@@ -1,0 +1,93 @@
+<?xml version='1.0'?>
+<rspec xmlns="http://www.geni.net/resources/rspec/3" type="request" generated_by="jFed RSpec Editor" generated="2016-08-18T22:04:13.131+02:00" xmlns:emulab="http://www.protogeni.net/resources/rspec/ext/emulab/1" xmlns:jfedBonfire="http://jfed.iminds.be/rspec/ext/jfed-bonfire/1" xmlns:delay="http://www.protogeni.net/resources/rspec/ext/delay/1" xmlns:jfed-command="http://jfed.iminds.be/rspec/ext/jfed-command/1" xmlns:client="http://www.protogeni.net/resources/rspec/ext/client/1" xmlns:jfed-ssh-keys="http://jfed.iminds.be/rspec/ext/jfed-ssh-keys/1" xmlns:jfed="http://jfed.iminds.be/rspec/ext/jfed/1" xmlns:sharedvlan="http://www.protogeni.net/resources/rspec/ext/shared-vlan/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.geni.net/resources/rspec/3 http://www.geni.net/resources/rspec/3/request.xsd ">
+  <node client_id="ns3slave1" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="44.0" y="58.5"/>
+  </node>
+  <node client_id="ns3slave2" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="38.5" y="111.5"/>
+  </node>
+  <node client_id="ns3slave3" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="40.5" y="161.5"/>
+  </node>
+  <node client_id="ns3slave4" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="42.5" y="219.5"/>
+  </node>
+  <node client_id="ns3slave5" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="37.5" y="279.5"/>
+  </node>
+  <node client_id="ns3slave6" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="218.5" y="61.5"/>
+  </node>
+  <node client_id="ns3slave7" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="214.5" y="110.5"/>
+  </node>
+  <node client_id="ns3slave8" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="211.5" y="171.5"/>
+  </node>
+  <node client_id="ns3slave9" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="210.5" y="232.5"/>
+  </node>
+  <node client_id="ns3slave10" exclusive="true" component_manager_id="urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm">
+    <sliver_type name="raw-pc">
+      <disk_image name="urn:publicid:IDN+wall2.ilabt.iminds.be+image+emulab-ops:UBUNTU14-64-STD"/>
+    </sliver_type>
+    <services>
+      <execute shell="sh" command="sudo bash /proj/wall2-ilabt-iminds-be/ns3ah/setup/bootscript.sh"/>
+    </services>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="211.5" y="278.5"/>
+  </node>
+</rspec>

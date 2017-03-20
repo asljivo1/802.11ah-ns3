@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.3">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.baselet.element.old.element.InitialState</type>
+    <coordinates>
+      <x>110</x>
+      <y>300</y>
+      <w>20</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>100</x>
+      <y>260</y>
+      <w>250</w>
+      <h>94</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+Packet arrives from upper
+layer in the AP MAC</panel_attributes>
+    <additional_attributes>230;50;30;50</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.State</type>
+    <coordinates>
+      <x>620</x>
+      <y>200</y>
+      <w>250</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>Schedule packet to enqueue it in the
+DCA at the next RAW slot period after
+the DTIM beacon</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>330</x>
+      <y>210</y>
+      <w>310</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+STA is not active or
+not inside RAW slot period</panel_attributes>
+    <additional_attributes>290;30;30;90</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.State</type>
+    <coordinates>
+      <x>620</x>
+      <y>340</y>
+      <w>250</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>Enqueue packet in the 
+appropriate DCA</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>330</x>
+      <y>290</y>
+      <w>310</w>
+      <h>94</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+AP knows STA is active and
+currently inside RAW slot period</panel_attributes>
+    <additional_attributes>290;70;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.InitialState</type>
+    <coordinates>
+      <x>110</x>
+      <y>510</y>
+      <w>20</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.FinalState</type>
+    <coordinates>
+      <x>930</x>
+      <y>300</y>
+      <w>20</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>840</x>
+      <y>210</y>
+      <w>110</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>90;100;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>840</x>
+      <y>280</y>
+      <w>110</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>90;30;30;90</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.State</type>
+    <coordinates>
+      <x>320</x>
+      <y>490</y>
+      <w>320</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>AP checks the DCA queue lengths
+and whether data was scheduled 
+to be enqueued and flags the DTIM partial 
+bitmap appropriately</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Decision</type>
+    <coordinates>
+      <x>330</x>
+      <y>290</y>
+      <w>40</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>100</x>
+      <y>470</y>
+      <w>240</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+DTIM beacon period arrives</panel_attributes>
+    <additional_attributes>220;50;30;50</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.FinalState</type>
+    <coordinates>
+      <x>930</x>
+      <y>510</y>
+      <w>20</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>610</x>
+      <y>490</y>
+      <w>340</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>320;30;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.InitialState</type>
+    <coordinates>
+      <x>110</x>
+      <y>650</y>
+      <w>20</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.State</type>
+    <coordinates>
+      <x>320</x>
+      <y>630</y>
+      <w>180</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>DCA gets access and
+proceeds to send all
+pending transmissions
+with backoff if possible</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>100</x>
+      <y>610</y>
+      <w>240</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+RAW slot period arrives</panel_attributes>
+    <additional_attributes>220;50;30;50</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.FinalState</type>
+    <coordinates>
+      <x>930</x>
+      <y>650</y>
+      <w>20</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>870</x>
+      <y>630</y>
+      <w>80</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60;30;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.State</type>
+    <coordinates>
+      <x>620</x>
+      <y>630</y>
+      <w>280</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>DCA is denied access. Pending data will be 
+tried to be transmitted on the next granted
+access which is in the next appropriate 
+RAW slot period</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>470</x>
+      <y>610</y>
+      <w>170</w>
+      <h>94</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+RAW slot period 
+expires</panel_attributes>
+    <additional_attributes>150;50;30;50</additional_attributes>
+  </element>
+</diagram>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <code-assistance-data xmlns="http://www.netbeans.org/ns/make-project-private/1">
+        <code-model-enabled>true</code-model-enabled>
+    </code-assistance-data>
+    <data xmlns="http://www.netbeans.org/ns/make-project-private/1">
+        <activeConfTypeElem>0</activeConfTypeElem>
+        <activeConfIndexElem>0</activeConfIndexElem>
+    </data>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/src/internet/helper/ipv4-interface-container.h</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/build/ns3/acoustic-modem-energy-model.h</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/src/applications/model/udp-server.cc</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/scratch/ahsimulation/Configuration.h</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/scratch/ahsimulation/main.h</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/src/visualizer/model/pyviz.cc</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/src/wifi/model/regular-wifi-mac.cc</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/scratch/ahsimulation/NodeEntry.cc</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/src/applications/model/udp-server.h</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/scratch/ahsimulation/NodeEntry.h</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/scratch/ahsimulation/main.cc</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/src/wifi/model/sta-wifi-mac.cc</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/src/applications/model/udp-client.cc</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/src/applications/model/udp-client.h</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/scratch/ahsimulation/Statistics.h</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/scratch/test1.cc</file>
+            <file>file:/home/dwight/ns3ah/802.11ah-ns3/ns-3/scratch/ahsimulation/NodeStatistics.h</file>
+        </group>
+    </open-files>
+</project-private>

@@ -1,0 +1,16 @@
+0;start;20;4;0;162;5;MCS2_8;;;10000;4096;102400;APAlwaysSchedulesForNextSlottrueContentionPerRAWSlot0DataModeMCS2_8IpCameraDataRate48NGroup4NRawSlotNum5TCPSegmentSize536;3.670000;8.000000;1;81920000;1000.000000;tcpipcamera;1000;536;65535;1;100;1.000000;10;48;5;60;512000;1024;0.010000;0.010000;1024;0;1
+0;stanodeadd;0;955.726289;1045.967593;8192
+0;stanodeadd;1;982.513390;933.480337;8192
+0;stanodeadd;2;1061.547238;1073.125020;8192
+0;stanodeadd;3;1031.962158;973.235415;8192
+0;stanodeadd;4;1015.285069;1074.523568;8192
+0;apnodeadd;1000.000000;1000.000000
+0;nodestatsheader;STAIndex;TotalTransmitTime;TotalReceiveTime;TotalDozeTime;TotalActiveTime;NumberOfTransmissions;NumberOfTransmissionsDropped;NumberOfReceives;NumberOfReceivesDropped;NumberOfSentPackets;NumberOfSuccessfulPackets;NumberOfDroppedPackets;AveragePacketSentReceiveTime;GoodputKbit;EDCAQueueLength;NumberOfSuccessfulRoundtripPackets;AveragePacketRoundTripTime;TCPCongestionWindow;NumberOfTCPRetransmissions;NumberOfTCPRetransmissionsFromAP;NumberOfReceiveDroppedByDestination;NumberOfMACTxRTSFailed;NumberOfMACTxMissedACK;NumberOfDropsByReason;NumberOfDropsByReasonAtAP;TCPRTOValue;NumberOfAPScheduledPacketForNodeInNextSlot;NumberOfAPSentPacketForNodeImmediately;AverageTimeRemainingWhenAPSendingPacketInSameSlot;NumberOfCollisions;NumberOfMACTxMissedACKAndDroppedPacket;TCPConnected;TCPSlowStartThreshold;TCPEstimatedBandwidth;TCPRTTValue;NumberOfBeaconsMissed;NumberOfTransmissionsDuringRAWSlot;TotalNumberOfDrops;FirmwareTransferTime;IPCameraSendingRate;IPCameraReceivingRate;NumberOfTransmissionsCancelledDueToCrossingRAWBoundary
+0;nodestats;0;0;0;0;0;0;0;0;0;0;0;-1;0;-1.000000;0;0;0;0;0;0;0;0;0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;-1;0;0;0;0;0;0;4294967295;-1.000000;-1;0;0;0;0;-1.000000;-1.000000;0
+0;nodestats;1;0;0;0;0;0;0;0;0;0;0;-1;0;-1.000000;0;0;0;0;0;0;0;0;0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;-1;0;0;0;0;0;0;4294967295;-1.000000;-1;0;0;0;0;-1.000000;-1.000000;0
+0;nodestats;2;0;0;0;0;0;0;0;0;0;0;-1;0;-1.000000;0;0;0;0;0;0;0;0;0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;-1;0;0;0;0;0;0;4294967295;-1.000000;-1;0;0;0;0;-1.000000;-1.000000;0
+0;nodestats;3;0;0;0;0;0;0;0;0;0;0;-1;0;-1.000000;0;0;0;0;0;0;0;0;0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;-1;0;0;0;0;0;0;4294967295;-1.000000;-1;0;0;0;0;-1.000000;-1.000000;0
+0;nodestats;4;0;0;0;0;0;0;0;0;0;0;-1;0;-1.000000;0;0;0;0;0;0;0;0;0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0;-1;0;0;0;0;0;0;4294967295;-1.000000;-1;0;0;0;0;-1.000000;-1.000000;0
+0;slotstatsAP;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0
+0;slotstatsSTA;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0
+0;startheader;NRawSta;NGroup;SlotFormat;NRawSlotCount;NRawSlotNum;DataMode;;;TrafficInterval;TrafficPacketSize;BeaconInterval;Name;PropagationLossExponent;PropagationLossReferenceLoss;APAlwaysSchedulesForNextSlot;MinRTO;SimulationTime;TrafficType;TrafficIntervalDeviation;TCPSegmentSize;TCPInitialSlowStartThreshold;TCPInitialCwnd;MaxTimeOfPacketsInQueue;IPCameraMotionPercentage;IPCameraMotionDuration;IPCameraDataRate;NSta;CoolDownPeriod;FirmwareSize;FirmwareBlockSize;FirmwareCorruptionProbability;FirmwareNewUpdateProbability;SensorMeasurementSize;ContentionPerRAWSlot;ContentionPerRAWSlotOnlyInFirstGroup

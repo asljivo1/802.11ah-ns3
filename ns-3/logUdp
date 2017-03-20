@@ -1,0 +1,332 @@
+Waf: Entering directory `/usr/local/src/802.11ah-ns3/ns-3/build'
+Waf: Leaving directory `/usr/local/src/802.11ah-ns3/ns-3/build'
+Build commands will be stored in build/compile_commands.json
+'build' finished successfully (0.666s)
+Configuring STA Nodes 
+Installing STA Node devices
+Configuring STA Node mobility
+Configuring AP Node 
+Configuring IP stack 
+IP stack configured 
+Populating routing tables 
+Populating arp cache 
+Arp Cache: Adding the pair (00:00:00:00:00:01,192.168.0.1)
+Arp Cache: Adding the pair (00:00:00:00:00:02,192.168.0.2)
+Arp Cache: Adding the pair (00:00:00:00:00:03,192.168.0.3)
+Arp Cache: Adding the pair (00:00:00:00:00:04,192.168.0.4)
+Arp Cache: Adding the pair (00:00:00:00:00:05,192.168.0.5)
+Arp Cache: Adding the pair (00:00:00:00:00:06,192.168.0.6)
+Arp Cache: Adding the pair (00:00:00:00:00:07,192.168.0.7)
+Arp Cache: Adding the pair (00:00:00:00:00:08,192.168.0.8)
+Arp Cache: Adding the pair (00:00:00:00:00:09,192.168.0.9)
+Arp Cache: Adding the pair (00:00:00:00:00:0a,192.168.0.10)
+Arp Cache: Adding the pair (00:00:00:00:00:0b,192.168.0.11)
+Configuring STA Node trace sources
+Hooking up trace sources for STA 0
+Hooking up trace sources for STA 1
+Hooking up trace sources for STA 2
+Hooking up trace sources for STA 3
+Hooking up trace sources for STA 4
+Hooking up trace sources for STA 5
+Hooking up trace sources for STA 6
+Hooking up trace sources for STA 7
+Hooking up trace sources for STA 8
+Hooking up trace sources for STA 9
+AP node, position = 1000:1000:0
+Sta node#0, position = 948.654:1008.69:0(distance to AP: 52.0766)
+Sta node#1, position = 935.334:973.049:0(distance to AP: 70.0576)
+Sta node#2, position = 989.295:1009.91:0(distance to AP: 14.5875)
+Sta node#3, position = 936.479:1050.56:0(distance to AP: 81.184)
+Sta node#4, position = 1083.87:1030.34:0(distance to AP: 89.1857)
+Sta node#5, position = 964.464:961.57:0(distance to AP: 52.3417)
+Sta node#6, position = 981.722:1080.3:0(distance to AP: 82.3517)
+Sta node#7, position = 988.19:1048.59:0(distance to AP: 50.0063)
+Sta node#8, position = 981.027:1079.22:0(distance to AP: 81.4641)
+Sta node#9, position = 1051.34:925.598:0(distance to AP: 90.3939)
+Connecting to visualizer
+Node 2 is associated and has aId 3 and falls in RAW group 0
+Node 9 is associated and has aId 10 and falls in RAW group 0
+Node 1 is associated and has aId 2 and falls in RAW group 0
+Node 6 is associated and has aId 7 and falls in RAW group 0
+Node 4 is associated and has aId 5 and falls in RAW group 0
+Node 3 is associated and has aId 4 and falls in RAW group 0
+Node 0 is associated and has aId 1 and falls in RAW group 0
+Node 5 is associated and has aId 6 and falls in RAW group 0
+Node 7 is associated and has aId 8 and falls in RAW group 0
+Node 8 is associated and has aId 9 and falls in RAW group 0
+All stations associated, configuring clients & server
+Statistics
+----------
+Total simulation time: 200000ms
+Time every station associated: 2006ms
+
+Node 0
+X: 948.654, Y: 1008.69
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 321ms
+Total receive time: 1863ms
+
+Total active time: 15512ms
+Total doze time: 244175ms
+
+Number of transmissions: 425
+Number of transmissions dropped: 0
+Number of receives: 8972
+Number of receives dropped: 7717
+
+Number of packets sent: 257
+Number of packets successful: 256
+Number of packets dropped: 1
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 14.992448Kbit
+*********************
+Node 1
+X: 935.334, Y: 973.049
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 394ms
+Total receive time: 1950ms
+
+Total active time: 14538ms
+Total doze time: 245149ms
+
+Number of transmissions: 521
+Number of transmissions dropped: 0
+Number of receives: 8876
+Number of receives dropped: 7717
+
+Number of packets sent: 257
+Number of packets successful: 257
+Number of packets dropped: 0
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 13.749286Kbit
+*********************
+Node 2
+X: 989.295, Y: 1009.91
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 339ms
+Total receive time: 1863ms
+
+Total active time: 14538ms
+Total doze time: 245229ms
+
+Number of transmissions: 448
+Number of transmissions dropped: 0
+Number of receives: 8949
+Number of receives dropped: 7675
+
+Number of packets sent: 257
+Number of packets successful: 257
+Number of packets dropped: 0
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 12.742151Kbit
+*********************
+Node 3
+X: 936.479, Y: 1050.56
+Tx Remaining Queue size: 1
+Tcp congestion window value: 0
+--------------
+Total transmit time: 294ms
+Total receive time: 1805ms
+
+Total active time: 15040ms
+Total doze time: 244747ms
+
+Number of transmissions: 388
+Number of transmissions dropped: 0
+Number of receives: 9009
+Number of receives dropped: 7839
+
+Number of packets sent: 257
+Number of packets successful: 257
+Number of packets dropped: 0
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 11.835772Kbit
+*********************
+Node 4
+X: 1083.87, Y: 1030.34
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 267ms
+Total receive time: 1752ms
+
+Total active time: 12071ms
+Total doze time: 247617ms
+
+Number of transmissions: 354
+Number of transmissions dropped: 0
+Number of receives: 9043
+Number of receives dropped: 8036
+
+Number of packets sent: 257
+Number of packets successful: 257
+Number of packets dropped: 0
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 16.479914Kbit
+*********************
+Node 5
+X: 964.464, Y: 961.57
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 321ms
+Total receive time: 1863ms
+
+Total active time: 15512ms
+Total doze time: 244175ms
+
+Number of transmissions: 425
+Number of transmissions dropped: 0
+Number of receives: 8972
+Number of receives dropped: 7717
+
+Number of packets sent: 257
+Number of packets successful: 256
+Number of packets dropped: 1
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 14.957697Kbit
+*********************
+Node 6
+X: 981.722, Y: 1080.3
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 394ms
+Total receive time: 1972ms
+
+Total active time: 14658ms
+Total doze time: 245029ms
+
+Number of transmissions: 521
+Number of transmissions dropped: 0
+Number of receives: 8876
+Number of receives dropped: 7688
+
+Number of packets sent: 257
+Number of packets successful: 257
+Number of packets dropped: 0
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 13.708244Kbit
+*********************
+Node 7
+X: 988.19, Y: 1048.59
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 339ms
+Total receive time: 1900ms
+
+Total active time: 16034ms
+Total doze time: 243733ms
+
+Number of transmissions: 447
+Number of transmissions dropped: 0
+Number of receives: 8950
+Number of receives dropped: 7640
+
+Number of packets sent: 257
+Number of packets successful: 257
+Number of packets dropped: 0
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 12.741313Kbit
+*********************
+Node 8
+X: 981.027, Y: 1079.22
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 294ms
+Total receive time: 1828ms
+
+Total active time: 16034ms
+Total doze time: 243753ms
+
+Number of transmissions: 388
+Number of transmissions dropped: 0
+Number of receives: 9009
+Number of receives dropped: 7817
+
+Number of packets sent: 257
+Number of packets successful: 257
+Number of packets dropped: 0
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 11.897568Kbit
+*********************
+Node 9
+X: 1051.34, Y: 925.598
+Tx Remaining Queue size: 0
+Tcp congestion window value: 0
+--------------
+Total transmit time: 267ms
+Total receive time: 1747ms
+
+Total active time: 11948ms
+Total doze time: 247739ms
+
+Number of transmissions: 353
+Number of transmissions dropped: 0
+Number of receives: 9044
+Number of receives dropped: 8045
+
+Number of packets sent: 257
+Number of packets successful: 256
+Number of packets dropped: 1
+Number of roundtrip packets successful: 0
+Average packet sent/receive time: 0µs
+Average packet roundtrip time: 0µs
+IP Camera Data sending rate: -1.000000kbps
+IP Camera Data receiving rate: -1.000000kbps
+
+Goodput: 16.431752Kbit
+*********************

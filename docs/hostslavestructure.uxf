@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.3">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.baselet.element.old.element.Node</type>
+    <coordinates>
+      <x>330</x>
+      <y>210</y>
+      <w>370</w>
+      <h>330</h>
+    </coordinates>
+    <panel_attributes>center:Host</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.SimpleComponent</type>
+    <coordinates>
+      <x>350</x>
+      <y>270</y>
+      <w>300</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>WCF Service
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>410</x>
+      <y>300</y>
+      <w>210</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>SimulationHost
+--
+SOAP
+* GetSimulation
+* SimulationDone
+* SimulationFailed
+* GetStatus
+--
+HTML
+GetStatusPage (/web/)
+--
+REST
+GetStatus (/web/GetStatus)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Node</type>
+    <coordinates>
+      <x>760</x>
+      <y>210</y>
+      <w>310</w>
+      <h>230</h>
+    </coordinates>
+    <panel_attributes>center:Slave
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.SimpleComponent</type>
+    <coordinates>
+      <x>770</x>
+      <y>350</y>
+      <w>270</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>WCF Proxy
+
+
+layer=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Note</type>
+    <coordinates>
+      <x>790</x>
+      <y>250</y>
+      <w>110</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>bootscript.sh
+layer=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>800</x>
+      <y>290</y>
+      <w>50</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30;60;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Note</type>
+    <coordinates>
+      <x>930</x>
+      <y>250</y>
+      <w>110</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>installscript.sh
+layer=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>870</x>
+      <y>240</y>
+      <w>80</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60;30;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>590</x>
+      <y>320</y>
+      <w>200</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30;30;180;50</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>590</x>
+      <y>330</y>
+      <w>200</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30;30;180;40</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>590</x>
+      <y>340</y>
+      <w>200</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30;40;180;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Node</type>
+    <coordinates>
+      <x>760</x>
+      <y>430</y>
+      <w>310</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>center:Slave
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Node</type>
+    <coordinates>
+      <x>760</x>
+      <y>470</y>
+      <w>310</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>center:Slave
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Node</type>
+    <coordinates>
+      <x>760</x>
+      <y>510</y>
+      <w>310</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>center:Slave</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Node</type>
+    <coordinates>
+      <x>760</x>
+      <y>630</y>
+      <w>310</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>center:Slave</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Node</type>
+    <coordinates>
+      <x>760</x>
+      <y>570</y>
+      <w>310</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>center:...</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>360</x>
+      <y>600</y>
+      <w>230</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Web browser
+--
+http://host/SimulationHost/web/</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>350</x>
+      <y>410</y>
+      <w>80</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60;30;30;30;30;190</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>360</x>
+      <y>450</y>
+      <w>70</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50;30;30;30;30;150</additional_attributes>
+  </element>
+</diagram>
