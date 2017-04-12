@@ -16,21 +16,25 @@ int main(int argc, char** argv) {
 	PacketMetadata::Enable();
 	TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
 	Config::SetDefault ("ns3::TcpL4Protocol::SocketType", StringValue ("ns3::TcpWestwood"));
+	//LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
+	//LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
+	//LogComponentEnable("S1gApWifiMac", LOG_LEVEL_INFO);
+	//LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
+#ifdef false
 	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
 	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
-#ifdef false
+	LogComponentEnable("CoapPdu", LOG_LEVEL_ALL);
 	LogComponentEnable("StaWifiMac", LOG_LEVEL_ALL);
 	LogComponentEnable("S1gApWifiMac", LOG_LEVEL_ALL);
-
+	LogComponentEnable("WifiNetDevice", LOG_LEVEL_ALL);
 	LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_ALL);
 	LogComponentEnable("Ipv6Interface", LOG_LEVEL_ALL);
 	LogComponentEnable("Icmpv6L4Protocol", LOG_LEVEL_ALL);
-
-	LogComponentEnable("WifiNetDevice", LOG_LEVEL_ALL);
 	LogComponentEnable("Ipv4Interface", LOG_LEVEL_ALL);
 #endif
 
     config = Configuration(argc, argv);
+
 
     // calculate parameters
     if(config.trafficPacketSize == -1)
@@ -59,7 +63,11 @@ int main(int argc, char** argv) {
     	config.SlotFormat = config.NRawSlotCount > 256 ? 1 : 0;
     if(config.NRawSta == -1)
     	config.NRawSta = config.Nsta;
-
+    if (config.nControlLoops*2 > config.Nsta)
+    {
+    	std::cout << "Bad configuration: number of stations must be at least 2 * number of control loops. Abort elegantly." << std::endl;
+    	return 0;
+    }
     stats = Statistics(config.Nsta);
 
     transmissionsPerTIMGroupAndSlotFromAPSinceLastInterval = vector<long>(config.NGroup * config.NRawSlotNum, 0);
@@ -89,12 +97,41 @@ int main(int argc, char** argv) {
     // configure AP nodes
     configureAPNode(ssid);
 
+
+    externalNodes.Create(1);
+    externalNodes.Add(apNodes.Get(0));
+
+    PointToPointHelper pointToPoint;
+    pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
+    pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
+
+    externalDevices = pointToPoint.Install (externalNodes);
+
+    InternetStackHelper stack;
+    stack.Install(externalNodes.Get(0));
+
+    //in ip stack one command
     // configure IP addresses
     configureIPStack();
 
+    CoapServerHelper myServer(5683);
+    serverApp = myServer.Install(externalNodes.Get(0));
+    //serverApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&coapPacketReceivedAtServer));
+    serverApp.Start(Seconds(0));
+    serverApp.Stop (Seconds (config.simulationTime));
+
     // prepopulate routing tables and arp cache
-    if (!config.useV6) PopulateArpCache();
-    else PopulateNdiscCache(false);
+    if (!config.useV6)
+    {
+    	PopulateArpCache();
+    	Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+    }
+    else
+    {
+    	PopulateNdiscCache(true);
+    }
+
+
 
     // configure tracing for associations & other metrics
     configureNodes();
@@ -236,7 +273,8 @@ void configureSTANodes(Ssid& ssid) {
             "Ssid", SsidValue(ssid),
             "ActiveProbing", BooleanValue(false),
 			"MaxMissedBeacons", UintegerValue (10 *config.NGroup),
-			"MaxTimeInQueue", TimeValue(Seconds(config.MaxTimeOfPacketsInQueue)));
+			"MaxTimeInQueue", TimeValue(Seconds(config.MaxTimeOfPacketsInQueue)),
+			"RawDuration", TimeValue (MicroSeconds (config.BeaconInterval)));///ami TODO test
 
     // create wifi
     WifiHelper wifi = WifiHelper::Default();
@@ -348,11 +386,10 @@ void OnAPPacketToTransmitReceived(string context, Ptr<const Packet> packet, Mac4
 	}
 }
 
-void configureAPNode(Ssid& ssid) {
+void configureAPNode (Ssid& ssid) {
 	cout << "Configuring AP Node " << endl;
     // create AP node
     apNodes.Create(1);
-
     uint32_t NGroupStas = config.NRawSta / config.NGroup;
 
     // setup mac
@@ -396,7 +433,6 @@ void configureAPNode(Ssid& ssid) {
     //wifi.EnableLogComponents();
 
     apDevices = wifi.Install(phy, mac, apNodes);
-    //apDevices4sixlp = wifi.Install(phy, mac, apNodes);
 
     MobilityHelper mobilityAp;
     Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
@@ -427,6 +463,10 @@ void configureIPStack() {
     	address.SetBase("192.168.0.0", "255.255.0.0");
     	staNodeInterfaces = address.Assign(staDevices);
     	apNodeInterfaces = address.Assign(apDevices);
+
+    	address.SetBase("169.200.0.0", "255.255.0.0");
+        externalInterfaces = address.Assign (externalDevices);
+
     }
     else
     {
@@ -442,6 +482,7 @@ void configureIPStack() {
 
         staNodeInterfaces6 = address6.Assign(sixStaDevices);
         apNodeInterfaces6 = address6.Assign(sixApDevices);
+        //TODO routing doesnt work with ipv6 here
 
     	/*std::cout << "    AP     --IPv6: " << apNodeInterfaces6.GetAddress(0, 0) << "  --MAC: " 	<< Mac48Address::ConvertFrom(sixApDevices.Get(0)->GetAddress())
     	<< std::endl;
@@ -449,6 +490,9 @@ void configureIPStack() {
     		Mac48Address addr48 = Mac48Address::ConvertFrom(sixStaDevices.Get(i)->GetAddress());
     		std::cout << "  Node #" << i << "  --IPv6: "<< staNodeInterfaces6.GetAddress(i,0) << "--MAC: " << addr48 	<< std::endl;
     	}*/
+
+    	address6.SetBase("2001:2::", Ipv6Prefix (64));
+        externalInterfaces6 = address6.Assign (externalDevices);
 
         for (uint32_t i=0; i<staNodes.GetN(); i++)
         	staNodes.Get(i)->GetObject<Icmpv6L4Protocol> ()->SetAttribute ("DAD", BooleanValue (false));
@@ -475,7 +519,6 @@ void configureNodes() {
         Config::Connect("/NodeList/" + std::to_string(i) + "/DeviceList/0/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/$ns3::StaWifiMac/Assoc", MakeCallback(&NodeEntry::SetAssociation, n));
         Config::Connect("/NodeList/" + std::to_string(i) + "/DeviceList/0/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/$ns3::StaWifiMac/DeAssoc", MakeCallback(&NodeEntry::UnsetAssociation, n));
         Config::Connect("/NodeList/" + std::to_string(i) + "/DeviceList/0/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/$ns3::StaWifiMac/NrOfTransmissionsDuringRAWSlot", MakeCallback(&NodeEntry::OnNrOfTransmissionsDuringRAWSlotChanged, n));
-
 
         Config::Connect("/NodeList/" + std::to_string(i) + "/DeviceList/0/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/$ns3::StaWifiMac/S1gBeaconMissed", MakeCallback(&NodeEntry::OnS1gBeaconMissed, n));
 
@@ -548,9 +591,9 @@ void coapPacketReceivedAtServer(Ptr<const Packet> packet, Address from) {
 	else
 		staId = getSTAIdFromAddress(Inet6SocketAddress::ConvertFrom(from).GetIpv6());
     if (staId != -1)
-        nodes[staId]->OnCoapPacketReceivedAtAP(packet);
+        nodes[staId]->OnCoapPacketReceivedAtServer(packet); ///ami OnCoapPacketReceivedAtAP
     else
-    	cout << "*** Node could not be determined from received packet at AP " << endl;
+    	cout << "*** Node could not be determined from received packet at server " << endl;
 }
 
 void tcpPacketReceivedAtServer (Ptr<const Packet> packet, Address from) {
@@ -579,6 +622,7 @@ void tcpRetransmissionAtServer(Address to) {
 }
 
 void tcpPacketDroppedAtServer(Address to, Ptr<Packet> packet, DropReason reason) {
+	unused(packet);
 	int staId;
 	if (!config.useV6)
 		staId = getSTAIdFromAddress(Ipv4Address::ConvertFrom(to));
@@ -597,8 +641,6 @@ void tcpStateChangeAtServer(TcpSocket::TcpStates_t oldState, TcpSocket::TcpState
 			nodes[staId]->OnTcpStateChangedAtAP(oldState, newState);
 		else
 			cout << "*** Node could not be determined from received packet at AP " << endl;
-
-	//cout << Simulator::Now().GetMicroSeconds() << " ********** TCP SERVER SOCKET STATE CHANGED FROM " << oldState << " TO " << newState << endl;
 }
 
 void tcpIPCameraDataReceivedAtServer(Address from, uint16_t nrOfBytes) {
@@ -622,7 +664,7 @@ void configureUDPServer() {
 
 void configureUDPEchoServer() {
     UdpEchoServerHelper myServer(9);
-    serverApp = myServer.Install(apNodes);
+    serverApp = myServer.Install(staNodes.Get(0));//apNodes
     serverApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&udpPacketReceivedAtServer));
     serverApp.Start(Seconds(0));
 }
@@ -762,7 +804,6 @@ void configureTCPSensorServer() {
 	Ptr<Application> tcpServer = factory.Create<TCPSensorServer>();
 	apNodes.Get(0)->AddApplication(tcpServer);
 
-
 	auto serverApp = ApplicationContainer(tcpServer);
 	wireTCPServer(serverApp);
 	serverApp.Start(Seconds(0));
@@ -790,14 +831,6 @@ void configureTCPSensorClients() {
 		clientApp.Start(MilliSeconds(0+random));
 		clientApp.Stop(Seconds(config.simulationTime));
 	}
-}
-
-
-void configureCoapServer() {
-    CoapServerHelper myServer(5683);
-    serverApp = myServer.Install(apNodes);
-    serverApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&coapPacketReceivedAtServer));
-    serverApp.Start(Seconds(0));
 }
 
 void wireTCPServer(ApplicationContainer serverApp) {
@@ -887,7 +920,9 @@ void configureUDPClients() {
 void configureUDPEchoClients() {
 	if (!config.useV6)
 	{
-		UdpEchoClientHelper clientHelper (apNodeInterfaces.GetAddress(0), 9); //address of remote node
+		Ptr<Ipv4> ip = staNodes.Get(0)->GetObject<Ipv4>();
+		Ipv4InterfaceAddress iAddr = ip->GetAddress(1,0);
+		UdpEchoClientHelper clientHelper (iAddr.GetLocal(), 9); //address of remote node, before it was AP
 		configureUdpEchoClientHelper(clientHelper);
 	}
 	else
@@ -912,39 +947,113 @@ void configureUdpEchoClientHelper(UdpEchoClientHelper& clientHelper){
 
 		double random = m_rv->GetValue(0, config.trafficInterval);
 		clientApp.Start(MilliSeconds(0+random));
-		//clientApp.Stop(Seconds(simulationTime + 1));
 	}
 }
 
-void configureCoapClients() {
-	if (!config.useV6)
-	{
-		CoapClientHelper clientHelper (apNodeInterfaces.GetAddress(0), 5683); //address of remote node
-		configureCoapClientHelper(clientHelper);
-	}
-	else
-	{
-		CoapClientHelper clientHelper (apNodeInterfaces6.GetAddress(0,0), 5683); //address of remote node
-		configureCoapClientHelper(clientHelper);
-	}
+
+/* In control loops, odd nodes (1, 3, 5, ...) are clients
+ * even nodes and zeroth node can be servers (0, 2, 4, ...)
+ *
+ * */
+void configureCoapServer() {
+    CoapServerHelper myServer(5683);
+    for (uint32_t i = 0; i < config.nControlLoops*2; i += 2)
+    {
+        serverApp = myServer.Install(staNodes.Get(i));
+        serverApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&coapPacketReceivedAtServer));
+        serverApp.Start(Seconds(0));
+    }
 }
 
-void configureCoapClientHelper(CoapClientHelper& clientHelper)
+void configureCoapClients()
 {
-	clientHelper.SetAttribute("MaxPackets", UintegerValue(4294967295u));
+	for (uint32_t i = 0; i < config.nControlLoops*2; i += 2)
+	{
+		if (!config.useV6)
+		{
+			// Configure client (cpntroller) that sends PUT control value to the server (process = sensor+actuator)
+
+			// address of remote node n0 (server)
+			Ptr<Ipv4> ip = staNodes.Get(i)->GetObject<Ipv4>();
+			Ipv4InterfaceAddress iAddr = ip->GetAddress(1,0);
+			CoapClientHelper clientHelper (iAddr.GetLocal(), 5683);
+			configureCoapClientHelper(clientHelper, i+1);
+			for (uint32_t i = 2*config.nControlLoops - 1; i < staNodes.GetN(); i++)
+			{
+				// Dummy clients for network congestion send packets to some external service over AP
+				CoapClientHelper clientHelperDummy (externalInterfaces.GetAddress(0), 5683); //address of AP
+				//std::cout << " external node address is " << externalInterfaces.GetAddress(0) << std::endl;
+				clientHelperDummy.SetAttribute("MaxPackets", config.maxNumberOfPackets); //4294967295u
+				clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(3000)));
+				clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(100)));
+				clientHelperDummy.SetAttribute("PacketSize", UintegerValue(config.trafficPacketSize));
+				clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
+				clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
+
+
+				Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
+
+				ApplicationContainer clientApp = clientHelperDummy.Install(staNodes.Get(i));
+				clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnCoapPacketSent, nodes[i]));
+				clientApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&NodeEntry::OnCoapPacketReceived, nodes[i]));
+
+				double random = m_rv->GetValue(0, 3000);
+				clientApp.Start(MilliSeconds(0+random));
+
+			}
+
+		}
+		else
+		{
+			Ptr<Ipv6> ip = staNodes.Get(0)->GetObject<Ipv6>();
+			Ipv6InterfaceAddress iAddr = ip->GetAddress(1,0);
+			CoapClientHelper clientHelper (iAddr.GetAddress(), 5683); //address of remote node apNodeInterfaces6.GetAddress(0,0)
+			configureCoapClientHelper(clientHelper, i+1);
+			for (uint32_t i = 0; i < staNodes.GetN(); i++)
+			{
+				if (i != 0 && i != 1)
+				{
+					// dummy clients for AP bombarding
+					CoapClientHelper clientHelperDummy (apNodeInterfaces6.GetAddress(0, 0), 5683);//address of AP
+					clientHelperDummy.SetAttribute("MaxPackets", config.maxNumberOfPackets); //4294967295u
+					clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(3000)));
+					clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(100)));
+					clientHelperDummy.SetAttribute("PacketSize", UintegerValue(config.trafficPacketSize));
+					clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
+					clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
+
+
+					Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
+
+					ApplicationContainer clientApp = clientHelperDummy.Install(staNodes.Get(i));
+					clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnCoapPacketSent, nodes[i]));
+					clientApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&NodeEntry::OnCoapPacketReceived, nodes[i]));
+					double random = m_rv->GetValue(0, 3000);
+					clientApp.Start(MilliSeconds(0+random));
+				}
+			}
+		}
+	}
+}
+
+void configureCoapClientHelper(CoapClientHelper& clientHelper, uint32_t n)
+{
+	clientHelper.SetAttribute("MaxPackets", config.maxNumberOfPackets);//4294967295u
 	clientHelper.SetAttribute("Interval", TimeValue(MilliSeconds(config.trafficInterval)));
 	clientHelper.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(config.trafficIntervalDeviation)));
 	clientHelper.SetAttribute("PacketSize", UintegerValue(config.trafficPacketSize));
+	clientHelper.SetAttribute("RequestMethod", UintegerValue(3));
+	clientHelper.SetAttribute("MessageType", UintegerValue(0));
+
 
 	Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
-	for (uint16_t i = 0; i < config.Nsta; i++) {
-		ApplicationContainer clientApp = clientHelper.Install(staNodes.Get(i));
-		clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnCoapPacketSent, nodes[i]));
-		clientApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&NodeEntry::OnCoapPacketReceived, nodes[i]));
-		double random = m_rv->GetValue(0, config.trafficInterval);
-		clientApp.Start(MilliSeconds(0+random));
-		//clientApp.Stop(Seconds(simulationTime + 1));
-	}
+
+	ApplicationContainer clientApp = clientHelper.Install(staNodes.Get(n));
+	clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnCoapPacketSent, nodes[n]));
+	clientApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&NodeEntry::OnCoapPacketReceived, nodes[n]));
+	double random = m_rv->GetValue(0, config.trafficInterval);
+	clientApp.Start(MilliSeconds(0+random));
+
 }
 
 void onSTAAssociated(int i) {
@@ -1040,14 +1149,33 @@ void printStatistics() {
 		cout << "Number of packets dropped: " << std::to_string(stats.get(i).getNumberOfDroppedPackets()) << endl;
 		cout << "Number of roundtrip packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulRoundtripPackets) << endl;
 		cout << "Average packet sent/receive time: " << std::to_string(stats.get(i).getAveragePacketSentReceiveTime().GetMicroSeconds()) << "µs" << std::endl;
-		cout << "Average packet roundtrip time: " << std::to_string(stats.get(i).getAveragePacketRoundTripTime().GetMicroSeconds()) << "µs" << std::endl;
+		cout << "Average packet roundtrip time: " << std::to_string(stats.get(i).getAveragePacketRoundTripTime(config.trafficType).GetMicroSeconds()) << "µs" << std::endl;
 		cout << "IP Camera Data sending rate: " << std::to_string(stats.get(i).getIPCameraSendingRate()) << "kbps" << std::endl;
 		cout << "IP Camera Data receiving rate: " << std::to_string(stats.get(i).getIPCameraAPReceivingRate()) << "kbps" << std::endl;
-		cout << "" << endl;
+		cout << endl;
+		cout << "    maxLatency (C->S)= " << std::to_string(NodeEntry::maxLatency.GetMicroSeconds()) << "µs" << endl;
+		cout << "    minLatency (C->S) = " << std::to_string(NodeEntry::minLatency.GetMicroSeconds()) << "µs" << endl;
+		cout << "    max diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::maxJitter.GetMicroSeconds()) << "µs" << endl;
+		cout << "    min diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::minJitter.GetMicroSeconds()) << "µs" << endl;
+		cout << "    Jitter (RTT)= " << std::to_string(stats.get(i).GetAverageJitter()) << "ms" << endl;
+		cout << "    Average inter packet delay at server is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayServer).GetMicroSeconds()) << "µs" << endl;
+		cout << "    Inter-packet-delay at the server standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayServer) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayServer) << "%" <<endl;
+		cout << "    Average inter packet delay at client is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayClient).GetMicroSeconds()) << "µs" << endl;
+		cout << "    Inter-packet-delay at the client standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayClient) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayClient) << "%" <<endl;
+		//calculate the deviation between inter packet arrival times at the server
+		cout << "    Reliability " << std::to_string(stats.get(i).GetReliability()) << "%" << endl;
+
+
+		cout << endl;
 		cout << "Goodput: " << (stats.get(i).getGoodputKbit()) << "Kbit" << endl;
-//		cout << "Total bytes: " << std::to_string(stats.get(i).TotalPacketPayloadSize) << "b" << endl;
-//		cout << "Total time: " << std::to_string(stats.get(i).TotalPacketTimeOfFlight.GetSeconds()) << "sec" << endl;
 		cout << "*********************" << endl;
+		/*std::vector<Time> x = stats.get(i).m_interPacketDelay;
+		for (uint32_t i=0; i< x.size(); i++)
+		{
+			cout << "S: " << (x[i]).GetMicroSeconds() << ", ";
+		}*/
+	    cout << endl;
+
 	}
 }
 

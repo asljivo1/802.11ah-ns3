@@ -42,6 +42,7 @@
 #include "coap-pdu.h"
 #include "seq-ts-header.h"
 
+#define WITH_SEQ_TS true
 
 namespace ns3 {
 
@@ -62,7 +63,9 @@ TypeId CoapServer::GetTypeId(void) {
 			.AddTraceSource("Rx",
 					"A packet is received",
 					MakeTraceSourceAccessor(&CoapServer::m_packetReceived),
-					"ns3::CoapServer::PacketReceivedCallback");
+					"ns3::CoapServer::PacketReceivedCallback")
+					;
+
 	return tid;
 }
 
@@ -113,8 +116,6 @@ bool CoapServer::PrepareContext(void)
 
 	  if (true)
 	  {
-		  //std::cout << "*server***********ip6Addr " << this->GetNodeIpv4().c_str() << std::endl;
-
 		  srcAddr.addr.sin.sin_family      = AF_INET;
 		  srcAddr.addr.sin.sin_port        = htons(COAP_DEFAULT_PORT);
 		  srcAddr.addr.sin.sin_addr.s_addr = INADDR_ANY;
@@ -122,7 +123,6 @@ bool CoapServer::PrepareContext(void)
 	  }
 	  else
 	  {
-		  //std::cout << "*server***********ip6Addr " << this->GetNodeIpv6().c_str() << std::endl;
 		  srcAddr.addr.sin.sin_family      = AF_INET6;
 		  srcAddr.addr.sin.sin_port        = htons(COAP_DEFAULT_PORT);
 		  srcAddr.addr.sin.sin_addr.s_addr = inet_addr("::");
@@ -131,7 +131,6 @@ bool CoapServer::PrepareContext(void)
 	  m_coapCtx->network_send = CoapServer::coap_network_send;
       m_coapCtx->ns3_coap_server_obj_ptr = this;
 
-	  	  //m_coapCtx->network_read = CoapClient::coap_network_read;
 	  if (m_coapCtx) return true;
 	  else return false;
 }
@@ -162,24 +161,97 @@ void CoapServer::HndGetIndex(coap_context_t *ctx UNUSED_PARAM,
 }
 
 void CoapServer::HndHello(coap_context_t *ctx UNUSED_PARAM,
+		struct coap_resource_t *resource UNUSED_PARAM,
+		const coap_endpoint_t *local_interface UNUSED_PARAM,
+		coap_address_t *peer UNUSED_PARAM,
+		coap_pdu_t *request UNUSED_PARAM,
+		str *token UNUSED_PARAM,
+		coap_pdu_t *response) {
+	uint8_t buf[3];
+	response->hdr->code = COAP_RESPONSE_CODE(205);
+	coap_add_option(response,
+			COAP_OPTION_CONTENT_TYPE,
+			coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
+	const char* responseData ("Hello World!");
+	coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
+}
+
+void CoapServer::HndGetControlValue(coap_context_t *ctx,
+        struct coap_resource_t *resource,
+        const coap_endpoint_t *local_interface UNUSED_PARAM,
+        coap_address_t *peer UNUSED_PARAM,
+        coap_pdu_t *request ,
+        str *token UNUSED_PARAM,
+		coap_pdu_t *response)
+{
+	uint8_t buf[4];
+	// If m_controlValue was deleted, we pretend to have no such resource
+	response->hdr->code = (CoapServer::m_controlValue == 0) ? COAP_RESPONSE_CODE(205) : COAP_RESPONSE_CODE(404);
+	coap_add_option(response, COAP_OPTION_CONTENT_TYPE, coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
+	if (response->hdr->code != COAP_RESPONSE_CODE(404))
+	{
+		const char* responseData (std::to_string(CoapServer::m_controlValue).c_str());
+		coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
+	}
+}
+
+double CoapServer::m_controlValue = 0;
+double CoapServer::m_sensorValue = 0;
+
+void CoapServer::HndPutControlValue(coap_context_t *ctx UNUSED_PARAM,
+		struct coap_resource_t *resource UNUSED_PARAM,
+		const coap_endpoint_t *local_interface UNUSED_PARAM,
+		coap_address_t *peer UNUSED_PARAM,
+		coap_pdu_t *request,
+		str *token UNUSED_PARAM,
+		coap_pdu_t *response)
+{
+	size_t size;
+	unsigned char *data;
+
+	// If there is no control value, we pretend that such a resource does not exist
+	// Response code: if created 201, if exists 204, if not allowed 405
+	response->hdr->code = (CoapServer::m_controlValue != 0) ? COAP_RESPONSE_CODE(204) : COAP_RESPONSE_CODE(201);
+	resource->dirty = 1;
+
+	// coap_get_data() sets size to 0 on error
+	(void)coap_get_data(request, &size, &data);
+
+	if (size == 0)
+		NS_LOG_INFO("Empty PUT request.");
+	else {
+		std::stringstream dataStringStream;
+		for (uint32_t i = 0; i < size; i++)
+		{
+			dataStringStream << data[i];
+		}
+		CoapServer::m_controlValue = std::stod(dataStringStream.str());
+		NS_LOG_INFO("Successfull PUT request. New control value is " << CoapServer::m_controlValue);
+	}
+
+	// Reply with a sensor reading
+	uint8_t buf[4];
+	coap_add_option(response, COAP_OPTION_CONTENT_TYPE, coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
+	CoapServer::m_sensorValue += 0.001;
+	const char* responseData (std::to_string(CoapServer::m_sensorValue).c_str());
+	coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
+}
+
+void CoapServer::HndDeleteControlValue(coap_context_t *ctx UNUSED_PARAM,
         struct coap_resource_t *resource UNUSED_PARAM,
         const coap_endpoint_t *local_interface UNUSED_PARAM,
         coap_address_t *peer UNUSED_PARAM,
         coap_pdu_t *request UNUSED_PARAM,
         str *token UNUSED_PARAM,
-        coap_pdu_t *response) {
-	  uint8_t buf[3];
-	  response->hdr->code = COAP_RESPONSE_CODE(205);
-	  coap_add_option(response,
-	                  COAP_OPTION_CONTENT_TYPE,
-	                  coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
-	  const char* responseData ("Hello World!");
-	  coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
+        coap_pdu_t *response UNUSED_PARAM)
+{
+	CoapServer::m_controlValue = 0;
 }
 
 void CoapServer::InitializeResources(coap_context_t* ctx, std::vector<coap_resource_t*> resources){
 	coap_resource_t *r;
 
+	// empty resource handler responds with INDEX
 	r = coap_resource_init(NULL, 0, 0);
 	coap_register_handler(r, COAP_REQUEST_GET, HndGetIndex);
 
@@ -188,24 +260,17 @@ void CoapServer::InitializeResources(coap_context_t* ctx, std::vector<coap_resou
 	coap_add_resource(ctx, r);
 	resources.push_back(r);
 
-	/* store clock base to use in /time */
-	//time_t my_clock_base = clock_offset;
-
-	/*r = coap_resource_init((uint8_t *)"time", 4, COAP_RESOURCE_FLAGS_NOTIFY_CON);
-	coap_register_handler(r, COAP_REQUEST_GET, hnd_get_time);
-	coap_register_handler(r, COAP_REQUEST_PUT, hnd_put_time);
-	coap_register_handler(r, COAP_REQUEST_DELETE, hnd_delete_time);
-
+	// control resource for control loop simulation
+	r = coap_resource_init((uint8_t *)"control", 7, COAP_RESOURCE_FLAGS_NOTIFY_CON);
+	coap_register_handler(r, COAP_REQUEST_GET, HndGetControlValue);
+	coap_register_handler(r, COAP_REQUEST_PUT, HndPutControlValue);
+	coap_register_handler(r, COAP_REQUEST_DELETE, HndDeleteControlValue);
 	coap_add_attr(r, (uint8_t *)"ct", 2, (uint8_t *)"0", 1, 0);
-	coap_add_attr(r, (uint8_t *)"title", 5, (uint8_t *)"\"Internal Clock\"", 16, 0);
-	coap_add_attr(r, (uint8_t *)"rt", 2, (uint8_t *)"\"Ticks\"", 7, 0);
-	r->observable = 1;
-	coap_add_attr(r, (uint8_t *)"if", 2, (uint8_t *)"\"clock\"", 7, 0);
-
+	coap_add_attr(r, (uint8_t *)"title", 5, (uint8_t *)"\"Control Value\"", 16, 0);
 	coap_add_resource(ctx, r);
-	time_resource = r;
-	resources.push_back(r);*/
+	resources.push_back(r);
 
+	// dummy hello resource responds with plain text "Hello World!"
 	r = coap_resource_init((uint8_t *)"hello", 5, COAP_RESOURCE_FLAGS_NOTIFY_NON);
 	coap_register_handler(r, COAP_REQUEST_GET, HndHello);
 	coap_add_resource(ctx, r);
@@ -216,14 +281,6 @@ void CoapServer::DoDispose(void) {
 	NS_LOG_FUNCTION(this);
 	Application::DoDispose();
 }
-
-/*static void CoapServer::HelloHandler(coap_context_t* ctx, coap_resource_t* resource, const coap_endpoint_t* local_interface, coap_address_t* peer, coap_pdu_t* req, str *token, coap_pdu_t* response){
-	const char* response_data = "Hello world";
-	unsigned char buf[3];
-	response->hdr->code = COAP_RESPONSE_CODE(205);
-	coap_add_option(response, COAP_OPTION_CONTENT_TYPE, coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
-	coap_add_data(response, strlen(response_data), (unsigned char *)response_data);
-}*/
 
 void CoapServer::StartApplication(void) {
 	NS_LOG_FUNCTION(this);
@@ -240,22 +297,18 @@ void CoapServer::StartApplication(void) {
 
 	// Initialize resources
 	CoapServer::InitializeResources(m_coapCtx, m_resourceVectorPtr);
-
 	if (m_socket == 0) {
 		TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
 		m_socket = Socket::CreateSocket(GetNode(), tid);
 		InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), 	m_port);
 		m_socket->Bind(local);
 	}
-
 	if (m_socket6 == 0) {
 		TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
 		m_socket6 = Socket::CreateSocket(GetNode(), tid);
 		Inet6SocketAddress local = Inet6SocketAddress(Ipv6Address::GetAny(), m_port);
 		m_socket6->Bind(local);
-
 	}
-
 	m_socket->SetRecvCallback (MakeCallback (&CoapServer::HandleRead, this));
 	m_socket6->SetRecvCallback (MakeCallback (&CoapServer::HandleRead, this));
 }
@@ -277,21 +330,17 @@ void CoapServer::StopApplication() {
 void
 CoapServer::coap_transaction_id(const coap_pdu_t *pdu, coap_tid_t *id) {
 	coap_key_t h;
-
 	memset(h, 0, sizeof(coap_key_t));
 
-	/* Compare the transport address. */
-
+	// Compare the transport address.
 	if (InetSocketAddress::IsMatchingType(m_from)) {
 		std::stringstream addressStringStream;
 		addressStringStream << InetSocketAddress::ConvertFrom (m_from).GetPort();
 		std::string port (addressStringStream.str());
-		//std::cout << "port is " << port << std::endl;
 		coap_hash((const unsigned char *)port.c_str(), sizeof(port.c_str()), h);
 		addressStringStream.str("");
 		addressStringStream << InetSocketAddress::ConvertFrom (m_from).GetIpv4 ();
 		std::string ipv4 (addressStringStream.str());
-		//std::cout << "ipv4 is " << ipv4 << std::endl;
 		coap_hash((const unsigned char *)ipv4.c_str(), sizeof(ipv4.c_str()), h);
 	}
 	else if (Inet6SocketAddress::IsMatchingType(m_from)) {
@@ -309,13 +358,10 @@ CoapServer::coap_transaction_id(const coap_pdu_t *pdu, coap_tid_t *id) {
 	else return;
 
 	coap_hash((const unsigned char *)&pdu->hdr->id, sizeof(unsigned short), h);
-
 	*id = (((h[0] << 8) | h[1]) ^ ((h[2] << 8) | h[3])) & INT_MAX;
 }
 
-ssize_t CoapServer::CoapHandleMessage(Ptr<Packet> packet){ //coap_network_read extracts coap_packet_t - this is coap_handle_message
-	//std::cout << "size of packet is " << packet->GetSize() <<std::endl;
-
+ssize_t CoapServer::CoapHandleMessage(Ptr<Packet> packet){
 	uint32_t msg_len (packet->GetSize());
 	ssize_t bytesRead(0);
 	uint8_t* msg = new uint8_t[msg_len];
@@ -326,7 +372,7 @@ ssize_t CoapServer::CoapHandleMessage(Ptr<Packet> packet){ //coap_network_read e
 		return 0;
 	}
 
-	/* check version identifier */
+	// check version identifier
 	if (((*msg >> 6) & 0x03) != COAP_DEFAULT_VERSION) {
 		NS_LOG_ERROR(this << "Unknown CoAP protocol version " << ((*msg >> 6) & 0x03));
 		return 0;
@@ -345,12 +391,13 @@ ssize_t CoapServer::CoapHandleMessage(Ptr<Packet> packet){ //coap_network_read e
 
 	NS_ASSERT(node->pdu);
 	if (coap_pdu_parse(msg, msg_len, node->pdu))
+	{
 		coap_show_pdu(node->pdu);
+	}
 	else {
 		NS_LOG_ERROR("Coap server cannot parse CoAP packet. Abort.");
 		return 0;
 	}
-
 	this->coap_transaction_id(node->pdu, &node->id);
 	coap_dispatch(m_coapCtx, node);
 	return bytesRead;
@@ -378,36 +425,36 @@ CoapServer::Send (uint8_t *data, size_t datalen)
 	NS_LOG_FUNCTION (this);
 	NS_ASSERT (m_sendEvent.IsExpired ());
 
-	//Ptr<Packet> p = Create<Packet> (reinterpret_cast<uint8_t const *>(m_coapMsg.GetPdu()), sizeof(coap_pdu_t));
 	Ptr<Packet> p = Create<Packet> (data, datalen);
 
 	ssize_t bytesSent;
     p->RemoveAllPacketTags ();
     p->RemoveAllByteTags ();
 
-	NS_LOG_LOGIC ("Server sending response");
 	NS_ASSERT(m_fromSocket);
 
 	// add sequence header to the packet
+#ifdef WITH_SEQ_TS
 	SeqTsHeader seqTs;
 	seqTs.SetSeq (m_sent);
 	p->AddHeader (seqTs);
+#endif
 
 	if ((m_fromSocket->SendTo (p, 0, m_from)) >= 0)
 	{
 		++m_sent;
-		bytesSent = p->GetSize(); //check if GetSerializedSize
+		bytesSent = p->GetSize();
 		if (InetSocketAddress::IsMatchingType (m_from))
 		{
 			NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s server sent " << bytesSent << " bytes to " <<
 					InetSocketAddress::ConvertFrom (m_from).GetIpv4 () << " port " <<
-					InetSocketAddress::ConvertFrom (m_from).GetPort ());
+					InetSocketAddress::ConvertFrom (m_from).GetPort () << " Uid: " << p->GetUid());
 		}
 		else if (Inet6SocketAddress::IsMatchingType (m_from))
 		{
 			NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s server sent " << bytesSent << " bytes to " <<
 					Inet6SocketAddress::ConvertFrom (m_from).GetIpv6 () << " port " <<
-					Inet6SocketAddress::ConvertFrom (m_from).GetPort ());
+					Inet6SocketAddress::ConvertFrom (m_from).GetPort () << " Uid: " << p->GetUid());
 		}
 
 	}
@@ -424,7 +471,8 @@ CoapServer::Send (uint8_t *data, size_t datalen)
 	return bytesSent;
 }
 
-void CoapServer::HandleRead(Ptr<Socket> socket) { //read from ns3 socket
+// Read from ns3 socket
+void CoapServer::HandleRead(Ptr<Socket> socket) {
 	NS_LOG_FUNCTION(this << socket);
 	m_fromSocket = socket;
 	Ptr<Packet> packet;
@@ -433,15 +481,15 @@ void CoapServer::HandleRead(Ptr<Socket> socket) { //read from ns3 socket
 			m_packetReceived(packet, m_from);
 		}
 		if (InetSocketAddress::IsMatchingType(m_from)) {
-			NS_LOG_INFO("Server Received " << packet->GetSize () << " bytes from " << InetSocketAddress::ConvertFrom (m_from).GetIpv4 () << " at " << Simulator::Now ());
+			NS_LOG_INFO("Server Received " << packet->GetSize () << " bytes from " << InetSocketAddress::ConvertFrom (m_from).GetIpv4 () << " at " << Simulator::Now ().GetSeconds() << "s" << " Uid: " << packet->GetUid ());
 		} else if (Inet6SocketAddress::IsMatchingType(m_from)) {
 			NS_LOG_INFO("TraceDelay: RX " << packet->GetSize () << " bytes from "<< Inet6SocketAddress::ConvertFrom (m_from).GetIpv6 ()  << " Uid: " << packet->GetUid () << " RXtime: " << Simulator::Now ());
 		}
-
+#ifdef WITH_SEQ_TS
 		SeqTsHeader seqTs;
 		packet->RemoveHeader(seqTs);
-		uint32_t currentSequenceNumber = seqTs.GetSeq();
-
+		//uint32_t currentSequenceNumber = seqTs.GetSeq();
+#endif
 		packet->RemoveAllPacketTags ();
 		packet->RemoveAllByteTags ();
 

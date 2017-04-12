@@ -33,6 +33,8 @@
 #include "coap/coap.h"
 //#include "ns3/packet.h"
 
+
+
 namespace ns3 {
 class Socket;
 class Packet;
@@ -141,11 +143,38 @@ private:
   	        coap_pdu_t *request UNUSED_PARAM,
   	        str *token UNUSED_PARAM,
   	        coap_pdu_t *response);
+
+  static void HndGetControlValue(coap_context_t *ctx,
+          struct coap_resource_t *resource,
+          const coap_endpoint_t *local_interface UNUSED_PARAM,
+          coap_address_t *peer UNUSED_PARAM,
+          coap_pdu_t *request ,
+          str *token UNUSED_PARAM,
+          coap_pdu_t *response);
+
+  static void HndPutControlValue(coap_context_t *ctx UNUSED_PARAM,
+          struct coap_resource_t *resource UNUSED_PARAM,
+          const coap_endpoint_t *local_interface UNUSED_PARAM,
+          coap_address_t *peer UNUSED_PARAM,
+          coap_pdu_t *request,
+          str *token UNUSED_PARAM,
+          coap_pdu_t *response);
+
+  static void HndDeleteControlValue(coap_context_t *ctx UNUSED_PARAM,
+          struct coap_resource_t *resource UNUSED_PARAM,
+          const coap_endpoint_t *local_interface UNUSED_PARAM,
+          coap_address_t *peer UNUSED_PARAM,
+          coap_pdu_t *request UNUSED_PARAM,
+          str *token UNUSED_PARAM,
+          coap_pdu_t *response UNUSED_PARAM);
+
   static void InitializeResources(coap_context_t* ctx, std::vector<coap_resource_t*> resources);
   uint16_t m_port; //!< Port on which we listen for incoming packets.
   Ptr<Socket> m_socket; //!< IPv4 Socket
   Ptr<Socket> m_socket6; //!< IPv6 Socket
   uint32_t m_received; //!< Number of received packets
+  uint32_t m_prevPacketSeq;
+  Time m_prevPacketTime;
   uint32_t m_sent; //!< Counter for sent packets
   PacketLossCounter m_lossCounter; //!< Lost packet counter
 
@@ -155,6 +184,10 @@ private:
   Ptr<Socket> m_fromSocket;
   std::vector<coap_resource_t*> m_resourceVectorPtr;
   coap_context_t* m_coapCtx;
+
+  // Control loop atrributes
+  static double m_controlValue;
+  static double m_sensorValue;
 };
 
 } // namespace ns3

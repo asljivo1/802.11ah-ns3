@@ -63,7 +63,9 @@ class EventManager {
                         parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseInt(ev.parts[33]),
                         parseInt(ev.parts[34]), parseFloat(ev.parts[35]), parseInt(ev.parts[36]),
                         parseInt(ev.parts[37]), parseInt(ev.parts[38]), parseInt(ev.parts[39]),
-                        parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]), parseInt(ev.parts[43]));
+                        parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]), 
+			parseInt(ev.parts[43]), parseFloat(ev.parts[44]), parseFloat(ev.parts[45]), parseFloat(ev.parts[46]), parseFloat(ev.parts[47]), 
+			parseFloat(ev.parts[48]), parseFloat(ev.parts[49]) );
                     break;
 
                 case 'slotstatsSTA':
@@ -275,7 +277,7 @@ class EventManager {
         tcpRtoValue: number, numberOfAPScheduledPacketForNodeInNextSlot: number, numberOfAPSentPacketForNodeImmediately: number, avgRemainingSlotTimeWhenAPSendingInSameSlot: number,
         numberOfCollisions: number, numberofMACTxMissedACKAndDroppedPacket: number, tcpConnected: number,
         tcpSlowStartThreshold: number, tcpEstimatedBandwidth: number, tcpRTT: number, numberOfBeaconsMissed: number, numberOfTransmissionsDuringRAWSlot: number,
-        totalNumberOfDrops: number, firmwareTransferTime: number, ipCameraSendingRate: number, ipCameraReceivingRate: number, numberOfTransmissionsCancelledDueToCrossingRAWBoundary: number) {
+        totalNumberOfDrops: number, firmwareTransferTime: number, ipCameraSendingRate: number, ipCameraReceivingRate: number, numberOfTransmissionsCancelledDueToCrossingRAWBoundary: number, jitter: number, reliability: number, interPacketDelayAtServer: number, interPacketDelayAtClient: number, interPacketDelayDeviationPercentageAtServer: number, interPacketDelayDeviationPercentageAtClient: number) {
         // ^- it's getting awfully crowded around here
 
 
@@ -321,6 +323,13 @@ class EventManager {
         nodeVal.numberOfMACTxRTSFailed = numberOfMACTxRTSFailed;
         nodeVal.numberOfMACTxMissedACK = numberOfMACTxMissedACK;
         nodeVal.numberofMACTxMissedACKAndDroppedPacket = numberofMACTxMissedACKAndDroppedPacket;
+
+        nodeVal.jitter = jitter;
+        nodeVal.reliability = reliability;
+        nodeVal.interPacketDelayAtServer = interPacketDelayAtServer;
+        nodeVal.interPacketDelayAtClient = interPacketDelayAtClient;
+        nodeVal.interPacketDelayDeviationPercentageAtServer = interPacketDelayDeviationPercentageAtServer;
+        nodeVal.interPacketDelayDeviationPercentageAtClient = interPacketDelayDeviationPercentageAtClient;
 
         if (typeof numberOfDropsByReason != "undefined") {
             let dropParts = numberOfDropsByReason.split(',');

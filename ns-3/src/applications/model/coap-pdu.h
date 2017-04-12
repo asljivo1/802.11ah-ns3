@@ -52,8 +52,7 @@ public:
   void SetType (uint32_t seq);
   uint32_t GetType (void) const;
 
-  void SetTkl (uint32_t seq);
-  uint32_t GetTkl (void) const;
+  void SetTokenLength (uint64_t tkl);
 
   /**
    * Message Codes: https://tools.ietf.org/html/draft-ietf-core-coap-18#section-12.1
@@ -61,7 +60,8 @@ public:
   uint32_t GetCode (void) const;
   void SetCode (uint32_t code);
 
-  uint32_t GetTokenLength (void) const;
+  uint64_t GetTokenLength (void) const;
+  uint8_t* GetToken(void);
   uint16_t GetId (void) const;
   void SetId (uint16_t id);
   coap_pdu_t* GetPdu (void) const;
@@ -85,7 +85,7 @@ public:
    *
    * @return     A true on success, or false on error.
    */
-  bool AddToken(uint64_t len, const uint8_t *data);
+  bool SetToken(uint64_t len, const uint8_t *data);
 
   /**
    * Adds option of given type to this header and destroys the PDU's data, so coap_add_data() must be called

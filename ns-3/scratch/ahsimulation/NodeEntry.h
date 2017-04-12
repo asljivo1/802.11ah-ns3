@@ -31,8 +31,11 @@ public:
     double y = 0;
     bool isAssociated = false;
     uint32_t queueLength = 0;
-    
 
+    static Time maxLatency;
+    static Time minLatency;
+    static Time minJitter;
+    static Time maxJitter;
     NodeEntry(int id, Statistics* stats,Ptr<Node> node, Ptr<NetDevice> device);
 
     virtual ~NodeEntry();
@@ -94,8 +97,8 @@ public:
     void OnUdpPacketSent(Ptr<const Packet> packet);
     void OnUdpEchoPacketReceived(Ptr<const Packet> packet, Address from);
     void OnUdpPacketReceivedAtAP(Ptr<const Packet> packet);
-    void OnCoapPacketReceivedAtAP(Ptr<const Packet> packet);
-    void OnCoapPacketSent(Ptr<const Packet> packet);
+    void OnCoapPacketReceivedAtServer(Ptr<const Packet> packet);
+    void OnCoapPacketSent(Ptr<const Packet> packet); ///ami
     void OnCoapPacketReceived(Ptr<const Packet> packet, Address from);
 
     void UpdateQueueLength();
@@ -104,7 +107,7 @@ public:
     void SetDeassociatedCallback(std::function<void()> assocCallback);
 
 private:
-
+    Statistics* stats;
 	Ptr<Node> node;
 	Ptr<NetDevice> device;
 
@@ -113,9 +116,6 @@ private:
     std::map<uint64_t, Time> txMap;
     std::map<uint64_t, Time> rxMap;
 
-    //std::vector<bool> seqNrReceivedAtAP;
-    //std::vector<bool> seqNrReceived;
-
     uint16_t lastBeaconAIDStart = 0;
     uint16_t lastBeaconAIDEnd = 0;
 
@@ -123,15 +123,17 @@ private:
 
     Time lastBeaconReceivedOn = Time();
 
-    Statistics* stats;
 
     void OnEndOfReceive(Ptr<const Packet> packet);
 
     bool tcpConnectedAtSTA = true;
     bool tcpConnectedAtAP = true;
 
-
     Time timeStreamStarted;
+
+    Time delayFirst = Time();
+    Time delaySecond = Time();
+    Time timeSent = Time();
 };
 
 #endif /* NODEENTRY_H */

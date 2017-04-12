@@ -15,6 +15,21 @@ public:
     Time TotalDozeTime = Time();
     Time TotalActiveTime = Time();
     
+    Time interPacketDelayAtServer = Time(); ///ami
+    Time interPacketDelayAtClient = Time(); ///ami
+    std::vector<Time> m_interPacketDelayServer;
+    std::vector<Time> m_interPacketDelayClient;
+    std::vector<Time> m_time;
+    long double GetInterPacketDelayDeviation(std::vector<Time>& delayVector);
+    long double GetInterPacketDelayDeviationPercentage(std::vector<Time>& delayVector);
+    Time GetAverageInterPacketDelay(std::vector<Time>& delayVector);
+    float GetReliability (void);
+
+    uint32_t m_prevPacketSeqServer;
+    Time m_prevPacketTimeServer;
+    uint32_t m_prevPacketSeqClient;
+    Time m_prevPacketTimeClient;
+
     long NumberOfTransmissions = 0;
     long NumberOfTransmissionsDropped = 0;
     long NumberOfReceives = 0;
@@ -27,7 +42,6 @@ public:
     // number of drops for any packets for between STA and AP by reason that occurred at AP
     map<DropReason, long> NumberOfDropsByReasonAtAP;
 
-
     long NumberOfSuccessfulPackets = 0;
     long NumberOfSuccessfulPacketsWithSeqHeader = 0;
     long NumberOfSentPackets = 0;
@@ -38,12 +52,18 @@ public:
     long getNumberOfDroppedPackets();
 
     Time TotalPacketSentReceiveTime = Time();
+
+    // for jitter RMS - cumulative sum of abs differences
+    uint64_t jitterAcc = 0;
+    Time jitter = Time();
+    uint64_t GetAverageJitter(void);
+
     long TotalPacketPayloadSize = 0;
     
     Time TotalPacketRoundtripTime = Time();
 
     Time getAveragePacketSentReceiveTime();
-    Time getAveragePacketRoundTripTime();
+    Time getAveragePacketRoundTripTime(std::string trafficType);
 
     double getGoodputKbit();
 

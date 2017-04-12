@@ -23,6 +23,7 @@ SimulationEventManager::SimulationEventManager(string hostname, int port, string
 
 
 void SimulationEventManager::onStart(Configuration& config) {
+	m_config = config;
 	send({"start",
 		  std::to_string(config.NRawSta),
 		  std::to_string(config.NGroup),
@@ -132,7 +133,7 @@ void SimulationEventManager::onUpdateStatistics(Statistics& stats) {
 			std::to_string(stats.get(i).getGoodputKbit()),
 			std::to_string(stats.get(i).EDCAQueueLength),
 			std::to_string(stats.get(i).NumberOfSuccessfulRoundtripPackets),
-			std::to_string(stats.get(i).getAveragePacketRoundTripTime().GetMilliSeconds()),
+			std::to_string(stats.get(i).getAveragePacketRoundTripTime(m_config.trafficType).GetMilliSeconds()),
 			std::to_string(stats.get(i).TCPCongestionWindow),
 			std::to_string(stats.get(i).NumberOfTCPRetransmissions),
 			std::to_string(stats.get(i).NumberOfTCPRetransmissionsFromAP),
@@ -157,7 +158,13 @@ void SimulationEventManager::onUpdateStatistics(Statistics& stats) {
 			std::to_string(stats.get(i).FirmwareTransferTime.GetMicroSeconds()),
 			std::to_string(stats.get(i).getIPCameraSendingRate()),
 			std::to_string(stats.get(i).getIPCameraAPReceivingRate()),
-			std::to_string(stats.get(i).NumberOfTransmissionsCancelledDueToCrossingRAWBoundary)
+			std::to_string(stats.get(i).NumberOfTransmissionsCancelledDueToCrossingRAWBoundary),
+			std::to_string(stats.get(i).GetAverageJitter()), // I have jitter in micros abs delay between subsequent packets
+			std::to_string(stats.get(i).GetReliability()),
+			std::to_string(stats.get(i).interPacketDelayAtServer.GetMicroSeconds()),
+			std::to_string(stats.get(i).interPacketDelayAtClient.GetMicroSeconds()),
+			std::to_string(stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayServer)),
+			std::to_string(stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayClient))
 		});
 	}
 }
@@ -282,7 +289,13 @@ void SimulationEventManager::onStatisticsHeader() {
 		"FirmwareTransferTime",
 		"IPCameraSendingRate",
 		"IPCameraReceivingRate",
-		"NumberOfTransmissionsCancelledDueToCrossingRAWBoundary"
+		"NumberOfTransmissionsCancelledDueToCrossingRAWBoundary",
+		"Jitter",
+		"Reliability",
+		"InterPacketDelayAtServer",
+		"InterPacketDelayAtClient",
+		"InterPacketDelayDeviationPercentageAtServer",
+		"InterPacketDelayDeviationPercentageAtClient"
 	});
 
 }

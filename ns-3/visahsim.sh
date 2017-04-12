@@ -26,7 +26,7 @@
 " --VisualizerSamplingInterval=1"\
 " --APPcapFile=\"appcap\""\
 " --NSSFile=\"test.nss\""\
-" --Name=\"test\"" 
+" --Name=\"test\""
 
 
 #" --useIpv6"\

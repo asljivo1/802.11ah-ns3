@@ -58,16 +58,10 @@ CoapPdu::GetType (void) const
 }
 
 void
-CoapPdu::SetTkl (uint32_t tkl)
+CoapPdu::SetTokenLength (uint64_t tkl)
 {
   NS_LOG_FUNCTION (this << tkl);
   m_coapPdu->hdr->token_length = tkl;
-}
-uint32_t
-CoapPdu::GetTkl (void) const
-{
-  NS_LOG_FUNCTION (this);
-  return m_coapPdu->hdr->token_length;
 }
 
 uint32_t
@@ -98,7 +92,7 @@ CoapPdu::SetId (uint16_t id)
 	m_coapPdu->hdr->id = id;
 }
 
-uint32_t
+uint64_t
 CoapPdu::GetTokenLength (void) const
 {
   NS_LOG_FUNCTION (this);
@@ -123,6 +117,7 @@ CoapPdu::SetSize (size_t size)
 	  NS_LOG_WARN ("Size of " << size << " cannot be set. CoAP pdu size is [4, 1400]. Current setting is basic header size 4.");
 }
 
+// Not sure if works - not tested
 int
 CoapPdu::AddData (uint32_t size){
 	//make a string of zerofilled data for payload of size m_size
@@ -161,14 +156,26 @@ CoapPdu::GetSerializedSize (void) const
  * @return     A value greater than zero on success, or @c 0 on error.
  */
 bool
-CoapPdu::AddToken(uint64_t len, const uint8_t *data){
+CoapPdu::SetToken(uint64_t len, const uint8_t *data){
 	if (coap_add_token(m_coapPdu, len, data) == 0){
-		NS_LOG_INFO("Token not added to CoAP header. Bad Format.");
+		NS_LOG_INFO("Token not added to CoAP header. Bad Format. Current token is " << this->GetTokenLength() << ".");
 		return false;
 	}
 	else {
-		NS_LOG_INFO("Token added to CoAP header.");
+		NS_LOG_INFO("Token " << *data << " added to CoAP header.");
 		return true;
+	}
+}
+
+uint8_t*
+CoapPdu::GetToken(void){
+	if (m_coapPdu->hdr->token){
+		NS_LOG_INFO("Token does not exist.");
+		return NULL;
+	}
+	else {
+		std::cout << *m_coapPdu->hdr->token <<std::endl;
+		return m_coapPdu->hdr->token;
 	}
 }
 

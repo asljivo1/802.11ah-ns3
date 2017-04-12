@@ -303,15 +303,12 @@ StaWifiMac::SendPspoll (void)
   //frames if we are a QoS AP. The approach taken here is to always
   //use the DCF for these regardless of whether we have a QoS
   //association or not.
-  printf("POLLLLLLLLLLLLLLLLLLL");//ami
   m_pspollDca->Queue (packet, hdr);
 }
 
 void
 StaWifiMac::SendPspollIfnecessary (void)
 {
-	  printf("POLLLLLLLLLLLLLLLLLLL");//ami
-
   //assume only send one beacon during RAW
   if ( m_rawStart && m_inRawGroup && m_pagedStaRaw && m_dataBuffered )
     {

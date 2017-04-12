@@ -19,7 +19,7 @@
 #include <fstream>
 #include <sys/stat.h>
 
-void PopulateArpCache();
+void PopulateArpCache(void);
 void PopulateNdiscCache(bool print);
 
 #endif /* HELPER_H */

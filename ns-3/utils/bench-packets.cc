@@ -24,6 +24,8 @@
 #include <sstream>
 #include <string>
 #include <stdlib.h> // for exit ()
+#include "cleaning-helper.h"
+
 
 using namespace ns3;
 
@@ -94,6 +96,7 @@ void
 BenchHeader<N>::Print (std::ostream &os) const
 {
   NS_ASSERT (false);
+  unused(os);
 }
 template <int N>
 uint32_t 

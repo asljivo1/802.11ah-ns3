@@ -13,6 +13,10 @@
 
 #include "ns3/internet-module.h"
 #include "ns3/extension-headers.h"
+//#include "ns3/csma-module.h"
+#include "ns3/point-to-point-module.h"
+
+#include "ns3/nstime.h"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -21,6 +25,8 @@
 #include <cstring>
 #include <fstream>
 #include <sys/stat.h>
+#include <vector>
+
 
 #include "Helper.h"
 #include "Configuration.h"
@@ -57,11 +63,16 @@ NodeContainer apNodes;
 NetDeviceContainer apDevices;
 NetDeviceContainer sixApDevices;
 
+NodeContainer externalNodes;
+NetDeviceContainer externalDevices;
+
 Ipv4InterfaceContainer staNodeInterfaces;
 Ipv4InterfaceContainer apNodeInterfaces;
+Ipv4InterfaceContainer externalInterfaces;
 
 Ipv6InterfaceContainer staNodeInterfaces6;
 Ipv6InterfaceContainer apNodeInterfaces6;
+Ipv6InterfaceContainer externalInterfaces6;
 
 ApplicationContainer serverApp;
 
@@ -108,7 +119,7 @@ void configureTCPSensorClients();
 
 void configureCoapServer(); /**/
 void configureCoapClients(); /**/
-void configureCoapClientHelper(CoapClientHelper& clientHelper);
+void configureCoapClientHelper(CoapClientHelper& clientHelper, uint32_t n);
 
 void wireTCPServer(ApplicationContainer serverApp);
 void wireTCPClient(ApplicationContainer clientApp, int i);

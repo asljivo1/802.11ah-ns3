@@ -65,6 +65,7 @@ void PopulateNdiscCache(bool print) {
 			ndisc->SetDevice(device, ipv6Iface);
 			if (ipv6Addr == Ipv6Address::GetLoopback())
 				continue;
+
 			NdiscCache::Entry* entry  (ndisc->Add(ipv6Addr));
 			entry->SetIpv6Address(ipv6Addr);
 			entry->SetMacAddress(addr);

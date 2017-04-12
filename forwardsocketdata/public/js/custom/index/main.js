@@ -1,8 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var Animation = (function () {
     function Animation() {
         this.time = 0;
@@ -12,16 +17,17 @@ var Animation = (function () {
         this.time += dt;
     };
     return Animation;
-})();
+}());
 var BroadcastAnimation = (function (_super) {
     __extends(BroadcastAnimation, _super);
     function BroadcastAnimation(x, y) {
-        _super.call(this);
-        this.x = x;
-        this.y = y;
-        this.max_radius = 50;
-        this.max_time = 1000;
-        this.color = new Color(255, 0, 0);
+        var _this = _super.call(this) || this;
+        _this.x = x;
+        _this.y = y;
+        _this.max_radius = 50;
+        _this.max_time = 1000;
+        _this.color = new Color(255, 0, 0);
+        return _this;
     }
     BroadcastAnimation.prototype.draw = function (canvas, ctx, area) {
         var radius = this.time / this.max_time * this.max_radius;
@@ -35,16 +41,17 @@ var BroadcastAnimation = (function (_super) {
         return this.time >= this.max_time;
     };
     return BroadcastAnimation;
-})(Animation);
+}(Animation));
 var ReceivedAnimation = (function (_super) {
     __extends(ReceivedAnimation, _super);
     function ReceivedAnimation(x, y) {
-        _super.call(this);
-        this.x = x;
-        this.y = y;
-        this.max_radius = 10;
-        this.max_time = 1000;
-        this.color = new Color(0, 255, 0);
+        var _this = _super.call(this) || this;
+        _this.x = x;
+        _this.y = y;
+        _this.max_radius = 10;
+        _this.max_time = 1000;
+        _this.color = new Color(0, 255, 0);
+        return _this;
     }
     ReceivedAnimation.prototype.draw = function (canvas, ctx, area) {
         var radius = (1 - this.time / this.max_time) * this.max_radius;
@@ -59,14 +66,15 @@ var ReceivedAnimation = (function (_super) {
         return this.time >= this.max_time;
     };
     return ReceivedAnimation;
-})(Animation);
+}(Animation));
 var AssociatedAnimation = (function (_super) {
     __extends(AssociatedAnimation, _super);
     function AssociatedAnimation(x, y) {
-        _super.call(this);
-        this.x = x;
-        this.y = y;
-        this.max_time = 3000;
+        var _this = _super.call(this) || this;
+        _this.x = x;
+        _this.y = y;
+        _this.max_time = 3000;
+        return _this;
     }
     AssociatedAnimation.prototype.draw = function (canvas, ctx, area) {
         var offset = this.time / this.max_time * Math.PI * 2;
@@ -84,7 +92,7 @@ var AssociatedAnimation = (function (_super) {
         return this.time >= this.max_time;
     };
     return AssociatedAnimation;
-})(Animation);
+}(Animation));
 var Charting = (function () {
     function Charting(simGUI) {
         this.simGUI = simGUI;
@@ -486,7 +494,8 @@ var Charting = (function () {
                     sum += simulations[s].slotUsageSTA[i][j];
                 data.push([
                     simulations[s].totalSlotUsageTimestamps[i],
-                    showDeltas ? sum - lastSums[s] : sum]);
+                    showDeltas ? sum - lastSums[s] : sum
+                ]);
                 lastSums[s] = sum;
             }
             series.push({
@@ -559,7 +568,7 @@ var Charting = (function () {
         });
     };
     return Charting;
-})();
+}());
 var Color = (function () {
     function Color(red, green, blue, alpha, position) {
         if (alpha === void 0) { alpha = 1; }
@@ -574,7 +583,7 @@ var Color = (function () {
         return "rgba(" + this.red + ", " + this.green + "," + this.blue + ", " + this.alpha + ")";
     };
     return Color;
-})();
+}());
 var Palette = (function () {
     function Palette() {
         this.colors = [];
@@ -626,7 +635,7 @@ var Palette = (function () {
         }
     };
     return Palette;
-})();
+}());
 var EventManager = (function () {
     function EventManager(sim) {
         this.sim = sim;
@@ -658,7 +667,7 @@ var EventManager = (function () {
                     this.onNodeAdded(ev.stream, false, -1, parseFloat(ev.parts[2]), parseFloat(ev.parts[3]), -1);
                     break;
                 case 'nodestats':
-                    this.onStatsUpdated(ev.stream, ev.time, parseInt(ev.parts[2]), parseFloat(ev.parts[3]), parseFloat(ev.parts[4]), parseFloat(ev.parts[5]), parseFloat(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), parseInt(ev.parts[9]), parseInt(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), parseFloat(ev.parts[14]), parseFloat(ev.parts[15]), parseInt(ev.parts[16]), parseInt(ev.parts[17]), parseFloat(ev.parts[18]), parseInt(ev.parts[19]), parseInt(ev.parts[20]), parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), ev.parts[25], ev.parts[26], parseInt(ev.parts[27]), parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseFloat(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseInt(ev.parts[33]), parseInt(ev.parts[34]), parseFloat(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]), parseInt(ev.parts[38]), parseInt(ev.parts[39]), parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]), parseInt(ev.parts[43]));
+                    this.onStatsUpdated(ev.stream, ev.time, parseInt(ev.parts[2]), parseFloat(ev.parts[3]), parseFloat(ev.parts[4]), parseFloat(ev.parts[5]), parseFloat(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), parseInt(ev.parts[9]), parseInt(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), parseFloat(ev.parts[14]), parseFloat(ev.parts[15]), parseInt(ev.parts[16]), parseInt(ev.parts[17]), parseFloat(ev.parts[18]), parseInt(ev.parts[19]), parseInt(ev.parts[20]), parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), ev.parts[25], ev.parts[26], parseInt(ev.parts[27]), parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseFloat(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseInt(ev.parts[33]), parseInt(ev.parts[34]), parseFloat(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]), parseInt(ev.parts[38]), parseInt(ev.parts[39]), parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]), parseInt(ev.parts[43]), parseFloat(ev.parts[44]), parseFloat(ev.parts[45]), parseFloat(ev.parts[46]), parseFloat(ev.parts[47]), parseFloat(ev.parts[48]), parseFloat(ev.parts[49]));
                     break;
                 case 'slotstatsSTA':
                     {
@@ -818,7 +827,7 @@ var EventManager = (function () {
         else
             return false;
     };
-    EventManager.prototype.onStatsUpdated = function (stream, timestamp, id, totalTransmitTime, totalReceiveTime, totalDozeTime, totalActiveTime, nrOfTransmissions, nrOfTransmissionsDropped, nrOfReceives, nrOfReceivesDropped, nrOfSentPackets, nrOfSuccessfulPackets, nrOfDroppedPackets, avgPacketTimeOfFlight, goodputKbit, edcaQueueLength, nrOfSuccessfulRoundtripPackets, avgRoundTripTime, tcpCongestionWindow, numberOfTCPRetransmissions, numberOfTCPRetransmissionsFromAP, nrOfReceivesDroppedByDestination, numberOfMACTxRTSFailed, numberOfMACTxMissedACK, numberOfDropsByReason, numberOfDropsByReasonAtAP, tcpRtoValue, numberOfAPScheduledPacketForNodeInNextSlot, numberOfAPSentPacketForNodeImmediately, avgRemainingSlotTimeWhenAPSendingInSameSlot, numberOfCollisions, numberofMACTxMissedACKAndDroppedPacket, tcpConnected, tcpSlowStartThreshold, tcpEstimatedBandwidth, tcpRTT, numberOfBeaconsMissed, numberOfTransmissionsDuringRAWSlot, totalNumberOfDrops, firmwareTransferTime, ipCameraSendingRate, ipCameraReceivingRate, numberOfTransmissionsCancelledDueToCrossingRAWBoundary) {
+    EventManager.prototype.onStatsUpdated = function (stream, timestamp, id, totalTransmitTime, totalReceiveTime, totalDozeTime, totalActiveTime, nrOfTransmissions, nrOfTransmissionsDropped, nrOfReceives, nrOfReceivesDropped, nrOfSentPackets, nrOfSuccessfulPackets, nrOfDroppedPackets, avgPacketTimeOfFlight, goodputKbit, edcaQueueLength, nrOfSuccessfulRoundtripPackets, avgRoundTripTime, tcpCongestionWindow, numberOfTCPRetransmissions, numberOfTCPRetransmissionsFromAP, nrOfReceivesDroppedByDestination, numberOfMACTxRTSFailed, numberOfMACTxMissedACK, numberOfDropsByReason, numberOfDropsByReasonAtAP, tcpRtoValue, numberOfAPScheduledPacketForNodeInNextSlot, numberOfAPSentPacketForNodeImmediately, avgRemainingSlotTimeWhenAPSendingInSameSlot, numberOfCollisions, numberofMACTxMissedACKAndDroppedPacket, tcpConnected, tcpSlowStartThreshold, tcpEstimatedBandwidth, tcpRTT, numberOfBeaconsMissed, numberOfTransmissionsDuringRAWSlot, totalNumberOfDrops, firmwareTransferTime, ipCameraSendingRate, ipCameraReceivingRate, numberOfTransmissionsCancelledDueToCrossingRAWBoundary, jitter, reliability, interPacketDelayAtServer, interPacketDelayAtClient, interPacketDelayDeviationPercentageAtServer, interPacketDelayDeviationPercentageAtClient) {
         // ^- it's getting awfully crowded around here
         var simulation = this.sim.simulationContainer.getSimulation(stream);
         if (id < 0 || id >= simulation.nodes.length)
@@ -852,6 +861,12 @@ var EventManager = (function () {
         nodeVal.numberOfMACTxRTSFailed = numberOfMACTxRTSFailed;
         nodeVal.numberOfMACTxMissedACK = numberOfMACTxMissedACK;
         nodeVal.numberofMACTxMissedACKAndDroppedPacket = numberofMACTxMissedACKAndDroppedPacket;
+        nodeVal.jitter = jitter;
+        nodeVal.reliability = reliability;
+        nodeVal.interPacketDelayAtServer = interPacketDelayAtServer;
+        nodeVal.interPacketDelayAtClient = interPacketDelayAtClient;
+        nodeVal.interPacketDelayDeviationPercentageAtServer = interPacketDelayDeviationPercentageAtServer;
+        nodeVal.interPacketDelayDeviationPercentageAtClient = interPacketDelayDeviationPercentageAtClient;
         if (typeof numberOfDropsByReason != "undefined") {
             var dropParts = numberOfDropsByReason.split(',');
             nodeVal.numberOfDropsByReasonUnknown = parseInt(dropParts[0]);
@@ -912,7 +927,7 @@ var EventManager = (function () {
         // this.sim.onNodeUpdated(stream, id);
     };
     return EventManager;
-})();
+}());
 var SimulationEvent = (function () {
     function SimulationEvent(stream, time, parts) {
         this.stream = stream;
@@ -920,10 +935,10 @@ var SimulationEvent = (function () {
         this.parts = parts;
     }
     return SimulationEvent;
-})();
-/// <reference path="../../../typings/globals/jquery/index.d.ts" />
-/// <reference path="../../../typings/globals/socket.io/index.d.ts" />
-/// <reference path="../../../typings/globals/highcharts/index.d.ts" />
+}());
+/// <reference path="../../../../typings/globals/jquery/index.d.ts" />
+/// <reference path="../../../../typings/globals/socket.io/index.d.ts" />
+/// <reference path="../../../../typings/globals/highcharts/index.d.ts" />
 var SimulationContainer = (function () {
     function SimulationContainer() {
         this.keys = [];
@@ -954,7 +969,7 @@ var SimulationContainer = (function () {
         return sims;
     };
     return SimulationContainer;
-})();
+}());
 var SimulationGUI = (function () {
     function SimulationGUI(canvas) {
         this.canvas = canvas;
@@ -1110,12 +1125,12 @@ var SimulationGUI = (function () {
         if (this.selectedPropertyForChart != "") {
             var type = el.attr("data-type");
             if (typeof type != "undefined" && type != "") {
-                var min;
+                var min = void 0;
                 if (el.attr("data-max") == "*")
                     min = curMin;
                 else
                     min = parseInt(el.attr("data-min"));
-                var max;
+                var max = void 0;
                 if (el.attr("data-max") == "*")
                     max = curMax;
                 else
@@ -1123,7 +1138,7 @@ var SimulationGUI = (function () {
                 var values = n.values;
                 if (values.length > 0) {
                     var value = values[values.length - 1][this.selectedPropertyForChart];
-                    var alpha;
+                    var alpha = void 0;
                     if (max - min != 0)
                         alpha = (value - min) / (max - min);
                     else
@@ -1298,7 +1313,7 @@ var SimulationGUI = (function () {
                         else
                             color = "black";
                         // prefix z-score
-                        el = ("<div class=\"zscore\" title=\"Z-score: " + zScore + "\" style=\"background-color: " + color + "\" />") + el;
+                        el = "<div class=\"zscore\" title=\"Z-score: " + zScore + "\" style=\"background-color: " + color + "\" />" + el;
                     }
                     $($(propertyElements[i]).find("td").get(1)).empty().append(el);
                 }
@@ -1381,7 +1396,7 @@ var SimulationGUI = (function () {
         this.charting.deferUpdateCharts(simulations, full);
     };
     return SimulationGUI;
-})();
+}());
 function getParameterByName(name, url) {
     if (!url)
         url = window.location.href;
@@ -1405,8 +1420,8 @@ $(document).ready(function () {
         streams = ["live"];
     else
         streams = compare.split(',');
-    for (var _i = 0; _i < streams.length; _i++) {
-        var stream = streams[_i];
+    for (var _i = 0, streams_1 = streams; _i < streams_1.length; _i++) {
+        var stream = streams_1[_i];
         var rdb = "<input class=\"rdbStream\" name=\"streams\" type='radio' data-stream='" + stream + "'>&nbsp;";
         $("#rdbStreams").append(rdb);
     }
@@ -1543,7 +1558,7 @@ var SimulationNode = (function () {
         this.values = [];
     }
     return SimulationNode;
-})();
+}());
 var NodeValue = (function () {
     function NodeValue() {
         this.totalTransmitTime = 0;
@@ -1613,32 +1628,40 @@ var NodeValue = (function () {
         this.ipCameraSendingRate = 0;
         this.ipCameraReceivingRate = 0;
         this.numberOfTransmissionsCancelledDueToCrossingRAWBoundary = 0;
+        this.jitter = 0;
+        this.reliability = 0;
+        this.interPacketDelayAtServer = 0;
+        this.interPacketDelayAtClient = 0;
+        this.interPacketDelayDeviationPercentageAtServer = 0;
+        this.interPacketDelayDeviationPercentageAtClient = 0;
     }
     return NodeValue;
-})();
+}());
 var APNode = (function (_super) {
     __extends(APNode, _super);
     function APNode() {
-        _super.apply(this, arguments);
-        this.type = "AP";
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.type = "AP";
+        return _this;
     }
     return APNode;
-})(SimulationNode);
+}(SimulationNode));
 var STANode = (function (_super) {
     __extends(STANode, _super);
     function STANode() {
-        _super.apply(this, arguments);
-        this.type = "STA";
-        this.isAssociated = false;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.type = "STA";
+        _this.isAssociated = false;
+        return _this;
     }
     return STANode;
-})(SimulationNode);
+}(SimulationNode));
 var SimulationConfiguration = (function () {
     function SimulationConfiguration() {
         this.name = "";
     }
     return SimulationConfiguration;
-})();
+}());
 var Simulation = (function () {
     function Simulation() {
         this.nodes = [];
@@ -1652,5 +1675,5 @@ var Simulation = (function () {
         this.config = new SimulationConfiguration();
     }
     return Simulation;
-})();
+}());
 //# sourceMappingURL=main.js.map

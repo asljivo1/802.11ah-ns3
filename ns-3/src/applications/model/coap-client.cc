@@ -1,23 +1,3 @@
-/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-/*
- * Copyright (c) 2007,2008,2009 INRIA, UDCAST
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Author: Amine Ismail <amine.ismail@sophia.inria.fr>
- *                      <amine.ismail@udcast.com>
- */
 #include "ns3/log.h"
 #include "ns3/ipv4.h"
 #include "ns3/ipv6.h"
@@ -43,6 +23,8 @@
 #include <climits>
 #include "arpa/inet.h"
 #include "seq-ts-header.h"
+
+#define WITH_SEQ_TS true
 
 namespace ns3 {
 
@@ -75,8 +57,8 @@ CoapClient::GetTypeId (void)
                    UintegerValue (COAP_DEFAULT_PORT),
                    MakeUintegerAccessor (&CoapClient::m_peerPort),
                    MakeUintegerChecker<uint16_t> ())
-	.AddAttribute ("PacketSize", "Size of echo data in outbound packets",
-				   UintegerValue (436),
+	.AddAttribute ("PacketSize", "Size of payload in sensor measurements.",
+				   UintegerValue (100),
 				   MakeUintegerAccessor (&CoapClient::m_size),
 				   MakeUintegerChecker<uint32_t> (4,COAP_MAX_PDU_SIZE))
 	.AddAttribute ("IntervalDeviation",
@@ -84,12 +66,22 @@ CoapClient::GetTypeId (void)
 					TimeValue (Seconds (0)),
 					MakeTimeAccessor (&CoapClient::m_intervalDeviation),
 					MakeTimeChecker ())
+	.AddAttribute ("RequestMethod",
+				   "COAP_REQUEST_GET = 1, COAP_REQUEST_POST = 2, COAP_REQUEST_PUT = 3, COAP_REQUEST_DELETE = 4",
+					UintegerValue (3),
+					MakeUintegerAccessor (&CoapClient::m_method),
+					MakeUintegerChecker<uint16_t> (1,4))
+	.AddAttribute ("MessageType",
+				   "COAP_MESSAGE_CON = 0, COAP_MESSAGE_NON = 1, COAP_MESSAGE_ACK = 2, COAP_MESSAGE_RST = 3",
+					UintegerValue (3),
+					MakeUintegerAccessor (&CoapClient::m_type),
+					MakeUintegerChecker<uint16_t> (0,3))
     .AddTraceSource ("Tx", "A new packet is created and is sent",
                      MakeTraceSourceAccessor (&CoapClient::m_packetSent),
                      "ns3::Packet::TracedCallback")
 	.AddTraceSource("Rx","Response from CoAP server received",
 					MakeTraceSourceAccessor(&CoapClient::m_packetReceived),
-					"ns3::CoapClient::PacketReceivedCallback");
+					"ns3::CoapClient::PacketReceivedCallback")
   ;
   return tid;
 }
@@ -104,6 +96,7 @@ CoapClient::CoapClient ()
   m_rv = CreateObject<UniformRandomVariable> ();
   m_coapCtx = NULL;
   m_peerPort = COAP_DEFAULT_PORT;
+  //m_tokenMsf = 0;
   //m_payload = { 0, NULL };
   //m_optList = NULL;
 }
@@ -111,10 +104,6 @@ CoapClient::CoapClient ()
 CoapClient::~CoapClient ()
 {
   NS_LOG_FUNCTION (this);
-
-  /*delete [] m_data;
-  m_data = 0;
-  m_dataSize = 0;*/
   /*if (m_coapCtx)
 	  coap_free_context(m_coapCtx);*/
 }
@@ -149,6 +138,27 @@ coap_context_t* CoapClient::GetContext(void)
 	  return m_coapCtx;
 }
 
+// Context in libcoap defines src and dst addresses, sockets and all network parameters needed for successfull communication
+// This CoapClient uses libcoap at the application layer, but uses ns3's sockets and all layers below application layer
+// One example of simple message exchange is:
+// CoapClient::StartApplication ------> CoapClient::PrepareMsg ------> libcoap: coap_send
+//																				|
+//																				V
+//																	   libcoap: coap_network_send
+//																				|
+//																				V
+//																	   CoapClient::coap_network_send ------> CoapClient::Send
+//																													|
+//																													V	ns-3 socket
+//																									 _______________________________
+//																									|		       UDP				|
+//																									|_______________________________|
+//																									|		       IP				|
+//																									|_______________________________|
+//																									|		   802.11ah (MAC+PHY)	|
+//																									|_______________________________|
+//
+//
 bool CoapClient::PrepareContext(void)
 {
 	  // Prepare dummy source address for libcoap
@@ -164,8 +174,7 @@ bool CoapClient::PrepareContext(void)
 
 		  srcAddr.addr.sin.sin_family      = AF_INET;
 		  srcAddr.addr.sin.sin_port        = htons(0);
-		  //std::cout << "************src ip4Addr " << addressStringStream.str().c_str() << std::endl;
-		  srcAddr.addr.sin.sin_addr.s_addr = inet_addr("0.0.0.0"); //"0.0.0.0"
+		  srcAddr.addr.sin.sin_addr.s_addr = inet_addr("0.0.0.0");
 		  m_coapCtx = coap_new_context(&srcAddr);
 
 
@@ -181,7 +190,6 @@ bool CoapClient::PrepareContext(void)
 	  m_coapCtx->network_send = CoapClient::coap_network_send;
 
 	  m_coapCtx->ns3_coap_client_obj_ptr = this;
-	  //m_coapCtx->network_read = CoapClient::coap_network_read;
 	  if (m_coapCtx) return true;
 	  else return false;
 }
@@ -225,7 +233,6 @@ CoapClient::StartApplication (void)
 			return;
 		}
 	}
-
 	// BLOCK2 pertrains to the response payload
 	coap_register_option(m_coapCtx, COAP_OPTION_BLOCK2);
 	m_socket->SetRecvCallback (MakeCallback (&CoapClient::HandleRead, this));
@@ -254,8 +261,11 @@ CoapClient::PrepareMsg (void)
 		serverUri.append("]");
 	}
 
-	//serverUri.append("");
-	serverUri.append("/hello");
+	// Implemented resources are "control", "hello" and empty resource.
+	// For "control" resources implemented methods are GET, PUT and DELETE.
+	// For empty resource and "hello" implementeh method is GET.
+	serverUri.append("/control");
+
 	static coap_uri_t uri;
 	int res = coap_split_uri((const unsigned char*)serverUri.c_str(), strlen(serverUri.c_str()), &uri);
 	if (res < 0){
@@ -263,28 +273,23 @@ CoapClient::PrepareMsg (void)
 		return;
 	}
 	// Prepare request
-
-	m_coapMsg.SetType(COAP_MESSAGE_CON);
-	m_coapMsg.SetCode(COAP_REQUEST_GET);
+	m_coapMsg.SetType(m_type);
+	m_coapMsg.SetCode(m_method);
 	m_coapMsg.SetId(coap_new_message_id(m_coapCtx));
-
-	//make a string of zerofilled data for payload of size m_size
-	std::string payload(448-2-12-4, '0');
-	/*std::cout << "velicina m_size je " << m_size << std::endl;
-	std::cout << "velicina payload je " << payload.length() << std::endl;
-	std::cout << "velicina payload.c_str() je " << strlen(payload.c_str()) << std::endl;*/
-
-
-	m_coapMsg.SetSize(sizeof(coap_hdr_t) + uri.path.length + 1 + strlen(payload.c_str()) + 1); //allocate space for the options (uri) and payload +1 ?
-	//m_coapMsg.SetSize(m_size);
-	m_coapMsg.AddOption(COAP_OPTION_URI_PATH, uri.path.length, uri.path.s); //try with host as well - see the difference?
-
+	// Measurement size of 100B - 12(seqTs) -2-4 m_size - 12
+	if (m_size < 14)
+	{
+		NS_LOG_WARN("Packet size too small for payload. Payload is 14B at least so packet size should be equal or larger.");
+		return;
+	}
+	std::string payload(m_size-2-12, '1');
+	//std::string payload("6740");
+	m_coapMsg.SetSize(sizeof(coap_hdr_t) + uri.path.length + 1 + strlen(payload.c_str()) + 1); //allocate space for the options (uri) and payload
+	m_coapMsg.AddOption(COAP_OPTION_URI_PATH, uri.path.length, uri.path.s);
 	coap_add_data(m_coapMsg.GetPdu(), strlen(payload.c_str()), (const unsigned char *)payload.c_str());
-	//m_coapMsg.AddData(m_coapMsg.GetSerializedSize() - sizeof(coap_hdr_t) - uri.path.length);
-	std::cout << "velicina pdu je " << m_coapMsg.GetSerializedSize() << std::endl;
 
 	coap_address_init(&m_dst_addr);
-	// prepare destination for libcoap ipv4
+	// Prepare destination for libcoap
 	m_dst_addr.addr.sin.sin_family = AF_INET;
 	m_dst_addr.addr.sin.sin_port = htons(m_peerPort);
 
@@ -293,6 +298,7 @@ CoapClient::PrepareMsg (void)
 	else
 		m_dst_addr.addr.sin.sin_addr.s_addr = inet_addr(ipv6AdrString.c_str());
 
+	// Send CoAP message trough libcoap
 	if (m_coapMsg.GetType() == COAP_MESSAGE_CON)
 	{
 		m_tid = coap_send_confirmed(m_coapCtx, m_coapCtx->endpoint, &m_dst_addr, m_coapMsg.GetPdu());
@@ -300,8 +306,6 @@ CoapClient::PrepareMsg (void)
 	else {
 		m_tid = coap_send(m_coapCtx, m_coapCtx->endpoint, &m_dst_addr, m_coapMsg.GetPdu());
 	}
-	if (m_coapMsg.GetPdu()->hdr->type != COAP_MESSAGE_CON || m_tid == COAP_INVALID_TID)
-	    coap_delete_pdu(m_coapMsg.GetPdu());
 }
 
 void
@@ -314,7 +318,6 @@ CoapClient::StopApplication (void)
       m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
       m_socket = 0;
     }
-
   Simulator::Cancel (m_sendEvent);
 }
 
@@ -325,13 +328,13 @@ CoapClient::Send (uint8_t *data, size_t datalen)
 	NS_ASSERT (m_sendEvent.IsExpired ());
 
 	Ptr<Packet> p = Create<Packet> (data, datalen);
-	// size of packet shoud be m_size. Later make this happen: empty payload of size m_size-hdr-options
 
 	// add sequence header to the packet
+#ifdef WITH_SEQ_TS
 	SeqTsHeader seqTs;
 	seqTs.SetSeq (m_sent);
 	p->AddHeader (seqTs);
-
+#endif
 	std::stringstream peerAddressStringStream;
 	if (Ipv4Address::IsMatchingType (m_peerAddress))
 		peerAddressStringStream << Ipv4Address::ConvertFrom (m_peerAddress);
@@ -349,15 +352,13 @@ CoapClient::Send (uint8_t *data, size_t datalen)
 		{
 			++m_sent;
 
-			NS_LOG_INFO ("At time "<< (Simulator::Now ()).GetSeconds ()<< " client sent " << p->GetSize() << " bytes to "
-					<< peerAddressStringStream.str () << " Uid: "
-					<< p->GetUid ());
+			NS_LOG_INFO ("At time "<< (Simulator::Now ()).GetSeconds ()<< "s client sent " << p->GetSize() << " bytes to "
+					<< peerAddressStringStream.str () << " Uid: " << p->GetUid ());
 			retval = p->GetSize();
 		}
 		else
 		{
-			NS_LOG_INFO ("Error while sending " << m_size << " bytes to "
-					<< peerAddressStringStream.str ());
+			NS_LOG_INFO ("Error while sending " << m_size << " bytes to " << peerAddressStringStream.str ());
 			retval = -1;
 		}
 	}
@@ -369,6 +370,7 @@ CoapClient::Send (uint8_t *data, size_t datalen)
 	return retval;
 }
 
+// This method needs to have exactly this signature because it is pointed by a function pointer from coap context (libcoap)
 ssize_t
 CoapClient::coap_network_send(struct coap_context_t *context UNUSED_PARAM,
 		  const coap_endpoint_t *local_interface,
@@ -381,7 +383,6 @@ CoapClient::coap_network_send(struct coap_context_t *context UNUSED_PARAM,
 	unused(data);
 	unused(datalen);
 	CoapClient* clientPtr = static_cast<CoapClient*>(context->ns3_coap_client_obj_ptr);
-
 	return (*clientPtr).Send(data, datalen);
 }
 
@@ -419,11 +420,7 @@ ssize_t CoapClient::CoapHandleMessage(Address from, Ptr<Packet> packet){ //coap_
 	if (coap_pdu_parse(msg, msg_len, node->pdu)){
 		coap_show_pdu(node->pdu);
 		if (COAP_RESPONSE_CLASS(node->pdu->hdr->code) == 2)	{
-			//set obs timer if we have successfully subscribed a resource
-			/*if (sent && coap_check_option(received, COAP_OPTION_SUBSCRIPTION, &opt_iter)) {
-				NS_LOG_DEBUG("Observation relationship established, set timeout to" << m_obsSeconds);
-				//set_timeout(&obs_wait, obs_seconds);
-			}*/
+			// set observation timer TODO
 		}
 		else if(COAP_RESPONSE_CLASS(node->pdu->hdr->code) > 2 && COAP_RESPONSE_CLASS(node->pdu->hdr->code) <= 5)
 		{
@@ -442,12 +439,10 @@ ssize_t CoapClient::CoapHandleMessage(Address from, Ptr<Packet> packet){ //coap_
 	coap_transaction_id(from, node->pdu, &node->id);
 	std::cout << "---------------------------- "  << std::endl;
 
-	// drop if this was just some message, or send reset in case of notification - TODO!
+	// drop if this was just some message, or send reset in case of notification - TODO
 
-	if (!sent && (received->hdr->type == COAP_MESSAGE_CON ||
-			received->hdr->type == COAP_MESSAGE_NON))
+	if (!sent && (received->hdr->type == COAP_MESSAGE_CON || received->hdr->type == COAP_MESSAGE_NON))
 		coap_send_rst(m_coapCtx, m_coapCtx->endpoint, &m_dst_addr, node->pdu);
-	//return 0;
 	if (received->hdr->type == COAP_MESSAGE_RST) {
 		NS_LOG_INFO("Coap client got RST.");
 		return 0;
@@ -492,21 +487,22 @@ void CoapClient::HandleRead(Ptr<Socket> socket) {
 	NS_LOG_FUNCTION(this << socket);
 	Ptr<Packet> packet;
 	Address from;
-
 	while ((packet = socket->RecvFrom(from))) {
 		m_packetReceived(packet, from);
 
 		if (InetSocketAddress::IsMatchingType (from)) {
 			NS_LOG_INFO(
-					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " << InetSocketAddress::ConvertFrom (from).GetPort ());
+					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << InetSocketAddress::ConvertFrom (from).GetIpv4 ()
+					<< " port " << InetSocketAddress::ConvertFrom (from).GetPort () << " Uid: " << packet->GetUid());
 		} else if (Inet6SocketAddress::IsMatchingType(from)) {
 			NS_LOG_INFO(
-					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port " << Inet6SocketAddress::ConvertFrom (from).GetPort ());
+					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << Inet6SocketAddress::ConvertFrom (from).GetIpv6 ()
+					<< " port " << Inet6SocketAddress::ConvertFrom (from).GetPort () << " Uid: " << packet->GetUid());
 		}
+#ifdef WITH_SEQ_TS
 		SeqTsHeader seqTs;
 		packet->RemoveHeader(seqTs);
-		uint32_t currentSequenceNumber = seqTs.GetSeq();
-		// msg handling (parsing) not obligatory but for analysis
+#endif
 		if (!this->CoapHandleMessage(from, packet)) {
 			NS_LOG_ERROR("Cannot handle message. Abort.");
 			return;

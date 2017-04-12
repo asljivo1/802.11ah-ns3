@@ -160,7 +160,7 @@ void S1gApWifiMac::DoDispose() {
 		delete strategy;
 	strategy = nullptr;
 
-	for (int i = 0; i < rawSlotsDCA.size(); i++) {
+	for (uint32_t i = 0; i < rawSlotsDCA.size(); i++) {
 		rawSlotsDCA[i] = 0;
 	}
 
@@ -674,7 +674,7 @@ void S1gApWifiMac::SendOneBeacon(void) {
 		// check the DCA queues if there is pending data
 		for (int group = 0; group < m_nrOfTIMGroups; group++) {
 			bool hasPendingData = false;
-			for (int slot = 0; slot < m_slotNum; slot++) {
+			for (uint32_t slot = 0; slot < m_slotNum; slot++) {
 				if (rawSlotsDCA[group * m_slotNum + slot]->NeedsAccess()) {
 					// pending data
 					hasPendingData = true;
@@ -706,7 +706,7 @@ void S1gApWifiMac::SendOneBeacon(void) {
 			uint16_t aId = pair.second;
 			int group = strategy->GetTIMGroupFromAID(aId, m_rawGroupInterval);
 
-			if ((vmap >> group) & 0x01 == 0x01) {
+			if (((vmap >> group) & 0x01) == 0x01) {
 				///std::cout << Simulator::Now().GetMicroSeconds() << " there is data for aId " << aId << "( " << " TIM group " << group << ")" << std::endl;
 				staIsActiveDuringCurrentCycle[aId - 1] = true;
 			} else
@@ -759,7 +759,7 @@ void S1gApWifiMac::SendOneBeacon(void) {
 
 	// schedule the slot start & ends
 	Time slotDuration = strategy->GetSlotDuration(m_slotDurationCount);
-	for (int i = 0; i < m_slotNum; i++) {
+	for (uint32_t i = 0; i < m_slotNum; i++) {
 
 
 	Simulator::Schedule(
@@ -834,8 +834,7 @@ void S1gApWifiMac::Receive(Ptr<Packet> packet, const WifiMacHeader *hdr) {
 
 	if (hdr->IsData()) {
 		Mac48Address bssid = hdr->GetAddr1();
-		if (!hdr->IsFromDs() && hdr->IsToDs() && bssid == GetAddress()
-				&& m_stationManager->IsAssociated(from)) {
+		if (!hdr->IsFromDs() && hdr->IsToDs() && bssid == GetAddress() && m_stationManager->IsAssociated(from)) {
 			Mac48Address to = hdr->GetAddr3();
 			if (to == GetAddress()) {
 				NS_LOG_DEBUG("frame for me from=" << from);
@@ -846,10 +845,11 @@ void S1gApWifiMac::Receive(Ptr<Packet> packet, const WifiMacHeader *hdr) {
 						DeaggregateAmsduAndForward(packet, hdr);
 						packet = 0;
 					} else {
+						std::cout << "forwarding frame from=" << from << ", to=" << to << " at " << Simulator::Now() << std::endl;
 						ForwardUp(packet, from, bssid);
 					}
 				} else {
-					ForwardUp(packet, from, bssid);
+					ForwardUp(packet, from, bssid);//ami
 				}
 			} else if (to.IsGroup() || m_stationManager->IsAssociated(to)) {
 				NS_LOG_DEBUG("forwarding frame from=" << from << ", to=" << to);
@@ -1042,7 +1042,7 @@ void S1gApWifiMac::DoInitialize(void) {
 	current_aid_end = m_rawGroupInterval;
 
 	rawSlotsDCA = std::vector<Ptr<DcaTxop>>();
-	for (int i = 0; i < (m_nrOfTIMGroups * m_slotNum); i++) {
+	for (uint32_t i = 0; i < (m_nrOfTIMGroups * m_slotNum); i++) {
 
 		Ptr<DcaTxop> dca = CreateObject<DcaTxop>();
 		dca->SetLow(m_low);

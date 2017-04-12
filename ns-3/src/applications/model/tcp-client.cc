@@ -11,6 +11,7 @@
 #include "tcp-client.h"
 #include "seq-ts-header.h"
 #include "ns3/tcp-socket-base.h"
+#include "cleaning-helper.h"
 
 namespace ns3 {
 
@@ -145,8 +146,9 @@ void TcpClient::OnRetransmission(Address a) {
 	m_retransmission(a);
 }
 
-void TcpClient::OnTCPDataPacketSent(Ptr<const Packet> packet, const TcpHeader& header,
-        Ptr<const TcpSocketBase> tcpSocket, bool isRetransmission) {
+void TcpClient::OnTCPDataPacketSent(Ptr<const Packet> packet, const TcpHeader& header, Ptr<const TcpSocketBase> tcpSocket, bool isRetransmission) {
+	unused (header);
+	unused (tcpSocket);
 	if(!isRetransmission)
 		m_txTrace(packet);
 }
@@ -266,7 +268,7 @@ void TcpClient::ReceivePacket(Ptr<Socket> socket) {
 
 		uint8_t * buf = new uint8_t[packet->GetSize()];
 		packet->CopyData(buf, packet->GetSize());
-		for(int i = 0; i < packet->GetSize(); i++)
+		for(uint32_t i = 0; i < packet->GetSize(); i++)
 			rxBuffer.push((char)buf[i]);
 		delete buf;
 
@@ -282,7 +284,7 @@ void TcpClient::Write(char* data, int size) {
 	// send blocks if queue exceeds packet size
 	while (txBuffer.size() > m_size) {
 		uint8_t* block = new uint8_t[m_size];
-		for (int i = 0; i < m_size; i++) {
+		for (uint32_t i = 0; i < m_size; i++) {
 			block[i] = (uint8_t)txBuffer.front();
 			txBuffer.pop();
 		}
@@ -296,7 +298,7 @@ int TcpClient::Read(char* data, int size) {
 	if(rxBuffer.size() == 0)
 		return 0;
 
-	int nrOfBytesRead = (rxBuffer.size() > size ? size : rxBuffer.size());
+	int nrOfBytesRead = (static_cast<int>(rxBuffer.size()) > size ? size : static_cast<int>(rxBuffer.size()));
 
 	for(int i = 0; i < nrOfBytesRead; i++) {
 		data[i] = rxBuffer.front();

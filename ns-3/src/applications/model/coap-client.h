@@ -31,7 +31,6 @@
 #include "ns3-dev/ns3/random-variable-stream.h"
 
 #include "coap-pdu.h"
-//#include "coap_list.h"
 #define WITH_NS3 1
 #include "coap/coap.h"
 
@@ -81,14 +80,12 @@ public:
    */
   void SetRemote (Address ip, uint16_t port);
 
+
+
   coap_context_t* GetContext(void);
-
-
 
   typedef void (* PacketReceivedCallback)
             (Ptr<const Packet>, Address from);
-
-
 
 #ifdef __GNUC__
 #define UNUSED_PARAM __attribute__ ((unused))
@@ -101,19 +98,10 @@ static ssize_t coap_network_send(struct coap_context_t *context UNUSED_PARAM,
   		  unsigned char *data,
   		  size_t datalen);
 
-static void
-message_handler(struct coap_context_t *ctx,
-                const coap_endpoint_t *local_interface,
-                const coap_address_t *remote,
-                coap_pdu_t *sent,
-                coap_pdu_t *received,
-                const coap_tid_t id UNUSED_PARAM);
 protected:
   virtual void DoDispose (void);
 
 private:
- //inline int check_token(coap_pdu_t *received);
-
   bool PrepareContext(void);
   ssize_t CoapHandleMessage(Address from, Ptr<Packet> packet);
   void PrepareMsg (void);
@@ -122,8 +110,7 @@ private:
   virtual void StopApplication (void);
 
   TracedCallback<Ptr<const Packet> > m_packetSent;
-  TracedCallback<Ptr<const Packet>, Address> m_packetReceived; /// TODO IMPLEMENT TRACEBACK
-  
+  TracedCallback<Ptr<const Packet>, Address> m_packetReceived;
 
   /**
    * \brief Send a packet
@@ -134,8 +121,8 @@ private:
   Time m_interval; //!< Packet inter-send time
   Time m_intervalDeviation;
 
-  uint32_t m_dataSize; //!< packet payload size (must be equal to m_size)
-  uint8_t *m_data; //!< packet payload data
+  //uint32_t m_dataSize; //!< packet payload size (must be equal to m_size)
+  //uint8_t *m_data; //!< packet payload data
   uint32_t m_size; //!< Size of the sent packet (including the SeqTsHeader)
 
   uint32_t m_sent; //!< Counter for sent packets
@@ -151,17 +138,12 @@ private:
   CoapPdu m_coapMsg;
   coap_address_t m_dst_addr;
   coap_tid_t m_tid = COAP_INVALID_TID;
+  uint16_t m_method;    // get, post, put, delete
+  uint16_t m_type;    // confirmable, non-confirmable, ACK, reset
 
-  //coap_list_t *m_optlist;
-  //str m_payload;       // optional payload to send
-  //uint32_t m_wait_seconds = 90;         //default timeout in seconds
-  //unsigned long max_wait;                 //global timeout (changed by set_timeout()) u long
+  //uint8_t m_tokenMsf;
+  //uint8_t m_token[8] = {0,0,0,0,0,0,0,0};
 
-  /*static unsigned char _token_data[8];
-  str the_token = { 0, _token_data };*/
-
-  //unsigned int m_obsSeconds = 30;          // default observe time
-  //coap_tick_t obs_wait = 0;               // timeout for current subscription
 };
 
 } // namespace ns3

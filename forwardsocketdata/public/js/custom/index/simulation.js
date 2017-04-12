@@ -1,8 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var SimulationNode = (function () {
     function SimulationNode() {
         this.id = -1;
@@ -15,7 +20,7 @@ var SimulationNode = (function () {
         this.values = [];
     }
     return SimulationNode;
-})();
+}());
 var NodeValue = (function () {
     function NodeValue() {
         this.totalTransmitTime = 0;
@@ -85,32 +90,36 @@ var NodeValue = (function () {
         this.ipCameraSendingRate = 0;
         this.ipCameraReceivingRate = 0;
         this.numberOfTransmissionsCancelledDueToCrossingRAWBoundary = 0;
+        this.jitter = 0;
+        this.reliability = 0;
     }
     return NodeValue;
-})();
+}());
 var APNode = (function (_super) {
     __extends(APNode, _super);
     function APNode() {
-        _super.apply(this, arguments);
-        this.type = "AP";
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.type = "AP";
+        return _this;
     }
     return APNode;
-})(SimulationNode);
+}(SimulationNode));
 var STANode = (function (_super) {
     __extends(STANode, _super);
     function STANode() {
-        _super.apply(this, arguments);
-        this.type = "STA";
-        this.isAssociated = false;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.type = "STA";
+        _this.isAssociated = false;
+        return _this;
     }
     return STANode;
-})(SimulationNode);
+}(SimulationNode));
 var SimulationConfiguration = (function () {
     function SimulationConfiguration() {
         this.name = "";
     }
     return SimulationConfiguration;
-})();
+}());
 var Simulation = (function () {
     function Simulation() {
         this.nodes = [];
@@ -124,5 +133,4 @@ var Simulation = (function () {
         this.config = new SimulationConfiguration();
     }
     return Simulation;
-})();
-//# sourceMappingURL=simulation.js.map
+}());

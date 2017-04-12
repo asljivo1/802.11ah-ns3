@@ -21,6 +21,7 @@
 #include "s1g-beacon-compatibility.h"
 #include "ns3/assert.h"
 #include "ns3/simulator.h"
+#include "cleaning-helper.h"
 
 namespace ns3 {
 
@@ -81,6 +82,7 @@ S1gBeaconCompatibility::Print(std::ostream& os) const {
 uint8_t
 S1gBeaconCompatibility::DeserializeInformationField (Buffer::Iterator start, uint8_t length)
 {
+  unused (length);
   start = m_compatibility.Deserialize (start);
   m_beaconinterval = start.ReadLsbtohU16 ();
   m_beaconinterval *= 1024;

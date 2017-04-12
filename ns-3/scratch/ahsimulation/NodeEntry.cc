@@ -7,9 +7,12 @@ using namespace std;
 
 
 bool showLog = false;
+Time NodeEntry::maxLatency = Time::Min();
+Time NodeEntry::minLatency = Time::Max();
+Time NodeEntry::minJitter = Time::Max();
+Time NodeEntry::maxJitter = Time::Min();
 
-NodeEntry::NodeEntry(int id, Statistics* stats, Ptr<Node> node,
-		Ptr<NetDevice> device) :
+NodeEntry::NodeEntry(int id, Statistics* stats, Ptr<Node> node, Ptr<NetDevice> device) :
 		id(id), stats(stats), node(node), device(device) {
 }
 
@@ -527,11 +530,6 @@ void NodeEntry::OnUdpPacketSent(Ptr<const Packet> packet) {
 	 */
 }
 
-void NodeEntry::OnCoapPacketSent(Ptr<const Packet> packet) {
-	unused(packet);
-	stats->get(this->id).NumberOfSentPackets++;
-}
-
 void NodeEntry::OnUdpEchoPacketReceived(Ptr<const Packet> packet, Address from) {
 	//cout << "Echo packet received back from AP ("
 	//	<< InetSocketAddress::ConvertFrom(from).GetIpv4() << ")" << endl;
@@ -550,17 +548,59 @@ void NodeEntry::OnUdpEchoPacketReceived(Ptr<const Packet> packet, Address from) 
 	}
 }
 
+void NodeEntry::OnCoapPacketSent(Ptr<const Packet> packet) {
+	unused(packet);
+	stats->get(this->id).NumberOfSentPackets++;
+}
+
 void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 	unused(from);
 	auto pCopy = packet->Copy();
 	try {
 		SeqTsHeader seqTs;
 		pCopy->RemoveHeader(seqTs);
+		// time from the moment server sends a reply until the moment client receives it
 		auto timeDiff = (Simulator::Now() - seqTs.GetTs());
 		if (seqTs.GetSeq() > 0)
 			stats->get(this->id).NumberOfSuccessfulRoundtripPacketsWithSeqHeader++;
+
 		stats->get(this->id).NumberOfSuccessfulRoundtripPackets++;
-		stats->get(this->id).TotalPacketRoundtripTime += timeDiff;
+		stats->get(this->id).TotalPacketRoundtripTime += timeDiff; //time from S to C is accumulated here and later added to the time from C to S
+		timeDiff = (Simulator::Now() - this->timeSent);
+
+		// RT jitter calculation [server to client direction]
+		if (stats->get(this->id).NumberOfSuccessfulRoundtripPackets == 1)
+		{
+			delayFirst = timeDiff;
+		}
+		else
+		{
+			delaySecond = timeDiff;
+			Time var = Abs(delayFirst - delaySecond);
+			stats->get (this->id).jitter = var;
+			stats->get (this->id).jitterAcc += pow (var.GetMilliSeconds (), 2);
+			if (NodeEntry::maxJitter < var)
+				NodeEntry::maxJitter = var;
+			if (NodeEntry::minJitter > var)
+				NodeEntry::minJitter = var;
+			delayFirst = delaySecond;
+
+		}
+		uint32_t currentSequenceNumber = seqTs.GetSeq();
+		if (currentSequenceNumber == 0)
+		{
+			stats->get(this->id).m_prevPacketSeqClient = currentSequenceNumber;
+			stats->get(this->id).m_prevPacketTimeClient = Simulator::Now();
+		}
+		else if (currentSequenceNumber == stats->get(this->id).m_prevPacketSeqClient + 1)
+		{
+			Time newNow = Simulator::Now();
+			stats->get(this->id).m_interPacketDelayClient.push_back(newNow - stats->get(this->id).m_prevPacketTimeClient);
+			stats->get(this->id).interPacketDelayAtClient = newNow - stats->get(this->id).m_prevPacketTimeClient;
+			stats->get(this->id).m_prevPacketSeqClient = currentSequenceNumber;
+			stats->get(this->id).m_prevPacketTimeClient = newNow;
+		}
+
 	} catch (std::runtime_error e) {
 		// packet fragmentation, unable to get the header from fragements
 	}
@@ -579,33 +619,50 @@ void NodeEntry::OnUdpPacketReceivedAtAP(Ptr<const Packet> packet) {
 
 		stats->get(this->id).NumberOfSuccessfulPackets++;
 		stats->get(this->id).TotalPacketSentReceiveTime += timeDiff;
-
-		/*cout << this->node->GetDevice(0)->GetAddress() << " ";
-		 cout << "[" << this->id << "] "  << Simulator::Now().GetMicroSeconds() << " Packet received in " << timeDiff.GetMicroSeconds() << "µs" << endl;
-		 */
-
 		stats->get(this->id).TotalPacketPayloadSize += packet->GetSize();
+
 	} catch (std::runtime_error e) {
 		// packet fragmentation, unable to get header
 	}
 }
 
-void NodeEntry::OnCoapPacketReceivedAtAP(Ptr<const Packet> packet) {
+
+void NodeEntry::OnCoapPacketReceivedAtServer(Ptr<const Packet> packet) {
 	auto pCopy = packet->Copy();
 	try {
+
 		SeqTsHeader seqTs;
 		pCopy->RemoveHeader(seqTs);
+		// time from the moment client sends a packet to the moment server receives it - latency
 		auto timeDiff = (Simulator::Now() - seqTs.GetTs());
+		this->timeSent = seqTs.GetTs();
+		if (NodeEntry::maxLatency < timeDiff)
+			NodeEntry::maxLatency = timeDiff;
+		if (NodeEntry::minLatency > timeDiff)
+			NodeEntry::minLatency = timeDiff;
 
-//cout << "[" << this->id << "] " << "UDP packet received at AP after "
-		//	<< std::to_string(timeDiff.GetMicroSeconds()) << "µs" << endl;
-
+		if (seqTs.GetSeq() > 0)
+			stats->get(this->id).NumberOfSuccessfulPacketsWithSeqHeader++;
 		stats->get(this->id).NumberOfSuccessfulPackets++;
 		stats->get(this->id).TotalPacketSentReceiveTime += timeDiff;
 
-		/*std::cout << this->node->GetDevice(0)->GetAddress() << " ";
-		std::cout << "[" << this->id << "] "  << Simulator::Now().GetMicroSeconds() << " Packet received in " <<  "µs" << std::endl;
-        */
+		uint32_t currentSequenceNumber = seqTs.GetSeq();
+		if (currentSequenceNumber == 0)
+		{
+			stats->get(this->id).m_prevPacketSeqServer = currentSequenceNumber;
+			stats->get(this->id).m_prevPacketTimeServer = Simulator::Now();
+		}
+		else if (currentSequenceNumber == stats->get(this->id).m_prevPacketSeqServer + 1)
+		{
+			Time newNow = Simulator::Now();
+			stats->get(this->id).m_interPacketDelayServer.push_back(newNow - stats->get(this->id).m_prevPacketTimeServer);
+			stats->get(this->id).interPacketDelayAtServer = newNow - stats->get(this->id).m_prevPacketTimeServer;
+			stats->get(this->id).m_time.push_back(newNow);
+			stats->get(this->id).m_prevPacketSeqServer = currentSequenceNumber;
+			stats->get(this->id).m_prevPacketTimeServer = newNow;
+		}
+		//else if (currentSequenceNumber > stats->get(this->id).m_prevPacketSeqServer + 1 && currentSequenceNumber > stats->get(this->id).NumberOfSentPackets)
+		//	std::cout << "Packet with seq number " << currentSequenceNumber << " is lost." << std::endl;
 
 		stats->get(this->id).TotalPacketPayloadSize += packet->GetSize() - 9; //deduct coap hdr & opts, only payload here
 	} catch (std::runtime_error e) {

@@ -1,0 +1,5 @@
+../analyzebatch.pl \
+/sim11042017/ \
+config=name,sensormeasurementsize,nsta,ngroup,nrawslotnum,trafficinterval,apalwaysschedulesfornextslot,contentionperrawslot \
+stats=edcaqueuelength,tcpconnected,totalnumberofdrops,numberofmactxmissedack,numberoftransmissions,NumberOfDroppedPackets,AveragePacketSentReceiveTime,DropTCPTxBufferExceeded,totaldozetime,numberoftcpretransmissions,numberoftcpretransmissionsfromap,NumberOfAPScheduledPacketForNodeInNextSlot,jitter,reliability,interPacketDelayAtServer,interPacketDelayAtClient,interPacketDelayDeviationPercentageAtServer,interPacketDelayDeviationPercentageAtClient \
+$@
