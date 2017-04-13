@@ -16,8 +16,8 @@ int main(int argc, char** argv) {
 	PacketMetadata::Enable();
 	TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
 	Config::SetDefault ("ns3::TcpL4Protocol::SocketType", StringValue ("ns3::TcpWestwood"));
-	//LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
-	//LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
+	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
+	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
 	//LogComponentEnable("S1gApWifiMac", LOG_LEVEL_INFO);
 	//LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
 #ifdef false
@@ -989,7 +989,7 @@ void configureCoapClients()
 				clientHelperDummy.SetAttribute("MaxPackets", config.maxNumberOfPackets); //4294967295u
 				clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(3000)));
 				clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(100)));
-				clientHelperDummy.SetAttribute("PacketSize", UintegerValue(config.trafficPacketSize));
+				clientHelperDummy.SetAttribute("PayloadSize", UintegerValue(config.coapPayloadSize));
 				clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
 				clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
 				Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
@@ -1019,7 +1019,7 @@ void configureCoapClients()
 					clientHelperDummy.SetAttribute("MaxPackets", config.maxNumberOfPackets); //4294967295u
 					clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(3000)));
 					clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(100)));
-					clientHelperDummy.SetAttribute("PacketSize", UintegerValue(config.trafficPacketSize));
+					clientHelperDummy.SetAttribute("PayloadSize", UintegerValue(config.coapPayloadSize));
 					clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
 					clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
 
@@ -1042,7 +1042,7 @@ void configureCoapClientHelper(CoapClientHelper& clientHelper, uint32_t n)
 	clientHelper.SetAttribute("MaxPackets", config.maxNumberOfPackets);//4294967295u
 	clientHelper.SetAttribute("Interval", TimeValue(MilliSeconds(config.trafficInterval)));
 	clientHelper.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(config.trafficIntervalDeviation)));
-	clientHelper.SetAttribute("PacketSize", UintegerValue(config.trafficPacketSize));
+	clientHelper.SetAttribute("PayloadSize", UintegerValue(config.coapPayloadSize));
 	clientHelper.SetAttribute("RequestMethod", UintegerValue(3));
 	clientHelper.SetAttribute("MessageType", UintegerValue(0));
 

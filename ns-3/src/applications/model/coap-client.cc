@@ -57,7 +57,7 @@ CoapClient::GetTypeId (void)
                    UintegerValue (COAP_DEFAULT_PORT),
                    MakeUintegerAccessor (&CoapClient::m_peerPort),
                    MakeUintegerChecker<uint16_t> ())
-	.AddAttribute ("PacketSize", "Size of payload in sensor measurements.",
+	.AddAttribute ("PayloadSize", "Size of payload in sensor measurements.",
 				   UintegerValue (100),
 				   MakeUintegerAccessor (&CoapClient::m_size),
 				   MakeUintegerChecker<uint32_t> (4,COAP_MAX_PDU_SIZE))

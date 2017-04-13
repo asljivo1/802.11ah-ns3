@@ -21,9 +21,14 @@ using namespace ns3;
 using namespace std;
 
 struct Configuration {
-	double simulationTime = 200;
+	/*
+	 * CoAP configuration parameters
+	 * */
 	bool useV6 = false; //false
 	uint32_t nControlLoops = 2;
+	uint32_t coapPayloadSize = 15;
+
+	double simulationTime = 200;
 	uint32_t seed = 1;
 	uint32_t Nsta = 4; //1
 	int NRawSta = -1; //-1
@@ -45,13 +50,10 @@ struct Configuration {
 	double propagationLossExponent = 3.67; //3.76
 	double propagationLossReferenceLoss = 8;
 
-
 	bool APAlwaysSchedulesForNextSlot = false;
 	uint32_t APScheduleTransmissionForNextSlotIfLessThan = 5000;
 
 	string DataMode = "MCS2_0"; //MCS2_8
-	//double datarate = 0.65;
-	//double bandWidth = 2;
 
 	string visualizerIP = "10.0.2.15"; /// prayan string ""
 	int visualizerPort = 7707;
@@ -64,10 +66,10 @@ struct Configuration {
 	string APPcapFile = "appcap"; //prayan string
 	string NSSFile = "test.nss";
 
-	uint32_t trafficInterval = 1000; //ms?
+	uint32_t trafficInterval = 1000; //ms
 	uint32_t trafficIntervalDeviation = 10; //1000 discuss with Jeroen
 
-	int trafficPacketSize = 15; //-1
+	int trafficPacketSize = -1; //-1
 	string trafficType = "coap"; //tcpfirmware
 
 	double ipcameraMotionPercentage = 1; //0.1
@@ -80,11 +82,10 @@ struct Configuration {
 	double firmwareCorruptionProbability = 0.01;
 	uint32_t firmwareVersionCheckInterval = 1000;
 
-
 	uint16_t sensorMeasurementSize = 54; //1024
 
 	uint16_t MaxTimeOfPacketsInQueue = 1000; //100
-	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
+	UintegerValue maxNumberOfPackets = 10; ///4294967295u //ami
 
 	uint16_t CoolDownPeriod = 0; //60
 
