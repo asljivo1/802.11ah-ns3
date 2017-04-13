@@ -967,18 +967,21 @@ void configureCoapServer() {
 
 void configureCoapClients()
 {
-	for (uint32_t i = 0; i < config.nControlLoops*2; i += 2)
+	for (uint32_t i = 0; i < config.Nsta; i++)
 	{
+		//if (i < config.nControlLoops*2)
 		if (!config.useV6)
 		{
 			// Configure client (cpntroller) that sends PUT control value to the server (process = sensor+actuator)
-
-			// address of remote node n0 (server)
-			Ptr<Ipv4> ip = staNodes.Get(i)->GetObject<Ipv4>();
-			Ipv4InterfaceAddress iAddr = ip->GetAddress(1,0);
-			CoapClientHelper clientHelper (iAddr.GetLocal(), 5683);
-			configureCoapClientHelper(clientHelper, i+1);
-			for (uint32_t i = 2*config.nControlLoops - 1; i < staNodes.GetN(); i++)
+			if (i % 2 == 0 && i < 2*config.nControlLoops)
+			{
+				// address of remote node n0 (server)
+				Ptr<Ipv4> ip = staNodes.Get(i)->GetObject<Ipv4>();
+				Ipv4InterfaceAddress iAddr = ip->GetAddress(1,0);
+				CoapClientHelper clientHelper (iAddr.GetLocal(), 5683);
+				configureCoapClientHelper(clientHelper, i+1);
+			}
+			else if (i >= 2*config.nControlLoops)
 			{
 				// Dummy clients for network congestion send packets to some external service over AP
 				CoapClientHelper clientHelperDummy (externalInterfaces.GetAddress(0), 5683); //address of AP
@@ -989,8 +992,6 @@ void configureCoapClients()
 				clientHelperDummy.SetAttribute("PacketSize", UintegerValue(config.trafficPacketSize));
 				clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
 				clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
-
-
 				Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
 
 				ApplicationContainer clientApp = clientHelperDummy.Install(staNodes.Get(i));

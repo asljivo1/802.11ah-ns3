@@ -23,7 +23,7 @@ using namespace std;
 struct Configuration {
 	double simulationTime = 200;
 	bool useV6 = false; //false
-	uint32_t nControlLoops = 1;
+	uint32_t nControlLoops = 2;
 	uint32_t seed = 1;
 	uint32_t Nsta = 4; //1
 	int NRawSta = -1; //-1
@@ -84,7 +84,7 @@ struct Configuration {
 	uint16_t sensorMeasurementSize = 54; //1024
 
 	uint16_t MaxTimeOfPacketsInQueue = 1000; //100
-	UintegerValue maxNumberOfPackets = 5; ///4294967295u //ami
+	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
 
 	uint16_t CoolDownPeriod = 0; //60
 
