@@ -561,6 +561,7 @@ void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 		pCopy->RemoveHeader(seqTs);
 		// time from the moment server sends a reply until the moment client receives it
 		auto timeDiff = (Simulator::Now() - seqTs.GetTs());
+		//cout << "=========================CLIENT SEQ " << seqTs.GetSeq() << endl;
 		if (seqTs.GetSeq() > 0)
 			stats->get(this->id).NumberOfSuccessfulRoundtripPacketsWithSeqHeader++;
 
@@ -586,20 +587,20 @@ void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 			delayFirst = delaySecond;
 
 		}
+
 		uint32_t currentSequenceNumber = seqTs.GetSeq();
-		if (currentSequenceNumber == 0)
+	    //cout << "============================================================================ Client " << this->id << " received seq" << currentSequenceNumber << endl;
+
+		Time newNow = Simulator::Now();
+		if (currentSequenceNumber == stats->get(this->id).m_prevPacketSeqClient + 1)
 		{
-			stats->get(this->id).m_prevPacketSeqClient = currentSequenceNumber;
-			stats->get(this->id).m_prevPacketTimeClient = Simulator::Now();
-		}
-		else if (currentSequenceNumber == stats->get(this->id).m_prevPacketSeqClient + 1)
-		{
-			Time newNow = Simulator::Now();
 			stats->get(this->id).m_interPacketDelayClient.push_back(newNow - stats->get(this->id).m_prevPacketTimeClient);
 			stats->get(this->id).interPacketDelayAtClient = newNow - stats->get(this->id).m_prevPacketTimeClient;
-			stats->get(this->id).m_prevPacketSeqClient = currentSequenceNumber;
-			stats->get(this->id).m_prevPacketTimeClient = newNow;
+		    //cout << "============================================================================ interPacketDelayAtClient " << this->id << " is" << newNow - stats->get(this->id).m_prevPacketTimeClient << endl;
+
 		}
+		stats->get(this->id).m_prevPacketSeqClient = currentSequenceNumber;
+		stats->get(this->id).m_prevPacketTimeClient = newNow;
 
 	} catch (std::runtime_error e) {
 		// packet fragmentation, unable to get the header from fragements
@@ -664,7 +665,7 @@ void NodeEntry::OnCoapPacketReceivedAtServer(Ptr<const Packet> packet) {
 		//else if (currentSequenceNumber > stats->get(this->id).m_prevPacketSeqServer + 1 && currentSequenceNumber > stats->get(this->id).NumberOfSentPackets)
 		//	std::cout << "Packet with seq number " << currentSequenceNumber << " is lost." << std::endl;
 
-		stats->get(this->id).TotalPacketPayloadSize += packet->GetSize() - 9; //deduct coap hdr & opts, only payload here
+		stats->get(this->id).TotalPacketPayloadSize += packet->GetSize() - 4 - 7; //deduct coap hdr & opts, only payload here
 	} catch (std::runtime_error e) {
 		// packet fragmentation, unable to get header
 	}

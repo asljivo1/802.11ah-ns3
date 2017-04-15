@@ -20,6 +20,8 @@ int main(int argc, char** argv) {
 	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
 	//LogComponentEnable("S1gApWifiMac", LOG_LEVEL_INFO);
 	//LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
+	//LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_ALL);
+
 #ifdef false
 	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
 	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
@@ -57,16 +59,52 @@ int main(int argc, char** argv) {
 
     	config.NRawSta = totalSta;
     }
+    if (config.Nsta < config.nControlLoops * 2)
+    {
+    	std::cout << "Bad configuration: Number of stations must be at least double the number of control loops. Abort." << std::endl;
+    	return 0;
+    }
+    if (config.BeaconInterval % 1024 != 0 && config.BeaconInterval < 1024)
+    {
+    	//because its stored in the broadcast that way. If not it leads to rounding issues at the STA MAC causing them to be out of sync
+    	std::cout << "Bad configuration: Minimal beacon interval is 1024us and beacon interval must be divisible bz 1024. Abort." << std::endl;
+    	return 0;
+    }
+
     if(config.NRawSlotCount == -1)
-    	config.NRawSlotCount = ceil(162 * 5 / config.NRawSlotNum);
+    {
+    	//config.NRawSlotCount = ceil(162 * 5 / config.NRawSlotNum);
+    	config.NRawSlotCount = (config.BeaconInterval - 500 * config.NRawSlotNum)/(120 * config.NRawSlotNum);
+    }
     if(config.SlotFormat == -1)
-    	config.SlotFormat = config.NRawSlotCount > 256 ? 1 : 0;
+    {
+    	if (config.NRawSlotCount >= 256 && config.NRawSlotCount < 2048)
+    		config.SlotFormat = 1;
+    	else if (config.NRawSlotCount > -1 && config.NRawSlotCount < 256)
+    		config.SlotFormat = 0;
+    	else
+    	{
+    		std::cout << "Bad configuration: NRawSlotCount is at most 11 bits long, invalid value. Abort." << std::endl;
+    		return 0;
+    	}
+    }
     if(config.NRawSta == -1)
     	config.NRawSta = config.Nsta;
+    /*if (config.NRawSlotNum * (500 + config.NRawSlotCount * 120) >= config.BeaconInterval)
+    {
+    	std::cout << "Bad configuration: Raw period longer than beacon interval. Check NRawSlotNum, NRawSlotCount and BeaconInterval. Abort elegantly." << std::endl;
+    	return (EXIT_SUCCESS);
+    }*/
     if (config.nControlLoops*2 > config.Nsta)
     {
     	std::cout << "Bad configuration: number of stations must be at least 2 * number of control loops. Abort elegantly." << std::endl;
-    	return 0;
+    	return (EXIT_SUCCESS);
+    }
+    // NRawSta should be divisible by NGroup
+    if (config.NRawSta % config.NGroup != 0)
+    {
+    	std::cout << "Bad configuration: NRawSta must be divisible by NGroup. Abort elegantly." << std::endl;
+    	return (EXIT_SUCCESS);
     }
     stats = Statistics(config.Nsta);
 
@@ -1006,33 +1044,36 @@ void configureCoapClients()
 		}
 		else
 		{
-			Ptr<Ipv6> ip = staNodes.Get(0)->GetObject<Ipv6>();
-			Ipv6InterfaceAddress iAddr = ip->GetAddress(1,0);
-			CoapClientHelper clientHelper (iAddr.GetAddress(), 5683); //address of remote node apNodeInterfaces6.GetAddress(0,0)
-			configureCoapClientHelper(clientHelper, i+1);
-			for (uint32_t i = 0; i < staNodes.GetN(); i++)
+			// Configure client (cpntroller) that sends PUT control value to the server (process = sensor+actuator)
+			if (i % 2 == 0 && i < 2*config.nControlLoops)
 			{
-				if (i != 0 && i != 1)
-				{
-					// dummy clients for AP bombarding
-					CoapClientHelper clientHelperDummy (apNodeInterfaces6.GetAddress(0, 0), 5683);//address of AP
-					clientHelperDummy.SetAttribute("MaxPackets", config.maxNumberOfPackets); //4294967295u
-					clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(3000)));
-					clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(100)));
-					clientHelperDummy.SetAttribute("PayloadSize", UintegerValue(config.coapPayloadSize));
-					clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
-					clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
-
-
-					Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
-
-					ApplicationContainer clientApp = clientHelperDummy.Install(staNodes.Get(i));
-					clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnCoapPacketSent, nodes[i]));
-					clientApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&NodeEntry::OnCoapPacketReceived, nodes[i]));
-					double random = m_rv->GetValue(0, 3000);
-					clientApp.Start(MilliSeconds(0+random));
-				}
+				// address of remote node n0 (server)
+				Ptr<Ipv6> ip = staNodes.Get(i)->GetObject<Ipv6>();
+				Ipv6InterfaceAddress iAddr = ip->GetAddress(1,0);
+				CoapClientHelper clientHelper (iAddr.GetAddress(), 5683);
+				configureCoapClientHelper(clientHelper, i+1);
 			}
+			else if (i >= 2*config.nControlLoops)
+			{
+				// Dummy clients for network congestion send packets to some external service over AP
+				CoapClientHelper clientHelperDummy (externalInterfaces6.GetAddress(0, 0), 5683); //address of AP
+				//std::cout << " external node address is " << externalInterfaces.GetAddress(0) << std::endl;
+				clientHelperDummy.SetAttribute("MaxPackets", config.maxNumberOfPackets); //4294967295u
+				clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(3000)));
+				clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(100)));
+				clientHelperDummy.SetAttribute("PayloadSize", UintegerValue(config.coapPayloadSize));
+				clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
+				clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
+				Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
+
+				ApplicationContainer clientApp = clientHelperDummy.Install(staNodes.Get(i));
+				clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnCoapPacketSent, nodes[i]));
+				clientApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&NodeEntry::OnCoapPacketReceived, nodes[i]));
+
+				double random = m_rv->GetValue(0, 3000);
+				clientApp.Start(MilliSeconds(0+random));
+			}
+
 		}
 	}
 }

@@ -55,7 +55,7 @@ bool S1gStrategy::STABelongsToRAWGroup(uint16_t aid, RPS& rps) {
 }
 
 Time S1gStrategy::GetEarlyWakeTime() {
-	return MilliSeconds(10);
+	return MilliSeconds(4);
 }
 
 } /* namespace ns3 */
