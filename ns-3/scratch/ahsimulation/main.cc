@@ -998,6 +998,7 @@ void configureCoapServer() {
     for (uint32_t i = 0; i < config.nControlLoops*2; i += 2)
     {
         serverApp = myServer.Install(staNodes.Get(i));
+        nodes[i]->m_nodeType = NodeEntry::SERVER;
         serverApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&coapPacketReceivedAtServer));
         serverApp.Start(Seconds(0));
     }
@@ -1007,7 +1008,6 @@ void configureCoapClients()
 {
 	for (uint32_t i = 0; i < config.Nsta; i++)
 	{
-		//if (i < config.nControlLoops*2)
 		if (!config.useV6)
 		{
 			// Configure client (cpntroller) that sends PUT control value to the server (process = sensor+actuator)
@@ -1018,6 +1018,7 @@ void configureCoapClients()
 				Ipv4InterfaceAddress iAddr = ip->GetAddress(1,0);
 				CoapClientHelper clientHelper (iAddr.GetLocal(), 5683);
 				configureCoapClientHelper(clientHelper, i+1);
+				nodes[i+1]->m_nodeType = NodeEntry::CLIENT;
 			}
 			else if (i >= 2*config.nControlLoops)
 			{
@@ -1025,8 +1026,8 @@ void configureCoapClients()
 				CoapClientHelper clientHelperDummy (externalInterfaces.GetAddress(0), 5683); //address of AP
 				//std::cout << " external node address is " << externalInterfaces.GetAddress(0) << std::endl;
 				clientHelperDummy.SetAttribute("MaxPackets", config.maxNumberOfPackets); //4294967295u
-				clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(3000)));
-				clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(100)));
+				clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(config.trafficInterval*2)));
+				clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(config.trafficInterval*2/10)));
 				clientHelperDummy.SetAttribute("PayloadSize", UintegerValue(config.coapPayloadSize));
 				clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
 				clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
@@ -1035,6 +1036,7 @@ void configureCoapClients()
 				ApplicationContainer clientApp = clientHelperDummy.Install(staNodes.Get(i));
 				clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnCoapPacketSent, nodes[i]));
 				clientApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&NodeEntry::OnCoapPacketReceived, nodes[i]));
+				nodes[i]->m_nodeType = NodeEntry::DUMMY;
 
 				double random = m_rv->GetValue(0, 3000);
 				clientApp.Start(MilliSeconds(0+random));
@@ -1059,8 +1061,8 @@ void configureCoapClients()
 				CoapClientHelper clientHelperDummy (externalInterfaces6.GetAddress(0, 0), 5683); //address of AP
 				//std::cout << " external node address is " << externalInterfaces.GetAddress(0) << std::endl;
 				clientHelperDummy.SetAttribute("MaxPackets", config.maxNumberOfPackets); //4294967295u
-				clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(3000)));
-				clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(100)));
+				clientHelperDummy.SetAttribute("Interval", TimeValue(MilliSeconds(config.trafficInterval*2)));
+				clientHelperDummy.SetAttribute("IntervalDeviation", TimeValue(MilliSeconds(config.trafficInterval*2)));
 				clientHelperDummy.SetAttribute("PayloadSize", UintegerValue(config.coapPayloadSize));
 				clientHelperDummy.SetAttribute("RequestMethod", UintegerValue(1));
 				clientHelperDummy.SetAttribute("MessageType", UintegerValue(1));
@@ -1169,55 +1171,57 @@ void printStatistics() {
 	cout << "Total simulation time: " << std::to_string(stats.TotalSimulationTime.GetMilliSeconds()) << "ms" << endl;
 	cout << "Time every station associated: " << std::to_string(stats.TimeWhenEverySTAIsAssociated.GetMilliSeconds()) << "ms" << endl;
 	cout << "" << endl;
+
 	for (uint32_t i = 0; i < config.Nsta; i++) {
-		cout << "Node " << std::to_string(i) << endl;
-		cout << "X: " << nodes[i]->x << ", Y: " << nodes[i]->y << endl;
-		cout << "Tx Remaining Queue size: " << nodes[i]->queueLength << endl;
-		cout << "Tcp congestion window value: " <<  std::to_string(stats.get(i).TCPCongestionWindow) << endl;
-		cout << "--------------" << endl;
-		cout << "Total transmit time: " << std::to_string(stats.get(i).TotalTransmitTime.GetMilliSeconds()) << "ms" << endl;
-		cout << "Total receive time: " << std::to_string(stats.get(i).TotalReceiveTime.GetMilliSeconds()) << "ms" << endl;
-		cout << "" << endl;
-		cout << "Total active time: " << std::to_string(stats.get(i).TotalActiveTime.GetMilliSeconds()) << "ms" << endl;
-		cout << "Total doze time: " << std::to_string(stats.get(i).TotalDozeTime.GetMilliSeconds()) << "ms" << endl;
-		cout << "" << endl;
-		cout << "Number of transmissions: " << std::to_string(stats.get(i).NumberOfTransmissions) << endl;
-		cout << "Number of transmissions dropped: " << std::to_string(stats.get(i).NumberOfTransmissionsDropped) << endl;
-		cout << "Number of receives: " << std::to_string(stats.get(i).NumberOfReceives) << endl;
-		cout << "Number of receives dropped: " << std::to_string(stats.get(i).NumberOfReceivesDropped) << endl;
-		cout << "" << endl;
-		cout << "Number of packets sent: " << std::to_string(stats.get(i).NumberOfSentPackets) << endl;
-		cout << "Number of packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulPackets) << endl;
-		cout << "Number of packets dropped: " << std::to_string(stats.get(i).getNumberOfDroppedPackets()) << endl;
-		cout << "Number of roundtrip packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulRoundtripPackets) << endl;
-		cout << "Average packet sent/receive time: " << std::to_string(stats.get(i).getAveragePacketSentReceiveTime().GetMicroSeconds()) << "µs" << std::endl;
-		cout << "Average packet roundtrip time: " << std::to_string(stats.get(i).getAveragePacketRoundTripTime(config.trafficType).GetMicroSeconds()) << "µs" << std::endl;
-		cout << "IP Camera Data sending rate: " << std::to_string(stats.get(i).getIPCameraSendingRate()) << "kbps" << std::endl;
-		cout << "IP Camera Data receiving rate: " << std::to_string(stats.get(i).getIPCameraAPReceivingRate()) << "kbps" << std::endl;
-		cout << endl;
-		cout << "    maxLatency (C->S)= " << std::to_string(NodeEntry::maxLatency.GetMicroSeconds()) << "µs" << endl;
-		cout << "    minLatency (C->S) = " << std::to_string(NodeEntry::minLatency.GetMicroSeconds()) << "µs" << endl;
-		cout << "    max diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::maxJitter.GetMicroSeconds()) << "µs" << endl;
-		cout << "    min diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::minJitter.GetMicroSeconds()) << "µs" << endl;
-		cout << "    Jitter (RTT)= " << std::to_string(stats.get(i).GetAverageJitter()) << "ms" << endl;
-		cout << "    Average inter packet delay at server is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayServer).GetMicroSeconds()) << "µs" << endl;
-		cout << "    Inter-packet-delay at the server standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayServer) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayServer) << "%" <<endl;
-		cout << "    Average inter packet delay at client is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayClient).GetMicroSeconds()) << "µs" << endl;
-		cout << "    Inter-packet-delay at the client standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayClient) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayClient) << "%" <<endl;
-		//calculate the deviation between inter packet arrival times at the server
-		cout << "    Reliability " << std::to_string(stats.get(i).GetReliability()) << "%" << endl;
+		if (nodes[i]->m_nodeType == NodeEntry::CLIENT){
+			cout << "Node " << std::to_string(i) << endl;
+			cout << "X: " << nodes[i]->x << ", Y: " << nodes[i]->y << endl;
+			cout << "Tx Remaining Queue size: " << nodes[i]->queueLength << endl;
+			cout << "Tcp congestion window value: " <<  std::to_string(stats.get(i).TCPCongestionWindow) << endl;
+			cout << "--------------" << endl;
+			cout << "Total transmit time: " << std::to_string(stats.get(i).TotalTransmitTime.GetMilliSeconds()) << "ms" << endl;
+			cout << "Total receive time: " << std::to_string(stats.get(i).TotalReceiveTime.GetMilliSeconds()) << "ms" << endl;
+			cout << "" << endl;
+			cout << "Total active time: " << std::to_string(stats.get(i).TotalActiveTime.GetMilliSeconds()) << "ms" << endl;
+			cout << "Total doze time: " << std::to_string(stats.get(i).TotalDozeTime.GetMilliSeconds()) << "ms" << endl;
+			cout << "" << endl;
+			cout << "Number of transmissions: " << std::to_string(stats.get(i).NumberOfTransmissions) << endl;
+			cout << "Number of transmissions dropped: " << std::to_string(stats.get(i).NumberOfTransmissionsDropped) << endl;
+			cout << "Number of receives: " << std::to_string(stats.get(i).NumberOfReceives) << endl;
+			cout << "Number of receives dropped: " << std::to_string(stats.get(i).NumberOfReceivesDropped) << endl;
+			cout << "" << endl;
+			cout << "Number of packets sent: " << std::to_string(stats.get(i).NumberOfSentPackets) << endl;
+			cout << "Number of packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulPackets) << endl;
+			cout << "Number of packets dropped: " << std::to_string(stats.get(i).getNumberOfDroppedPackets()) << endl;
+			cout << "Number of roundtrip packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulRoundtripPackets) << endl;
+			cout << "Average packet sent/receive time: " << std::to_string(stats.get(i).getAveragePacketSentReceiveTime().GetMicroSeconds()) << "µs" << std::endl;
+			cout << "Average packet roundtrip time: " << std::to_string(stats.get(i).getAveragePacketRoundTripTime(config.trafficType).GetMicroSeconds()) << "µs" << std::endl;
+			cout << "IP Camera Data sending rate: " << std::to_string(stats.get(i).getIPCameraSendingRate()) << "kbps" << std::endl;
+			cout << "IP Camera Data receiving rate: " << std::to_string(stats.get(i).getIPCameraAPReceivingRate()) << "kbps" << std::endl;
+			cout << endl;
+			cout << "    maxLatency (C->S)= " << std::to_string(NodeEntry::maxLatency.GetMicroSeconds()) << "µs" << endl;
+			cout << "    minLatency (C->S) = " << std::to_string(NodeEntry::minLatency.GetMicroSeconds()) << "µs" << endl;
+			cout << "    max diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::maxJitter.GetMicroSeconds()) << "µs" << endl;
+			cout << "    min diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::minJitter.GetMicroSeconds()) << "µs" << endl;
+			cout << "    Jitter (RTT)= " << std::to_string(stats.get(i).GetAverageJitter()) << "ms" << endl;
+			cout << "    Average inter packet delay at server is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayServer).GetMicroSeconds()) << "µs" << endl;
+			cout << "    Inter-packet-delay at the server standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayServer) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayServer) << "%" <<endl;
+			cout << "    Average inter packet delay at client is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayClient).GetMicroSeconds()) << "µs" << endl;
+			cout << "    Inter-packet-delay at the client standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayClient) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayClient) << "%" <<endl;
+			//calculate the deviation between inter packet arrival times at the server
+			cout << "    Reliability " << std::to_string(stats.get(i).GetReliability()) << "%" << endl;
 
 
-		cout << endl;
-		cout << "Goodput: " << (stats.get(i).getGoodputKbit()) << "Kbit" << endl;
-		cout << "*********************" << endl;
-		/*std::vector<Time> x = stats.get(i).m_interPacketDelay;
+			cout << endl;
+			cout << "Goodput: " << (stats.get(i).getGoodputKbit()) << "Kbit" << endl;
+			cout << "*********************" << endl;
+			/*std::vector<Time> x = stats.get(i).m_interPacketDelay;
 		for (uint32_t i=0; i< x.size(); i++)
 		{
 			cout << "S: " << (x[i]).GetMicroSeconds() << ", ";
 		}*/
-	    cout << endl;
-
+			cout << endl;
+		}
 	}
 }
 

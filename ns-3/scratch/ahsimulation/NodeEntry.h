@@ -40,6 +40,11 @@ public:
 
     virtual ~NodeEntry();
 
+    enum NodeType {
+    	CLIENT,
+		SERVER,
+		DUMMY
+    } m_nodeType;
     
     void SetAssociation(std::string context, Mac48Address address);
     void UnsetAssociation(std::string context, Mac48Address address);

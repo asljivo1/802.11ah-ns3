@@ -19,9 +19,11 @@ uint64_t NodeStatistics::GetAverageJitter(void)
 }
 
 Time NodeStatistics::GetAverageInterPacketDelay(std::vector<Time>& delayVector){
-	//cout << "inter packet delay vector size " << delayVector.size() << endl;
 	if (delayVector.size() != 0)
+	{
+		cout << "inter packet delay vector size " << delayVector.size() << endl;
 		return std::accumulate(delayVector.begin(), delayVector.end(), Seconds(0.0))/delayVector.size();
+	}
 	else return Time();
 }
 

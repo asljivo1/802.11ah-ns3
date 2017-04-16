@@ -26,18 +26,22 @@ struct Configuration {
 	 * */
 	bool useV6 = false; //false
 	uint32_t nControlLoops = 1;
-	uint32_t coapPayloadSize = 20;
+	uint32_t coapPayloadSize = 15;
+	uint32_t BeaconInterval = 10240*2; //102400 25600
+	uint32_t trafficInterval = 310; //ms 55,110,210,310,410,515,615,720,820,950,1024
+	uint32_t trafficIntervalDeviation = 10; //1000 discuss with Jeroen
+	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
 
-	double simulationTime = 200;
-	uint32_t seed = 1;
-	uint32_t Nsta = 4; //1
+	uint32_t Nsta = 10; //1 ----- 10,50,100,200,500,1000,10000
 	int NRawSta = -1; //-1
 	int SlotFormat = -1; //0;
 	int NRawSlotCount = -1; //162;
-	uint32_t NRawSlotNum = 4;
-	uint32_t NGroup = 1;
-	uint32_t BeaconInterval = 20480; //102400 25600
+	uint32_t NRawSlotNum = 1;
+	uint32_t NGroup = 2;
 
+
+	double simulationTime = 200;
+	uint32_t seed = 1;
 	uint32_t MinRTO = 81920000; //819200
 	uint32_t TCPConnectionTimeout = 6000000;
 	uint32_t TCPSegmentSize = 536; //536
@@ -66,9 +70,6 @@ struct Configuration {
 	string APPcapFile = "appcap"; //prayan string
 	string NSSFile = "test.nss";
 
-	uint32_t trafficInterval = 215; //ms
-	uint32_t trafficIntervalDeviation = 10; //1000 discuss with Jeroen
-
 	int trafficPacketSize = -1; //-1
 	string trafficType = "coap"; //tcpfirmware
 
@@ -85,7 +86,6 @@ struct Configuration {
 	uint16_t sensorMeasurementSize = 54; //1024
 
 	uint16_t MaxTimeOfPacketsInQueue = 1000; //100
-	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
 
 	uint16_t CoolDownPeriod = 0; //60
 

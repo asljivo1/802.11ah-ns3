@@ -176,23 +176,23 @@ void CoapServer::HndHello(coap_context_t *ctx UNUSED_PARAM,
 	coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
 }
 
-void CoapServer::HndGetControlValue(coap_context_t *ctx,
-        struct coap_resource_t *resource,
+void CoapServer::HndGetControlValue(coap_context_t *ctx UNUSED_PARAM,
+        struct coap_resource_t *resource UNUSED_PARAM,
         const coap_endpoint_t *local_interface UNUSED_PARAM,
         coap_address_t *peer UNUSED_PARAM,
-        coap_pdu_t *request ,
+        coap_pdu_t *request UNUSED_PARAM,
         str *token UNUSED_PARAM,
 		coap_pdu_t *response)
 {
 	uint8_t buf[4];
 	// If m_controlValue was deleted, we pretend to have no such resource
-	response->hdr->code = (CoapServer::m_controlValue == 0) ? COAP_RESPONSE_CODE(205) : COAP_RESPONSE_CODE(404);
+	/*response->hdr->code = (CoapServer::m_controlValue == 0) ? COAP_RESPONSE_CODE(205) : COAP_RESPONSE_CODE(404);
 	coap_add_option(response, COAP_OPTION_CONTENT_TYPE, coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
 	if (response->hdr->code != COAP_RESPONSE_CODE(404))
 	{
 		const char* responseData (std::to_string(CoapServer::m_controlValue).c_str());
 		coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
-	}
+	}*/
 }
 
 double CoapServer::m_controlValue = 0;
@@ -361,7 +361,8 @@ CoapServer::coap_transaction_id(const coap_pdu_t *pdu, coap_tid_t *id) {
 	*id = (((h[0] << 8) | h[1]) ^ ((h[2] << 8) | h[3])) & INT_MAX;
 }
 
-ssize_t CoapServer::CoapHandleMessage(Ptr<Packet> packet){
+ssize_t CoapServer::CoapHandleMessage(/*Ptr<Packet> packet*/){
+	Ptr<Packet> packet = m_packet;
 	uint32_t msg_len (packet->GetSize());
 	ssize_t bytesRead(0);
 	uint8_t* msg = new uint8_t[msg_len];
@@ -494,12 +495,15 @@ void CoapServer::HandleRead(Ptr<Socket> socket) {
 		packet->RemoveAllByteTags ();
 
 		//m_lossCounter.NotifyReceived(currentSequenceNumber);
+		m_packet = packet;
 		m_received++;
 
-		if (!this->CoapHandleMessage(packet)){
+		m_sendEvent = Simulator::Schedule (MilliSeconds(10), &CoapServer::CoapHandleMessage, this);
+
+		/*if (!this->CoapHandleMessage(packet)){
 			NS_LOG_ERROR("Cannot handle message. Abort.");
 			return;
-		}
+		}*/
 	}
 }
 
