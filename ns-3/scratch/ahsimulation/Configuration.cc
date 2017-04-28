@@ -7,7 +7,7 @@ Configuration::Configuration() {
 Configuration::Configuration(int argc, char** argv) {
     CommandLine cmd;
     cmd.AddValue("useIpv6", "Use Ipv6 (true/false)", useV6);
-    cmd.AddValue("nControlLoops", "Number of control loops, number of stations is at least double of that", nControlLoops);
+    cmd.AddValue("nControlLoops", "Number of control loops. If -1 all the stations will be in the loops if NSta is even", nControlLoops);
     cmd.AddValue("CoapPayloadSize", "Size of CoAP payload",coapPayloadSize);
 
     cmd.AddValue("Seed", "random seed", seed);

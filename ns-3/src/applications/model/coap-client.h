@@ -140,9 +140,10 @@ private:
   coap_tid_t m_tid = COAP_INVALID_TID;
   uint16_t m_method;    // get, post, put, delete
   uint16_t m_type;    // confirmable, non-confirmable, ACK, reset
-
-  //uint8_t m_tokenMsf;
-  //uint8_t m_token[8] = {0,0,0,0,0,0,0,0};
+  static uint8_t m_tokenPrevious[8];
+  static uint8_t m_tklPrevious;
+  uint8_t m_tokenLength;
+  uint64_t m_token;
 
 };
 

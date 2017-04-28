@@ -76,6 +76,11 @@ CoapClient::GetTypeId (void)
 					UintegerValue (3),
 					MakeUintegerAccessor (&CoapClient::m_type),
 					MakeUintegerChecker<uint16_t> (0,3))
+	/*.AddAttribute ("Token",
+					"Token for the coap pdu",
+					UintegerValue (0),
+					MakeUintegerAccessor (&CoapClient::m_token),
+					MakeUintegerChecker<uint16_t> (0,3))*/
     .AddTraceSource ("Tx", "A new packet is created and is sent",
                      MakeTraceSourceAccessor (&CoapClient::m_packetSent),
                      "ns3::Packet::TracedCallback")
@@ -85,6 +90,9 @@ CoapClient::GetTypeId (void)
   ;
   return tid;
 }
+
+/*uint8_t CoapClient::m_tokenPrevious[8] = {0,250,0,0,0,0,0,0};
+uint8_t CoapClient::m_tklPrevious = 2;*/
 
 CoapClient::CoapClient ()
 {
@@ -96,9 +104,52 @@ CoapClient::CoapClient ()
   m_rv = CreateObject<UniformRandomVariable> ();
   m_coapCtx = NULL;
   m_peerPort = COAP_DEFAULT_PORT;
+  //m_tokenLength = 0;
   //m_tokenMsf = 0;
   //m_payload = { 0, NULL };
   //m_optList = NULL;
+  // Make token
+  		/*int full = 0;
+  		for (int i = 7; i >= 0; i--)
+  		{
+  			if (CoapClient::m_tokenPrevious[i] == 0 && i != 0)
+  				continue;
+  			else if (i == 0 && CoapClient::m_tokenPrevious[i] == 0){
+  				CoapClient::m_tklPrevious = i+1;
+  				CoapClient::m_tokenPrevious[i]++;
+  				break;
+  			}
+  			else { //non zero
+  				if (CoapClient::m_tokenPrevious[i] < 255){
+  					CoapClient::m_tokenPrevious[i]++;
+  					break;
+  				}
+  				else { // if 255
+  					if (i < 7 && CoapClient::m_tokenPrevious[i+1] == 0){
+  						CoapClient::m_tokenPrevious[i] = 0;
+  						CoapClient::m_tokenPrevious[i+1] = 1;
+  						CoapClient::m_tklPrevious += 1;
+  						break;
+  					}
+  					else if (i < 7 && CoapClient::m_tokenPrevious[i+1] < 255)
+  					{
+  						CoapClient::m_tokenPrevious[i] = 0;
+  						CoapClient::m_tokenPrevious[i+1]++;
+  						break;
+  					}
+  					else{
+  						if (full < 7)
+  							full++;
+  						i = 7 - full;
+  					}
+  				}
+  			}
+  		}
+  		m_tokenLength = CoapClient::m_tklPrevious;
+  		std::copy (CoapClient::m_tokenPrevious, CoapClient::m_tokenPrevious + CoapClient::m_tklPrevious, m_token);
+  		//m_coapMsg.SetToken(m_coapMsg.GetTokenLength(), m_token);*/
+  //m_token = 0x56ac;
+  //m_tokenLength = m_token;
 }
 
 CoapClient::~CoapClient ()
@@ -176,8 +227,6 @@ bool CoapClient::PrepareContext(void)
 		  srcAddr.addr.sin.sin_port        = htons(0);
 		  srcAddr.addr.sin.sin_addr.s_addr = inet_addr("0.0.0.0");
 		  m_coapCtx = coap_new_context(&srcAddr);
-
-
 	  }
 	  else if (Ipv6Address::IsMatchingType (m_peerAddress))
 	  {
@@ -236,6 +285,8 @@ CoapClient::StartApplication (void)
 	// BLOCK2 pertrains to the response payload
 	coap_register_option(m_coapCtx, COAP_OPTION_BLOCK2);
 	m_socket->SetRecvCallback (MakeCallback (&CoapClient::HandleRead, this));
+
+
 	PrepareMsg();
 }
 
@@ -264,7 +315,7 @@ CoapClient::PrepareMsg (void)
 	// Implemented resources are "control", "hello" and empty resource.
 	// For "control" resources implemented methods are GET, PUT and DELETE.
 	// For empty resource and "hello" implementeh method is GET.
-	serverUri.append("/control");
+	serverUri.append("/control");//.well-known/core
 
 	static coap_uri_t uri;
 	int res = coap_split_uri((const unsigned char*)serverUri.c_str(), strlen(serverUri.c_str()), &uri);
@@ -355,6 +406,11 @@ CoapClient::Send (uint8_t *data, size_t datalen)
 			NS_LOG_INFO ("At time "<< (Simulator::Now ()).GetSeconds ()<< "s client sent " << p->GetSize() << " bytes to "
 					<< peerAddressStringStream.str () << " Uid: " << p->GetUid ());
 			retval = p->GetSize();
+			/*std::cout << "+++++++++++++++++++++++++++++++++++++Token for dst " << peerAddressStringStream.str () << " is " << m_token;
+			for (uint32_t l = 0; l < 8; l++){
+				std::cout << std::to_string(m_token[l]) << "   ";
+			}
+			std::cout << std::endl;*/
 		}
 		else
 		{

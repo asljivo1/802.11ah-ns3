@@ -60,6 +60,11 @@ TypeId CoapServer::GetTypeId(void) {
 					UintegerValue(100),
 					MakeUintegerAccessor(&CoapServer::m_port),
 					MakeUintegerChecker<uint16_t>())
+			.AddAttribute ("ProcessingDelay",
+					"Processing delay",
+					TimeValue (Seconds (0)),
+					MakeTimeAccessor (&CoapServer::m_processingDelay),
+					MakeTimeChecker ())
 			.AddTraceSource("Rx",
 					"A packet is received",
 					MakeTraceSourceAccessor(&CoapServer::m_packetReceived),
@@ -184,9 +189,9 @@ void CoapServer::HndGetControlValue(coap_context_t *ctx UNUSED_PARAM,
         str *token UNUSED_PARAM,
 		coap_pdu_t *response)
 {
-	uint8_t buf[4];
+	/*uint8_t buf[4];
 	// If m_controlValue was deleted, we pretend to have no such resource
-	/*response->hdr->code = (CoapServer::m_controlValue == 0) ? COAP_RESPONSE_CODE(205) : COAP_RESPONSE_CODE(404);
+	response->hdr->code = (CoapServer::m_controlValue == 0) ? COAP_RESPONSE_CODE(205) : COAP_RESPONSE_CODE(404);
 	coap_add_option(response, COAP_OPTION_CONTENT_TYPE, coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
 	if (response->hdr->code != COAP_RESPONSE_CODE(404))
 	{
@@ -498,7 +503,7 @@ void CoapServer::HandleRead(Ptr<Socket> socket) {
 		m_packet = packet;
 		m_received++;
 
-		m_sendEvent = Simulator::Schedule (MilliSeconds(10), &CoapServer::CoapHandleMessage, this);
+		m_sendEvent = Simulator::Schedule (m_processingDelay, &CoapServer::CoapHandleMessage, this);
 
 		/*if (!this->CoapHandleMessage(packet)){
 			NS_LOG_ERROR("Cannot handle message. Abort.");

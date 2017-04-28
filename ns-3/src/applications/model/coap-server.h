@@ -177,7 +177,7 @@ private:
   Time m_prevPacketTime;
   uint32_t m_sent; //!< Counter for sent packets
   PacketLossCounter m_lossCounter; //!< Lost packet counter
-
+  Time m_processingDelay;   //processing delay 10ms
   Ptr<Packet> m_packet;
   EventId m_sendEvent; //!< Event to send the next packet
   Address m_from;
