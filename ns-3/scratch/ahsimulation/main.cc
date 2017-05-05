@@ -16,8 +16,8 @@ int main(int argc, char** argv) {
 	PacketMetadata::Enable();
 	TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
 	Config::SetDefault ("ns3::TcpL4Protocol::SocketType", StringValue ("ns3::TcpWestwood"));
-	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
-	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
+	//LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
+	//LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
 	//LogComponentEnable("S1gApWifiMac", LOG_LEVEL_INFO);
 	//LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
 	//LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_ALL);
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     	config.NRawSta = totalSta;
     }
 
-    if (static_cast<int>(config.Nsta) < config.nControlLoops * 2)
+    if (config.Nsta < config.nControlLoops * 2)
     {
     	std::cout << "Bad configuration: Number of stations must be at least double the number of control loops. Abort." << std::endl;
     	return 0;
@@ -113,10 +113,10 @@ int main(int argc, char** argv) {
     // check parameters = only for 2MHz
     if (config.DataMode == "MCS2_0")
     {
-    	if (config.NRawSlotCount < 14)
+    	if (config.NRawSlotCount < 15)
     	{
-        	std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_0 is 14. Abort." << std::endl;
-        	return 0;
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_0 is 15. Abort." << std::endl;
+    		return 0;
     	}
     	/*
     case "MCS2_1": break;
@@ -129,6 +129,62 @@ int main(int argc, char** argv) {
     case "MCS2_8": break;
     case "MCS2_9": break;
     case "MCS2_10": break;*/
+    }
+    else if (config.DataMode == "MCS2_1"){
+    	if (config.NRawSlotCount < 10)
+    	{
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_8 is 10. Abort." << std::endl;
+    		return 0;
+    	}
+    }
+    else if (config.DataMode == "MCS2_2"){
+    	if (config.NRawSlotCount < 8)
+    	{
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_1 is 8. Abort." << std::endl;
+    		return 0;
+    	}
+    }
+    else if (config.DataMode == "MCS2_3"){
+    	if (config.NRawSlotCount < 7)
+    	{
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_2 is 7. Abort." << std::endl;
+    		return 0;
+    	}
+    }
+    else if (config.DataMode == "MCS2_4"){
+    	if (config.NRawSlotCount < 6)
+    	{
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_3 is 6. Abort." << std::endl;
+    		return 0;
+    	}
+    }
+    else if (config.DataMode == "MCS2_5"){
+    	if (config.NRawSlotCount < 6)
+    	{
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_4 is 6. Abort." << std::endl;
+    		return 0;
+    	}
+    }
+    else if (config.DataMode == "MCS2_6"){
+    	if (config.NRawSlotCount < 6)
+    	{
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_5 is 6. Abort." << std::endl;
+    		return 0;
+    	}
+    }
+    else if (config.DataMode == "MCS2_7"){
+    	if (config.NRawSlotCount < 6)
+    	{
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_6 is 6. Abort." << std::endl;
+    		return 0;
+    	}
+    }
+    else if (config.DataMode == "MCS2_8"){
+    	if (config.NRawSlotCount < 6)
+    	{
+    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_7 is 6. Abort." << std::endl;
+    		return 0;
+    	}
     }
 
     if(config.NRawSta == -1)
@@ -143,7 +199,7 @@ int main(int argc, char** argv) {
     {
     	config.nControlLoops = config.Nsta / 2; // integer division ok
     }
-    if (config.nControlLoops*2 > static_cast<int>(config.Nsta))
+    if (config.nControlLoops*2 > config.Nsta)
     {
     	std::cout << "Bad configuration: number of stations must be at least 2 * number of control loops. Abort elegantly." << std::endl;
     	return (EXIT_SUCCESS);

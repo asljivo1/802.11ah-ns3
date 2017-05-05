@@ -25,10 +25,10 @@ struct Configuration {
 	 * CoAP configuration parameters
 	 * */
 	bool useV6 = false; //false
-	int nControlLoops = -1;
+	uint32_t nControlLoops = 1;
 	uint32_t coapPayloadSize = 15;
-	uint32_t BeaconInterval = 4096; //102400 25600 us
-	uint32_t trafficInterval = 100; //ms 55,110,210,310,410,515,615,720,820,950,1024 beacon interval *4
+	uint32_t BeaconInterval = 102400; //102400 25600 us
+	uint32_t trafficInterval = 1000; //ms 55,110,210,310,410,515,615,720,820,950,1024 beacon interval *4
 	uint32_t trafficIntervalDeviation = 10; //1000 discuss with Jeroen
 	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
 
