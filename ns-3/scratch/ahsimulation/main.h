@@ -84,6 +84,9 @@ vector<long> transmissionsPerTIMGroupAndSlotFromSTASinceLastInterval;
 uint16_t currentTIMGroup = 0;
 uint16_t currentRawSlot = 0;
 
+void autoSetNRawSlotCount (Configuration& config);
+bool calculateParameters (Configuration& config);
+
 void configureChannel();
 
 void configureSTANodes(Ssid& ssid);

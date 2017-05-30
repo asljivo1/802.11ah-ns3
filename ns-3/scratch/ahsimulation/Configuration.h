@@ -25,19 +25,19 @@ struct Configuration {
 	 * CoAP configuration parameters
 	 * */
 	bool useV6 = false; //false
-	uint32_t nControlLoops = 1;
+	uint32_t nControlLoops = 28;
 	uint32_t coapPayloadSize = 15;
 	uint32_t BeaconInterval = 102400; //102400 25600 us
 	uint32_t trafficInterval = 1000; //ms 55,110,210,310,410,515,615,720,820,950,1024 beacon interval *4
-	uint32_t trafficIntervalDeviation = 10; //1000 discuss with Jeroen
+	uint32_t trafficIntervalDeviation = 100; //1000 discuss with Jeroen
 	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
 
-	uint32_t Nsta = 2; //1 ----- 10,50,100,200,500,1000,10000
+	uint32_t Nsta = 56; //1 ----- 10,50,100,200,500,1000,10000
 	int NRawSta = -1; //-1
 	int SlotFormat = -1; //0;
-	int NRawSlotCount = 7; //162;
-	uint32_t NRawSlotNum = 1; //broj slotova
-	uint32_t NGroup = 1;
+	int NRawSlotCount = 3000; //162;
+	uint32_t NRawSlotNum = 64; //broj slotova
+	uint32_t NGroup = 2;
 
 
 	double simulationTime = 200;
@@ -57,13 +57,13 @@ struct Configuration {
 	bool APAlwaysSchedulesForNextSlot = false;
 	uint32_t APScheduleTransmissionForNextSlotIfLessThan = 5000;
 
-	string DataMode = "MCS2_4"; //MCS2_8--------------------------------
+	string DataMode = "MCS2_0"; //MCS2_8--------------------------------
 
 	string visualizerIP = "10.0.2.15"; /// prayan string ""
 	int visualizerPort = 7707;
 	double visualizerSamplingInterval = 1;
 
-	string rho = "100.0"; //100
+	string rho = "500.0"; //100
 
 	string name = "test"; //payan string
 

@@ -16,8 +16,8 @@ int main(int argc, char** argv) {
 	PacketMetadata::Enable();
 	TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
 	Config::SetDefault ("ns3::TcpL4Protocol::SocketType", StringValue ("ns3::TcpWestwood"));
-	//LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
-	//LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
+	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
+	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
 	//LogComponentEnable("S1gApWifiMac", LOG_LEVEL_INFO);
 	//LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
 	//LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_ALL);
@@ -37,179 +37,8 @@ int main(int argc, char** argv) {
 
     config = Configuration(argc, argv);
 
+    while (!calculateParameters(config));
 
-    // calculate parameters
-    if(config.trafficPacketSize == -1)
-    	config.trafficPacketSize = ((int)config.TCPSegmentSize - 100) < 0 ? 100 : (config.TCPSegmentSize - 100);
-
-    if(config.ContentionPerRAWSlot != -1) {
-    	// override the NSta based on the TIM groups and raw slot count
-    	// to match the contention per slot.
-    	int totalNrOfSlots = config.NGroup * config.NRawSlotNum;
-    	int totalSta = totalNrOfSlots * (config.ContentionPerRAWSlot+1);
-
-    	// only fill the first TIM group RAW if true, to reduce the number of stations overall
-    	// to speed up the simulation. All the other TIM groups are behaving the same.
-    	// Note that this is different from specifying only 1 TIM group because the DTIM cycle is still
-    	// longer with more groups!
-    	if(config.ContentionPerRAWSlotOnlyInFirstGroup)
-    		config.Nsta = totalSta / config.NGroup;
-    	else
-    		config.Nsta = totalSta;
-
-    	config.NRawSta = totalSta;
-    }
-
-    if (config.Nsta < config.nControlLoops * 2)
-    {
-    	std::cout << "Bad configuration: Number of stations must be at least double the number of control loops. Abort." << std::endl;
-    	return 0;
-    }
-
-
-    if (config.BeaconInterval % 1024 != 0 && config.BeaconInterval < 1024)
-    {
-    	//because its stored in the broadcast that way. If not it leads to rounding issues at the STA MAC causing them to be out of sync
-    	std::cout << "Bad configuration: Minimal beacon interval is 1024us and beacon interval must be divisible bz 1024. Abort." << std::endl;
-    	return 0;
-    }
-
-    // CONFIGURATION PARAMETERS
-    if(config.NRawSlotCount == -1)
-    {
-    	//config.NRawSlotCount = ceil(162 * 5 / config.NRawSlotNum);
-    	config.NRawSlotCount = (config.BeaconInterval - 500 * config.NRawSlotNum)/(120 * config.NRawSlotNum);
-    }
-
-
-    // For long RAW slots (slot format 1) max number of slots is < 8     =>   max RAW period <= 1 722 980 us
-    // For short RAW slots (slot format 0) max number of slots is < 64   =>   max RAW period <= 1 951 740 us
-    // Beacon interval should be the smallest multiple of 1024 larger or equal than RAW period
-
-    // Max NRawSlotCount is 2047 and min depends on the data rate.
-    if (config.NRawSlotCount >= 256 && config.NRawSlotCount < 2048)
-    {
-    	config.SlotFormat = 1;
-    	if (config.NRawSlotNum >= 8)
-    	{
-    		std::cout << "Bad configuration: if SlotFormat == 1 then NRawSlotNum must be < 8. Value NRawSlotNum = " << config.NRawSlotNum << " is invalid. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else if (config.NRawSlotCount > -1 && config.NRawSlotCount < 256)
-    {
-    	config.SlotFormat = 0;
-    	if (config.NRawSlotNum >= 64)
-    	{
-    		std::cout << "Bad configuration: if SlotFormat == 0 then NRawSlotNum must be < 64. Value NRawSlotNum = " << config.NRawSlotNum << " is invalid. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else
-    {
-    	std::cout << "Bad configuration: NRawSlotCount is at most 11 bits long, invalid value. Abort." << std::endl;
-    	return 0;
-    }
-    // check parameters = only for 2MHz
-    if (config.DataMode == "MCS2_0")
-    {
-    	if (config.NRawSlotCount < 15)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_0 is 15. Abort." << std::endl;
-    		return 0;
-    	}
-    	/*
-    case "MCS2_1": break;
-    case "MCS2_2": break;
-    case "MCS2_3": break;
-    case "MCS2_4": break;
-    case "MCS2_5": break;
-    case "MCS2_6": break;
-    case "MCS2_7": break;
-    case "MCS2_8": break;
-    case "MCS2_9": break;
-    case "MCS2_10": break;*/
-    }
-    else if (config.DataMode == "MCS2_1"){
-    	if (config.NRawSlotCount < 10)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_8 is 10. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else if (config.DataMode == "MCS2_2"){
-    	if (config.NRawSlotCount < 8)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_1 is 8. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else if (config.DataMode == "MCS2_3"){
-    	if (config.NRawSlotCount < 7)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_2 is 7. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else if (config.DataMode == "MCS2_4"){
-    	if (config.NRawSlotCount < 6)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_3 is 6. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else if (config.DataMode == "MCS2_5"){
-    	if (config.NRawSlotCount < 6)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_4 is 6. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else if (config.DataMode == "MCS2_6"){
-    	if (config.NRawSlotCount < 6)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_5 is 6. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else if (config.DataMode == "MCS2_7"){
-    	if (config.NRawSlotCount < 6)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_6 is 6. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-    else if (config.DataMode == "MCS2_8"){
-    	if (config.NRawSlotCount < 6)
-    	{
-    		std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_7 is 6. Abort." << std::endl;
-    		return 0;
-    	}
-    }
-
-    if(config.NRawSta == -1)
-    	config.NRawSta = config.Nsta;
-
-    if (config.NRawSlotNum * (500 + config.NRawSlotCount * 120) > config.BeaconInterval)
-    {
-    	std::cout << "Bad configuration: Raw period longer than beacon interval. Check NRawSlotNum, NRawSlotCount and BeaconInterval. Abort elegantly." << std::endl;
-    	return (EXIT_SUCCESS);
-    }
-    if (config.nControlLoops < 0)
-    {
-    	config.nControlLoops = config.Nsta / 2; // integer division ok
-    }
-    if (config.nControlLoops*2 > config.Nsta)
-    {
-    	std::cout << "Bad configuration: number of stations must be at least 2 * number of control loops. Abort elegantly." << std::endl;
-    	return (EXIT_SUCCESS);
-    }
-    // NRawSta should be divisible by NGroup
-    if (config.NRawSta % config.NGroup != 0)
-    {
-    	std::cout << "Bad configuration: NRawSta must be divisible by NGroup. Abort elegantly." << std::endl;
-    	return (EXIT_SUCCESS);
-    }
 
     stats = Statistics(config.Nsta);
 
@@ -320,12 +149,199 @@ int main(int argc, char** argv) {
     return (EXIT_SUCCESS);
 }
 
+bool calculateParameters (Configuration &config)
+{
+	bool good (true);
+	// calculate parameters
+	if(config.trafficPacketSize == -1)
+		config.trafficPacketSize = ((int)config.TCPSegmentSize - 100) < 0 ? 100 : (config.TCPSegmentSize - 100);
+
+	if(config.ContentionPerRAWSlot != -1)
+	{
+		// override the NSta based on the TIM groups and raw slot count
+		// to match the contention per slot.
+		int totalNrOfSlots = config.NGroup * config.NRawSlotNum;
+		int totalSta = totalNrOfSlots * (config.ContentionPerRAWSlot+1);
+
+		// only fill the first TIM group RAW if true, to reduce the number of stations overall
+		// to speed up the simulation. All the other TIM groups are behaving the same.
+		// Note that this is different from specifying only 1 TIM group because the DTIM cycle is still
+		// longer with more groups!
+		if(config.ContentionPerRAWSlotOnlyInFirstGroup)
+			config.Nsta = totalSta / config.NGroup;
+		else
+			config.Nsta = totalSta;
+
+		config.NRawSta = totalSta;
+	}
+
+	config.nControlLoops = config.Nsta / 2;
+	/*if (config.Nsta < config.nControlLoops * 2)
+	{
+		config.nControlLoops = config.Nsta / 2;
+		std::cout << "Number of stations:" << config.Nsta << " New number of control loops: " << config.nControlLoops << std::endl;
+	}*/
+	if (config.BeaconInterval % 1024 != 0)
+	{
+		//because its stored in the broadcast that way. If not it leads to rounding issues at the STA MAC causing them to be out of sync
+		config.BeaconInterval = ceil((config.BeaconInterval)/1024.)*1024;
+		std::cout << "New larger beacon interval divisible by 1024:" << config.BeaconInterval << std::endl;
+	}
+	/*if ( config.BeaconInterval < 1024*3 )
+	{
+		std::cout << "Bad configuration: Minimal beacon interval is 3072 for 1 slot and beacon interval must be divisible bz 1024." << std::endl;
+		do {
+			config.BeaconInterval += 1024;
+		}
+		while (config.BeaconInterval < 3072);
+		std::cout << "New larger beacon interval:" << config.BeaconInterval << std::endl;
+	}*/
+
+	// CONFIGURATION PARAMETERS
+	autoSetNRawSlotCount(config);
+
+
+	if(config.NRawSta == -1)
+		config.NRawSta = config.Nsta;
+
+	if (config.NRawSlotNum * (500 + config.NRawSlotCount * 120) > config.BeaconInterval)
+	{
+		std::cout << "Bad configuration: Raw period longer than beacon interval. Check NRawSlotNum, NRawSlotCount and BeaconInterval. Abort elegantly." << std::endl;
+		return (EXIT_SUCCESS);
+	}
+
+	if (config.nControlLoops*2 > config.Nsta)
+	{
+		std::cout << "Bad configuration: number of stations must be at least 2 * number of control loops. Abort elegantly." << std::endl;
+		return (EXIT_SUCCESS);
+	}
+	// NRawSta should be divisible by NGroup
+	if (config.NRawSta % config.NGroup != 0)
+	{
+		config.NRawSta = round(static_cast<double>(config.NRawSta/config.NGroup)) * config.NGroup;
+		std::cout << "Bad configuration: NRawSta must be divisible by NGroup. New NRawSta is "<< config.NRawSta << std::endl;
+	}
+	return good;
+}
+
+void autoSetNRawSlotCount (Configuration& config)
+{
+	if(config.NRawSlotCount == -1)
+	{
+		//config.NRawSlotCount = ceil(162 * 5 / config.NRawSlotNum);
+		config.NRawSlotCount = (config.BeaconInterval - 500 * config.NRawSlotNum)/(120 * config.NRawSlotNum);
+	}
+	// check parameters = only for 2MHz
+	if (config.DataMode == "MCS2_0")
+	{
+		if (config.NRawSlotCount < 15)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_0 is 15. Set to 15." << std::endl;
+			config.NRawSlotCount = 15;
+		}
+	}
+	else if (config.DataMode == "MCS2_1"){
+		if (config.NRawSlotCount < 10)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_8 is 10. Set to 10." << std::endl;
+			config.NRawSlotCount = 10;
+		}
+	}
+	else if (config.DataMode == "MCS2_2"){
+		if (config.NRawSlotCount < 8)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_1 is 8. Set to 8." << std::endl;
+			config.NRawSlotCount = 8;
+		}
+	}
+	else if (config.DataMode == "MCS2_3"){
+		if (config.NRawSlotCount < 7)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_2 is 7. Set to 7." << std::endl;
+			config.NRawSlotCount = 7;
+		}
+	}
+	else if (config.DataMode == "MCS2_4"){
+		if (config.NRawSlotCount < 6)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_3 is 6. Set to 6." << std::endl;
+			config.NRawSlotCount = 6;
+		}
+	}
+	else if (config.DataMode == "MCS2_5"){
+		if (config.NRawSlotCount < 6)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_4 is 6. Set to 6." << std::endl;
+			config.NRawSlotCount = 6;
+		}
+	}
+	else if (config.DataMode == "MCS2_6"){
+		if (config.NRawSlotCount < 6)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_5 is 6. Set to 6." << std::endl;
+			config.NRawSlotCount = 6;
+		}
+	}
+	else if (config.DataMode == "MCS2_7"){
+		if (config.NRawSlotCount < 6)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_6 is 6. Set to 6." << std::endl;
+			config.NRawSlotCount = 6;
+		}
+	}
+	else if (config.DataMode == "MCS2_8"){
+		if (config.NRawSlotCount < 6)
+		{
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_7 is 6. Set to 6." << std::endl;
+			config.NRawSlotCount = 6;
+		}
+	}
+	// For long RAW slots (slot format 1) max number of slots is < 8     =>   max RAW period <= 1 722 980 us
+	// For short RAW slots (slot format 0) max number of slots is < 64   =>   max RAW period <= 1 951 740 us
+	// Beacon interval should be the smallest multiple of 1024 larger or equal than RAW period
+
+	// Max NRawSlotCount is 2047 and min depends on the data rate.
+	if (config.NRawSlotCount >= 256 && config.NRawSlotCount < 2048)
+	{
+		config.SlotFormat = 1;
+		if (config.NRawSlotNum >= 8)
+		{
+			std::cout << "Bad configuration: if SlotFormat == 1 then NRawSlotNum must be < 8. Value NRawSlotNum = " << config.NRawSlotNum << " is invalid. New NRawSlotNum is 8." << std::endl;
+			config.NRawSlotNum = 7;
+			config.NRawSlotCount = -1;
+			autoSetNRawSlotCount (config);
+		}
+	}
+	else if (config.NRawSlotCount > -1 && config.NRawSlotCount < 256)
+	{
+		config.SlotFormat = 0;
+		if (config.NRawSlotNum >= 64)
+		{
+			std::cout << "Bad configuration: if SlotFormat == 0 then NRawSlotNum must be < 64. Value NRawSlotNum = " << config.NRawSlotNum << " is invalid. New NRawSlotNum is 63." << std::endl;
+			config.NRawSlotNum = 63;
+			config.NRawSlotCount = -1;
+			autoSetNRawSlotCount (config);
+		}
+	}
+	else if (config.NRawSlotCount >= 2048)
+	{
+		config.SlotFormat = 1;
+		config.NRawSlotCount = 2047;
+		while ((config.NRawSlotNum = config.BeaconInterval / (500 + 120 * config.NRawSlotCount)) == 0){
+			config.NRawSlotCount -= 10;
+			config.BeaconInterval += 1024;
+		}
+		autoSetNRawSlotCount (config);
+
+	}
+}
+
 void configureChannel() {
-    // setup wifi channel
-    YansWifiChannelHelper channelBuilder = YansWifiChannelHelper();
-    channelBuilder.AddPropagationLoss("ns3::LogDistancePropagationLossModel", "Exponent", DoubleValue(config.propagationLossExponent), "ReferenceLoss", DoubleValue(config.propagationLossReferenceLoss), "ReferenceDistance", DoubleValue(1.0));
-    channelBuilder.SetPropagationDelay("ns3::ConstantSpeedPropagationDelayModel");
-    channel = channelBuilder.Create();
+	// setup wifi channel
+	YansWifiChannelHelper channelBuilder = YansWifiChannelHelper();
+	channelBuilder.AddPropagationLoss("ns3::LogDistancePropagationLossModel", "Exponent", DoubleValue(config.propagationLossExponent), "ReferenceLoss", DoubleValue(config.propagationLossReferenceLoss), "ReferenceDistance", DoubleValue(1.0));
+	channelBuilder.SetPropagationDelay("ns3::ConstantSpeedPropagationDelayModel");
+	channel = channelBuilder.Create();
     channel->TraceConnectWithoutContext("Transmission", MakeCallback(&onChannelTransmission));
 }
 

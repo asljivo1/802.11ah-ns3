@@ -718,7 +718,7 @@ void S1gApWifiMac::SendOneBeacon(void) {
 		 for(int i = 31; i >= 0; i--)
 		 std::cout << ((vmap >> i) & 0x01);
 		 std::cout << std::endl;
-		 */
+*/
 
 		tim.SetPartialVBitmap(vmap);
 
