@@ -32,12 +32,12 @@ struct Configuration {
 	uint32_t trafficIntervalDeviation = 100; //1000 discuss with Jeroen
 	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
 
-	uint32_t Nsta = 56; //1 ----- 10,50,100,200,500,1000,10000
+	uint32_t Nsta = 20; //1 ----- 10,50,100,200,500,1000,10000
 	int NRawSta = -1; //-1
 	int SlotFormat = -1; //0;
-	int NRawSlotCount = 3000; //162;
-	uint32_t NRawSlotNum = 64; //broj slotova
-	uint32_t NGroup = 2;
+	int NRawSlotCount = -1; //162;
+	uint32_t NRawSlotNum = 5; //broj slotova
+	uint32_t NGroup = 2; // mora biti djeljenik od nsta dodati u checks
 
 
 	double simulationTime = 200;
@@ -51,7 +51,7 @@ struct Configuration {
 	int ContentionPerRAWSlot = -1; //-1
 	bool ContentionPerRAWSlotOnlyInFirstGroup = true; //false
 
-	double propagationLossExponent = 3.67; //3.76
+	double propagationLossExponent = 3.76; //3.67
 	double propagationLossReferenceLoss = 8;
 
 	bool APAlwaysSchedulesForNextSlot = false;
@@ -71,7 +71,7 @@ struct Configuration {
 	string NSSFile = "test.nss";
 
 	int trafficPacketSize = -1; //-1
-	string trafficType = "coap"; //tcpfirmware
+	string trafficType = "tcpipcamera"; //tcpfirmware
 
 	double ipcameraMotionPercentage = 1; //0.1
 	uint16_t ipcameraMotionDuration = 10; //60

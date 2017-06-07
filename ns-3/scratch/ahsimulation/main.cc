@@ -8,6 +8,7 @@ using namespace ns3;
 #define UNUSED_PARAM
 #endif /* GCC */
 
+//#define COAP_SIM
 NS_LOG_COMPONENT_DEFINE ("UdpOnHalow");
 
 
@@ -39,7 +40,6 @@ int main(int argc, char** argv) {
 
     while (!calculateParameters(config));
 
-
     stats = Statistics(config.Nsta);
 
     transmissionsPerTIMGroupAndSlotFromAPSinceLastInterval = vector<long>(config.NGroup * config.NRawSlotNum, 0);
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     // configure AP nodes
     configureAPNode(ssid);
 
-
+#ifdef COAP_SIM
     externalNodes.Create(1);
     externalNodes.Add(apNodes.Get(0));
 
@@ -81,17 +81,17 @@ int main(int argc, char** argv) {
 
     InternetStackHelper stack;
     stack.Install(externalNodes.Get(0));
-
+#endif
     //in ip stack one command
     // configure IP addresses
     configureIPStack();
-
+#ifdef COAP_SIM
     CoapServerHelper myServer(5683);
     serverApp = myServer.Install(externalNodes.Get(0));
     //serverApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&coapPacketReceivedAtServer));
     serverApp.Start(Seconds(0));
     serverApp.Stop (Seconds (config.simulationTime));
-
+#endif
     // prepopulate routing tables and arp cache
     if (!config.useV6)
     {
@@ -102,8 +102,6 @@ int main(int argc, char** argv) {
     {
     	PopulateNdiscCache(true);
     }
-
-
 
     // configure tracing for associations & other metrics
     configureNodes();
@@ -204,11 +202,8 @@ bool calculateParameters (Configuration &config)
 	if(config.NRawSta == -1)
 		config.NRawSta = config.Nsta;
 
-	if (config.NRawSlotNum * (500 + config.NRawSlotCount * 120) > config.BeaconInterval)
-	{
-		std::cout << "Bad configuration: Raw period longer than beacon interval. Check NRawSlotNum, NRawSlotCount and BeaconInterval. Abort elegantly." << std::endl;
-		return (EXIT_SUCCESS);
-	}
+	while (config.NRawSlotNum * (500 + config.NRawSlotCount * 120) > config.BeaconInterval)
+		config.BeaconInterval += 1024 * 2;
 
 	if (config.nControlLoops*2 > config.Nsta)
 	{
@@ -236,63 +231,63 @@ void autoSetNRawSlotCount (Configuration& config)
 	{
 		if (config.NRawSlotCount < 15)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_0 is 15. Set to 15." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_0 is " << config.NRawSlotCount << ". Set to 15." << std::endl;
 			config.NRawSlotCount = 15;
 		}
 	}
 	else if (config.DataMode == "MCS2_1"){
 		if (config.NRawSlotCount < 10)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_8 is 10. Set to 10." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_8 is " << config.NRawSlotCount << ". Set to 10." << std::endl;
 			config.NRawSlotCount = 10;
 		}
 	}
 	else if (config.DataMode == "MCS2_2"){
 		if (config.NRawSlotCount < 8)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_1 is 8. Set to 8." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_1 is " << config.NRawSlotCount << ". Set to 8." << std::endl;
 			config.NRawSlotCount = 8;
 		}
 	}
 	else if (config.DataMode == "MCS2_3"){
 		if (config.NRawSlotCount < 7)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_2 is 7. Set to 7." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_2 is " << config.NRawSlotCount << ". Set to 7." << std::endl;
 			config.NRawSlotCount = 7;
 		}
 	}
 	else if (config.DataMode == "MCS2_4"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_3 is 6. Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_3 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
 	else if (config.DataMode == "MCS2_5"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_4 is 6. Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_4 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
 	else if (config.DataMode == "MCS2_6"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_5 is 6. Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_5 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
 	else if (config.DataMode == "MCS2_7"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_6 is 6. Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_6 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
 	else if (config.DataMode == "MCS2_8"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_7 is 6. Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_7 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
@@ -332,7 +327,6 @@ void autoSetNRawSlotCount (Configuration& config)
 			config.BeaconInterval += 1024;
 		}
 		autoSetNRawSlotCount (config);
-
 	}
 }
 
@@ -622,10 +616,10 @@ void configureIPStack() {
     	address.SetBase("192.168.0.0", "255.255.0.0");
     	staNodeInterfaces = address.Assign(staDevices);
     	apNodeInterfaces = address.Assign(apDevices);
-
+#ifdef COAP_SIM
     	address.SetBase("169.200.0.0", "255.255.0.0");
         externalInterfaces = address.Assign (externalDevices);
-
+#endif
     }
     else
     {
@@ -649,10 +643,10 @@ void configureIPStack() {
     		Mac48Address addr48 = Mac48Address::ConvertFrom(sixStaDevices.Get(i)->GetAddress());
     		std::cout << "  Node #" << i << "  --IPv6: "<< staNodeInterfaces6.GetAddress(i,0) << "--MAC: " << addr48 	<< std::endl;
     	}*/
-
+#ifdef COAP_SIM
     	address6.SetBase("2001:2::", Ipv6Prefix (64));
         externalInterfaces6 = address6.Assign (externalDevices);
-
+#endif
         for (uint32_t i=0; i<staNodes.GetN(); i++)
         	staNodes.Get(i)->GetObject<Icmpv6L4Protocol> ()->SetAttribute ("DAD", BooleanValue (false));
         apNodes.Get(0)->GetObject<Icmpv6L4Protocol> ()->SetAttribute ("DAD", BooleanValue (false));
