@@ -863,6 +863,7 @@ void configureTCPPingPongClients() {
 		staNodes.Get(i)->AddApplication(tcpClient);
 		auto clientApp = ApplicationContainer(tcpClient);
 		wireTCPClient(clientApp,i);
+		nodes[i]->m_nodeType = NodeEntry::CLIENT;
 
 		double random = m_rv->GetValue(0, config.trafficInterval);
 		clientApp.Start(MilliSeconds(0+random));
@@ -904,6 +905,7 @@ void configureTCPIPCameraClients() {
 	for (uint16_t i = 0; i < config.Nsta; i++) {
 		Ptr<Application> tcpClient = factory.Create<TCPIPCameraClient>();
 		staNodes.Get(i)->AddApplication(tcpClient);
+		nodes[i]->m_nodeType = NodeEntry::CLIENT;
 		auto clientApp = ApplicationContainer(tcpClient);
 		wireTCPClient(clientApp,i);
 		clientApp.Start(MilliSeconds(0));
@@ -941,6 +943,7 @@ void configureTCPFirmwareClients() {
 	for (uint16_t i = 0; i < config.Nsta; i++) {
 		Ptr<Application> tcpClient = factory.Create<TCPFirmwareClient>();
 		staNodes.Get(i)->AddApplication(tcpClient);
+		nodes[i]->m_nodeType = NodeEntry::CLIENT;
 		auto clientApp = ApplicationContainer(tcpClient);
 		wireTCPClient(clientApp,i);
 
@@ -977,6 +980,7 @@ void configureTCPSensorClients() {
 	for (uint16_t i = 0; i < config.Nsta; i++) {
 		Ptr<Application> tcpClient = factory.Create<TCPSensorClient>();
 		staNodes.Get(i)->AddApplication(tcpClient);
+		nodes[i]->m_nodeType = NodeEntry::CLIENT;
 		auto clientApp = ApplicationContainer(tcpClient);
 		wireTCPClient(clientApp,i);
 
@@ -1043,6 +1047,7 @@ void configureTCPEchoClientHelper(TcpEchoClientHelper& clientHelper){
 	for (uint16_t i = 0; i < config.Nsta; i++) {
 		ApplicationContainer clientApp = clientHelper.Install(staNodes.Get(i));
 		wireTCPClient(clientApp,i);
+		nodes[i]->m_nodeType = NodeEntry::CLIENT;
 
 		double random = m_rv->GetValue(0, config.trafficInterval);
 		clientApp.Start(MilliSeconds(0+random));
@@ -1063,6 +1068,7 @@ void configureUDPClients() {
     for (uint16_t i = 0; i < config.Nsta; i++) {
         ApplicationContainer clientApp = clientHelper.Install(staNodes.Get(i));
         clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnUdpPacketSent, nodes[i]));
+		nodes[i]->m_nodeType = NodeEntry::CLIENT;
 
 		double random = m_rv->GetValue(0, config.trafficInterval);
 		clientApp.Start(MilliSeconds(0+random));
@@ -1097,6 +1103,7 @@ void configureUdpEchoClientHelper(UdpEchoClientHelper& clientHelper){
 		ApplicationContainer clientApp = clientHelper.Install(staNodes.Get(i));
 		clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnUdpPacketSent, nodes[i]));
 		clientApp.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&NodeEntry::OnUdpEchoPacketReceived, nodes[i]));
+		nodes[i]->m_nodeType = NodeEntry::CLIENT;
 
 		double random = m_rv->GetValue(0, config.trafficInterval);
 		clientApp.Start(MilliSeconds(0+random));

@@ -845,7 +845,7 @@ void S1gApWifiMac::Receive(Ptr<Packet> packet, const WifiMacHeader *hdr) {
 						DeaggregateAmsduAndForward(packet, hdr);
 						packet = 0;
 					} else {
-						std::cout << "forwarding frame from=" << from << ", to=" << to << " at " << Simulator::Now() << std::endl;
+						//std::cout << "forwarding frame from=" << from << ", to=" << to << " at " << Simulator::Now() << std::endl;
 						ForwardUp(packet, from, bssid);
 					}
 				} else {
