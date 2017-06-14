@@ -41,7 +41,7 @@
                                         <div class="scrollTable">
                                             <table class="table">
                                                 <tr>
-                                                    <td>Current time (ms)</td>
+                                                    <td>Current time [ms]</td>
                                                     <td id="simCurrentTime">---</td>
                                                 </tr>
 
@@ -51,15 +51,15 @@
                                                 </tr>
 
                                                 <tr class="configProperty" data-property="trafficInterval">
-                                                    <td>Traffic interval (in ms)</td>
+                                                    <td>Traffic interval [ms]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="trafficIntervalDeviation">
-                                                    <td>Traffic interval deviation (in ms)</td>
+                                                    <td>Traffic interval deviation [ms]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="trafficPacketsize">
-                                                    <td>Traffic Packet size (in bytes)</td>
+                                                    <td>Traffic Packet size [bytes]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="trafficType">
@@ -79,25 +79,25 @@
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="maxTimeOfPacketsInQueue">
-                                                    <td>Max. time of packets in MAC Queue (sec)</td>
+                                                    <td>Max. time of packets in MAC Queue [s]</td>
                                                     <td>---</td>
                                                 </tr>
 
                                                 <tr class="configProperty" data-property="ipCameraMotionPercentage">
-                                                    <td>IP Camera Motion Probability (each sec)</td>
+                                                    <td>IP Camera Motion Probability per second</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="ipCameraMotionDuration">
-                                                    <td>IP Camera Motion Duration (sec)</td>
+                                                    <td>IP Camera Motion Duration [s]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="firmwareSize">
-                                                    <td>Firmware size (bytes)</td>
+                                                    <td>Firmware size [bytes]</td>
                                                     <td>---</td>
                                                 </tr>
 
                                                 <tr class="configProperty" data-property="firmwareBlockSize">
-                                                    <td>Firmware block size (bytes)</td>
+                                                    <td>Firmware block size [bytes]</td>
                                                     <td>---</td>
                                                 </tr>
 
@@ -112,11 +112,11 @@
                                                 </tr>
 
                                                 <tr class="configProperty" data-property="sensorMeasurementSize">
-                                                    <td>Sensor measurement size (bytes)</td>
+                                                    <td>Sensor measurement size [bytes]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="cooldownPeriod">
-                                                    <td>Cooldown period (sec)</td>
+                                                    <td>Cooldown period [s]</td>
                                                     <td>---</td>
                                                 </tr>
                                             </table>
@@ -127,7 +127,7 @@
                                         <div class="scrollTable">
                                             <table class="table">
                                                 <tr class="configProperty" data-property="beaconInterval">
-                                                    <td>Beacon interval (in µs)</td>
+                                                    <td>Beacon interval [µs]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="apAlwaysSchedulesForNextSlot">
@@ -150,8 +150,12 @@
                                                     <td>Number of backoff slots in RAW</td>
                                                     <td>---</td>
                                                 </tr>
+                                                <tr class="configProperty" data-property="RAWSlotCount">
+                                                    <td>RAW Slot Count</td>
+                                                    <td>---</td>
+                                                </tr>
                                                 <tr class="configProperty" data-property="RAWSlotDuration">
-                                                    <td>RAW Slot duration (in µs)</td>
+                                                    <td>RAW Slot Duration [µs]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="nrSta">
@@ -172,15 +176,15 @@
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="tcpSegmentSize">
-                                                    <td>TCP Segment size (bytes)</td>
+                                                    <td>TCP Segment size [bytes]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="tcpInitialSlowStartThreshold">
-                                                    <td>TCP Initial slow start threshold (segments)</td>
+                                                    <td>TCP Initial slow start threshold [segments]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="tcpInitialCWnd">
-                                                    <td>TCP Initial Congestion window (segments)</td>
+                                                    <td>TCP Initial Congestion window [segments]</td>
                                                     <td>---</td>
                                                 </tr>
                                             </table>
@@ -219,7 +223,7 @@
                                                     <th colspan="2"><span>-</span> Performance</th>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-max="*" data-min="0" data-property="goodputKbit" data-type="HIGHER_IS_BETTER">
-                                                    <td>Goodput (kbit)</td>
+                                                    <td>Goodput [kbit/s]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="nrOfSentPackets">
@@ -235,11 +239,11 @@
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-max="*" data-min="0" data-property="avgSentReceiveTime" data-type="LOWER_IS_BETTER">
-                                                    <td>Average time between sent/receive (ms)</td>
+                                                    <td>Average time between sent/receive [ms]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="avgRoundtripTime" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
-                                                    <td>Average round trip time (ms)</td>
+                                                    <td>Average round trip time [ms]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-max="*" data-min="0" data-property="nrOfDroppedPackets" data-type="LOWER_IS_BETTER">
@@ -250,16 +254,24 @@
                                                     <td>Number of missed beacons</td>
                                                     <td>---</td>
                                                 </tr>
+                                                <tr class="chartProperty nodeProperty" data-property="jitter" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
+                                                    <td>Jitter (deviation from average RTT) [µs]</td>
+                                                    <td>---</td>
+                                                </tr>
+                                                <tr class="chartProperty nodeProperty" data-property="reliability" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
+                                                    <td>Reliability [%]</td>
+                                                    <td>---</td>
+                                                </tr>
 
                                                 <tr class="header">
                                                     <th colspan="2"><span>-</span> Transmission</th>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty selected" data-property="totalTransmitTime">
-                                                    <td>Total transmit time (ms)</td>
+                                                    <td>Total transmit time [ms]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="nrOfTransmissions">
-                                                    <td>Number of transmission</td>
+                                                    <td>Number of transmissions</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="nrOfTransmissionsDropped">
@@ -280,14 +292,6 @@
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="numberofMACTxMissedACKAndDroppedPacket" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
                                                     <td>Number of MAC TX missed ACK and dropped packet</td>
-                                                    <td>---</td>
-                                                </tr>
-                                                <tr class="chartProperty nodeProperty" data-property="jitter" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
-                                                    <td>Jitter measured as deviation from average RTT [µs]</td>
-                                                    <td>---</td>
-                                                </tr>
-                                                <tr class="chartProperty nodeProperty" data-property="reliability" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
-                                                    <td>Reliability</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="interPacketDelayAtServer" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
@@ -324,15 +328,15 @@
                                                     <th colspan="2"><span>-</span> Reception</th>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="totalReceiveTime">
-                                                    <td>Total receive time (ms)</td>
+                                                    <td>Total receive time [ms]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="totalDozeTime" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
-                                                    <td>Total doze time (ms)</td>
+                                                    <td>Total doze time [ms]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="totalActiveTime">
-                                                    <td>Total active time (ms)</td>
+                                                    <td>Total active time [ms]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="nrOfReceives">
@@ -357,11 +361,11 @@
                                                 </tr>
 
                                                 <tr class="chartProperty nodeProperty" data-property="tcpCongestionWindow" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
-                                                    <td>Congestion window (segments)</td>
+                                                    <td>Congestion window [segments]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="tcpRTO" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
-                                                    <td>Retransmission timeout (RTO) (µs)</td>
+                                                    <td>Retransmission timeout (RTO) [µs]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="numberOfTCPRetransmissions" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
@@ -373,15 +377,15 @@
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="tcpSlowStartThreshold" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
-                                                    <td>Slow start threshold (segments)</td>
+                                                    <td>Slow start threshold [segments]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="tcpEstimatedBandwidth" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
-                                                    <td>Estimated bandwidth (segments)</td>
+                                                    <td>Estimated bandwidth [segments]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="tcpRTT" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
-                                                    <td>Round trip time (RTT) (µs)</td>
+                                                    <td>Round trip time (RTT) [µs]</td>
                                                     <td>---</td>
                                                 </tr>
 
@@ -399,7 +403,7 @@
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="avgRemainingSlotTimeWhenAPSendingInSameSlot" data-max="*" data-min="0"
                                                     data-type="HIGHER_IS_BETTER">
-                                                    <td>Avg. rem. slot time when sending packets immediately (µs)</td>
+                                                    <td>Avg. rem. slot time when sending packets immediately [µs]</td>
                                                     <td>---</td>
                                                 </tr>
 
@@ -407,15 +411,15 @@
                                                     <th colspan="2"><span>-</span> Application</th>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="ipCameraSendingRate" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
-                                                    <td>Avg. ip camera sending rate (kbit/s)</td>
+                                                    <td>Avg. ip camera sending rate [kbit/s]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="ipCameraReceivingRate" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
-                                                    <td>Avg. ip camera receiving rate at AP (kbit/s)</td>
+                                                    <td>Avg. ip camera receiving rate at AP [kbit/s]</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="chartProperty nodeProperty" data-property="firmwareTransferTime" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
-                                                    <td>Time it took to transfer firmware completely (µs)</td>
+                                                    <td>Time it took to transfer firmware completely [µs]</td>
                                                     <td>---</td>
                                                 </tr>
                                             </table>

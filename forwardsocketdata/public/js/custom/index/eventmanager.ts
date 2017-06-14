@@ -25,13 +25,13 @@ class EventManager {
 
             switch (ev.parts[1]) {
                 case 'start':
-                    this.onStart(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), ev.parts[4], parseInt(ev.parts[5]),
-                        parseInt(ev.parts[6]), ev.parts[7], parseFloat(ev.parts[8]), parseFloat(ev.parts[9]),
-                        parseInt(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), ev.parts[13],
-                        parseFloat(ev.parts[14]), parseFloat(ev.parts[15]), ev.parts[16], parseInt(ev.parts[17]), parseInt(ev.parts[18]), ev.parts[19], parseInt(ev.parts[20]),
-                        parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), parseInt(ev.parts[25]), parseInt(ev.parts[26]), parseInt(ev.parts[27]),
-                        parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseInt(ev.parts[30]), parseInt(ev.parts[31]), parseFloat(ev.parts[32]), parseFloat(ev.parts[33]),
-                        parseInt(ev.parts[34]), parseInt(ev.parts[35]), parseInt(ev.parts[36]));
+                    this.onStart(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), ev.parts[4], parseInt(ev.parts[5]), parseInt(ev.parts[6]),
+                        parseInt(ev.parts[7]), ev.parts[8], parseFloat(ev.parts[9]), parseFloat(ev.parts[10]),
+                        parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), ev.parts[14],
+                        parseFloat(ev.parts[15]), parseFloat(ev.parts[16]), ev.parts[17], parseInt(ev.parts[18]), parseInt(ev.parts[19]), ev.parts[20], parseInt(ev.parts[21]),
+                        parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), parseInt(ev.parts[25]), parseInt(ev.parts[26]), parseInt(ev.parts[27]), parseInt(ev.parts[28]),
+                        parseInt(ev.parts[29]), parseInt(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseFloat(ev.parts[33]), parseFloat(ev.parts[34]),
+                        parseInt(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]));
                     break;
 
                 case 'stanodeadd':
@@ -118,7 +118,7 @@ class EventManager {
         this.events.push(ev);
     }
 
-    onStart(stream: string, aidRAWRange: number, numberOfRAWGroups: number, RAWSlotFormat: string, RAWSlotDuration: number, numberOfRAWSlots: number,
+    onStart(stream: string, aidRAWRange: number, numberOfRAWGroups: number, RAWSlotFormat: string, RAWSlotCount: number, RAWSlotDuration: number, numberOfRAWSlots: number,
         dataMode: string, dataRate: number, bandwidth: number, trafficInterval: number, trafficPacketsize: number, beaconInterval: number,
         name: string, propagationLossExponent: number, propagationLossReferenceLoss: number, apAlwaysSchedulesForNextSlot: string, minRTO: number, simulationTime: number,
         trafficType: string, trafficIntervalDeviation: number, tcpSegmentSize: number, tcpInitialSlowStartThreshold: number, tcpInitialCWnd: number,
@@ -143,6 +143,7 @@ class EventManager {
         config.numberOfRAWGroups = numberOfRAWGroups;
         config.RAWSlotFormat = RAWSlotFormat;
         config.numberOfRAWSlots = numberOfRAWSlots;
+        config.RAWSlotCount = RAWSlotCount;
         config.RAWSlotDuration = RAWSlotDuration;
         config.dataMode = dataMode;
         config.dataRate = dataRate;

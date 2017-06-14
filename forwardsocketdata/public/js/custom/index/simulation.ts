@@ -102,12 +102,12 @@ class NodeValue {
     ipCameraReceivingRate: number = 0;
     numberOfTransmissionsCancelledDueToCrossingRAWBoundary: number = 0;
 
-    jitter: number = 0;
+    jitter: number;
     reliability: number = 0;
-    interPacketDelayAtServer: number = 0;
-    interPacketDelayAtClient: number = 0;
-    interPacketDelayDeviationPercentageAtServer: number = 0;
-    interPacketDelayDeviationPercentageAtClient: number = 0;
+    interPacketDelayAtServer: number;
+    interPacketDelayAtClient: number;
+    interPacketDelayDeviationPercentageAtServer: number;
+    interPacketDelayDeviationPercentageAtClient: number;
 }
 
 class APNode extends SimulationNode {
@@ -128,6 +128,7 @@ class SimulationConfiguration {
 
     RAWSlotFormat: string;
     numberOfRAWSlots: number;
+    RAWSlotCount: number;
     RAWSlotDuration: number;
 
     dataMode: string;
