@@ -363,6 +363,7 @@ void NodeEntry::OnTcpEchoPacketReceived(Ptr<const Packet> packet, Address from) 
 	}
 
 	stats->get(this->id).NumberOfSuccessfulRoundtripPackets++;
+	this->UpdateJitter(Simulator::Now() - this->timeSent);
 
 	/*
 	try {
@@ -543,6 +544,9 @@ void NodeEntry::OnUdpEchoPacketReceived(Ptr<const Packet> packet, Address from) 
 			stats->get(this->id).NumberOfSuccessfulRoundtripPacketsWithSeqHeader++;
 		stats->get(this->id).NumberOfSuccessfulRoundtripPackets++;
 		stats->get(this->id).TotalPacketRoundtripTime += timeDiff;
+		// RT jitter calculation [server to client direction]
+		this->UpdateJitter(Simulator::Now() - this->timeSent);
+
 	} catch (std::runtime_error e) {
 		// packet fragmentation, unable to get the header from fragements
 	}
@@ -552,7 +556,26 @@ void NodeEntry::OnCoapPacketSent(Ptr<const Packet> packet) {
 	unused(packet);
 	stats->get(this->id).NumberOfSentPackets++;
 }
+void NodeEntry::UpdateJitter (Time timeDiff)
+{
+	if (stats->get(this->id).NumberOfSuccessfulRoundtripPackets == 1)
+	{
+		delayFirst = timeDiff;
+	}
+	else
+	{
+		delaySecond = timeDiff;
+		Time var = Abs(delayFirst - delaySecond);
+		stats->get (this->id).jitter = var;
+		stats->get (this->id).jitterAcc += pow (var.GetMilliSeconds (), 2);
+		if (NodeEntry::maxJitter < var)
+			NodeEntry::maxJitter = var;
+		if (NodeEntry::minJitter > var)
+			NodeEntry::minJitter = var;
+		delayFirst = delaySecond;
 
+	}
+}
 void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 	unused(from);
 	auto pCopy = packet->Copy();
@@ -567,10 +590,10 @@ void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 
 		stats->get(this->id).NumberOfSuccessfulRoundtripPackets++;
 		stats->get(this->id).TotalPacketRoundtripTime += timeDiff; //time from S to C is accumulated here and later added to the time from C to S
-		timeDiff = (Simulator::Now() - this->timeSent);
+		this->UpdateJitter(Simulator::Now() - this->timeSent);
 
 		// RT jitter calculation [server to client direction]
-		if (stats->get(this->id).NumberOfSuccessfulRoundtripPackets == 1)
+		/*if (stats->get(this->id).NumberOfSuccessfulRoundtripPackets == 1)
 		{
 			delayFirst = timeDiff;
 		}
@@ -586,7 +609,7 @@ void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 				NodeEntry::minJitter = var;
 			delayFirst = delaySecond;
 
-		}
+		}*/
 
 		uint32_t currentSequenceNumber = seqTs.GetSeq();
 	    //cout << "============================================================================ Client " << this->id << " received seq" << currentSequenceNumber << endl;

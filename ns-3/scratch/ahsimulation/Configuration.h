@@ -25,19 +25,19 @@ struct Configuration {
 	 * CoAP configuration parameters
 	 * */
 	bool useV6 = false; //false
-	uint32_t nControlLoops = 28;
+	uint32_t nControlLoops = 10;
 	uint32_t coapPayloadSize = 15;
 	uint32_t BeaconInterval = 102400; //102400 25600 us
-	uint32_t trafficInterval = 30000; //ms 55,110,210,310,410,515,615,720,820,950,1024 beacon interval *4
-	uint32_t trafficIntervalDeviation = 1000; //1000 discuss with Jeroen
+	uint32_t trafficInterval = 1000; //ms 55,110,210,310,410,515,615,720,820,950,1024 beacon interval *4
+	uint32_t trafficIntervalDeviation = 100; //1000 discuss with Jeroen
 	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
 
-	uint32_t Nsta = 512; //1 ----- 10,50,100,200,500,1000,10000
+	uint32_t Nsta = 20; //1 ----- 10,50,100,200,500,1000,10000
 	int NRawSta = -1; //-1
 	int SlotFormat = -1; //0;
-	int NRawSlotCount = -1; //162;
-	uint32_t NRawSlotNum = 2; //broj slotova
-	uint32_t NGroup = 4; // mora biti djeljenik od nsta dodati u checks
+	int NRawSlotCount = 36; //162;
+	uint32_t NRawSlotNum = 4; //broj slotova
+	uint32_t NGroup = 1; // mora biti djeljenik od nsta dodati u checks
 
 
 	double simulationTime = 200;
@@ -71,7 +71,7 @@ struct Configuration {
 	string NSSFile = "test.nss";
 
 	int trafficPacketSize = 4096; //-1
-	string trafficType = "udpecho"; //tcpfirmware
+	string trafficType = "coap"; //tcpfirmware
 
 	double ipcameraMotionPercentage = 1; //0.1
 	uint16_t ipcameraMotionDuration = 10; //60

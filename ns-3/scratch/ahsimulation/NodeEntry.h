@@ -130,6 +130,7 @@ private:
 
 
     void OnEndOfReceive(Ptr<const Packet> packet);
+    void UpdateJitter (Time timeDiff);
 
     bool tcpConnectedAtSTA = true;
     bool tcpConnectedAtAP = true;

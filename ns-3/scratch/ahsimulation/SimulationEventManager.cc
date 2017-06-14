@@ -29,6 +29,7 @@ void SimulationEventManager::onStart(Configuration& config) {
 		  std::to_string(config.NGroup),
 		  std::to_string(config.SlotFormat),
 		  std::to_string(config.NRawSlotCount),
+		  std::to_string(config.NRawSlotCount * 120 + 500),
 		  std::to_string(config.NRawSlotNum),
 
 		  config.DataMode,
@@ -213,6 +214,7 @@ void SimulationEventManager::onStartHeader() {
 		   "NGroup",
 		   "SlotFormat",
 		   "NRawSlotCount",
+		   "NRawSlotDuration",
 		   "NRawSlotNum",
 		   "DataMode",
 		   "",

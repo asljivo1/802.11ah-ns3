@@ -236,11 +236,18 @@ bool CoapClient::PrepareContext(void)
 		  m_coapCtx = coap_new_context(&srcAddr);
 	  }
 
-	  m_coapCtx->network_send = CoapClient::coap_network_send;
-
-	  m_coapCtx->ns3_coap_client_obj_ptr = this;
-	  if (m_coapCtx) return true;
-	  else return false;
+	  try
+	  {
+		  m_coapCtx->network_send = CoapClient::coap_network_send;
+		  m_coapCtx->ns3_coap_client_obj_ptr = this;
+		  if (m_coapCtx) return true;
+		  else return false;
+	  }
+	  catch(...)
+	  {
+		  std::cout << "m_coapCtx->network_send = CoapClient::coap_network_send raises an exception. Try again..." << std::endl;
+		  PrepareContext();
+	  }
 }
 
 void

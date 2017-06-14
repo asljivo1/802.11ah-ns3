@@ -238,56 +238,56 @@ void autoSetNRawSlotCount (Configuration& config)
 	else if (config.DataMode == "MCS2_1"){
 		if (config.NRawSlotCount < 10)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_8 is " << config.NRawSlotCount << ". Set to 10." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_1 is " << config.NRawSlotCount << ". Set to 10." << std::endl;
 			config.NRawSlotCount = 10;
 		}
 	}
 	else if (config.DataMode == "MCS2_2"){
 		if (config.NRawSlotCount < 8)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_1 is " << config.NRawSlotCount << ". Set to 8." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_2 is " << config.NRawSlotCount << ". Set to 8." << std::endl;
 			config.NRawSlotCount = 8;
 		}
 	}
 	else if (config.DataMode == "MCS2_3"){
 		if (config.NRawSlotCount < 7)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_2 is " << config.NRawSlotCount << ". Set to 7." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_3 is " << config.NRawSlotCount << ". Set to 7." << std::endl;
 			config.NRawSlotCount = 7;
 		}
 	}
 	else if (config.DataMode == "MCS2_4"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_3 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_4 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
 	else if (config.DataMode == "MCS2_5"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_4 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
+			std::cerr << "Bad configuration: Minimal NRawSlotCount for MCS2_5 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
 	else if (config.DataMode == "MCS2_6"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_5 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_6 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
 	else if (config.DataMode == "MCS2_7"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_6 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_7 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
 	else if (config.DataMode == "MCS2_8"){
 		if (config.NRawSlotCount < 6)
 		{
-			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_7 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
+			std::cout << "Bad configuration: Minimal NRawSlotCount for MCS2_8 is " << config.NRawSlotCount << ". Set to 6." << std::endl;
 			config.NRawSlotCount = 6;
 		}
 	}
@@ -450,7 +450,7 @@ void configureSTANodes(Ssid& ssid) {
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(staNodes);
 
-    //phy.EnablePcap("stafile", staNodes, 0);
+    phy.EnablePcap("stafile", staNodes, 0);
 }
 
 void OnAPPhyRxDrop(std::string context, Ptr<const Packet> packet, DropReason reason) {

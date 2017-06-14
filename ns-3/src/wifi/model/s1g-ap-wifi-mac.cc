@@ -694,7 +694,6 @@ void S1gApWifiMac::SendOneBeacon(void) {
 
 		for (auto& pair : macToAIDMap) {
 			uint16_t aId = pair.second;
-
 			if (pendingDataSizeForStations.at(aId - 1) > 0) {
 				int group = strategy->GetTIMGroupFromAID(aId, m_rawGroupInterval);
 				vmap = vmap | (1 << group);

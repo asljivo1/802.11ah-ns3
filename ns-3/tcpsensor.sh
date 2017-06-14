@@ -1,5 +1,5 @@
 ./waf --run "scratch/ahsimulation/ahsimulation"\
-" --Nsta=512"\
+" --Nsta=20"\
 " --NGroup=4"\
 " --NRawSlotNum=5"\
 " --DataMode=\"MCS2_0\""\
@@ -8,8 +8,8 @@
 " --PropagationLossExponent=3.67"\
 " --MaxTimeOfPacketsInQueue=10000"\
 " --SimulationTime=200"\
-" --TrafficPacketSize=256"\
-" --TrafficInterval=10000"\
+" --TrafficPacketSize=112"\
+" --TrafficInterval=30000"\
 " --TrafficIntervalDeviation=1000"\
 " --TrafficType=\"tcpsensor\""\
 " --SensorMeasurementSize=54"\

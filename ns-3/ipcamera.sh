@@ -4,7 +4,7 @@
 " --NRawSlotNum=5"\
 " --DataMode=\"MCS2_8\""\
 " --Rho=\"100\""\
-" --ContentionPerRAWSlot=1"\
+" --ContentionPerRAWSlot=0"\
 #" --ContentionPerRAWSlotOnlyInFirstGroup=false"\
 " --PropagationLossExponent=3.67"\
 " --MaxTimeOfPacketsInQueue=10000"\
