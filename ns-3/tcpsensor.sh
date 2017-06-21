@@ -24,7 +24,7 @@
 " --APScheduleTransmissionForNextSlotIfLessThan=5000"\
 " --NRawSta=96"\
 " --VisualizerIP=\"10.0.2.15\""\
-" --VisualizerPort=7707"\
+" --VisualizerPort=7708"\
 " --VisualizerSamplingInterval=1"\
 " --APPcapFile=\"appcap\""\
 " --NSSFile=\"test.nss\""\
