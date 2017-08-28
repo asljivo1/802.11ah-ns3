@@ -235,6 +235,7 @@ bool CoapClient::PrepareContext(void)
 		  srcAddr.addr.sin.sin_addr.s_addr = inet_addr("::");
 		  m_coapCtx = coap_new_context(&srcAddr);
 	  }
+	  NS_ASSERT(m_coapCtx != NULL);
 
 	  try
 	  {
@@ -337,7 +338,7 @@ CoapClient::PrepareMsg (void)
 	// Measurement size of 100B - 12(seqTs) -2-4 m_size - 12
 	if (m_size < 14)
 	{
-		NS_LOG_WARN("Packet size too small for payload. Payload is 14B at least so packet size should be equal or larger.");
+		NS_LOG_WARN("Minimum payload needs to be 14 because we store timing information in that payload.");
 		return;
 	}
 	std::string payload(m_size-2-12, '1');
@@ -411,7 +412,7 @@ CoapClient::Send (uint8_t *data, size_t datalen)
 			++m_sent;
 
 			NS_LOG_INFO ("At time "<< (Simulator::Now ()).GetSeconds ()<< "s client sent " << p->GetSize() << " bytes to "
-					<< peerAddressStringStream.str () << " Uid: " << p->GetUid ());
+					<< peerAddressStringStream.str () << " Uid: " << p->GetUid () << " seq = " << m_sent);
 			retval = p->GetSize();
 			/*std::cout << "+++++++++++++++++++++++++++++++++++++Token for dst " << peerAddressStringStream.str () << " is " << m_token;
 			for (uint32_t l = 0; l < 8; l++){
@@ -553,18 +554,18 @@ void CoapClient::HandleRead(Ptr<Socket> socket) {
 	while ((packet = socket->RecvFrom(from))) {
 		m_packetReceived(packet, from);
 
-		if (InetSocketAddress::IsMatchingType (from)) {
-			NS_LOG_INFO(
-					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << InetSocketAddress::ConvertFrom (from).GetIpv4 ()
-					<< " port " << InetSocketAddress::ConvertFrom (from).GetPort () << " Uid: " << packet->GetUid());
-		} else if (Inet6SocketAddress::IsMatchingType(from)) {
-			NS_LOG_INFO(
-					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << Inet6SocketAddress::ConvertFrom (from).GetIpv6 ()
-					<< " port " << Inet6SocketAddress::ConvertFrom (from).GetPort () << " Uid: " << packet->GetUid());
-		}
 #ifdef WITH_SEQ_TS
 		SeqTsHeader seqTs;
 		packet->RemoveHeader(seqTs);
+		if (InetSocketAddress::IsMatchingType (from)) {
+			NS_LOG_INFO(
+					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << InetSocketAddress::ConvertFrom (from).GetIpv4 ()
+					<< " port " << InetSocketAddress::ConvertFrom (from).GetPort () << " Uid: " << packet->GetUid() << " seq = " << seqTs.GetSeq() << " ts = " << seqTs.GetTs());
+		} else if (Inet6SocketAddress::IsMatchingType(from)) {
+			NS_LOG_INFO(
+					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << Inet6SocketAddress::ConvertFrom (from).GetIpv6 ()
+					<< " port " << Inet6SocketAddress::ConvertFrom (from).GetPort () << " Uid: " << packet->GetUid() << " seq = " << seqTs.GetSeq() << " ts = " << seqTs.GetTs());
+		}
 #endif
 		if (!this->CoapHandleMessage(from, packet)) {
 			NS_LOG_ERROR("Cannot handle message. Abort.");

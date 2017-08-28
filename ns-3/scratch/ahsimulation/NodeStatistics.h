@@ -61,11 +61,10 @@ public:
     long TotalPacketPayloadSize = 0;
     
     Time TotalPacketRoundtripTime = Time();
-
     Time getAveragePacketSentReceiveTime();
     Time getAveragePacketRoundTripTime(std::string trafficType);
 
-    double getGoodputKbit();
+    double getGoodputKbit(void);
 
     int EDCAQueueLength = 0;
 

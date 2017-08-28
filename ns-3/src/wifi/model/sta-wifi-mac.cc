@@ -608,9 +608,9 @@ StaWifiMac::Enqueue (Ptr<const Packet> packet, Mac48Address to)
 }
 
 void
-StaWifiMac::Receive(Ptr<Packet> packet, const WifiMacHeader *hdr) {
+StaWifiMac::Receive(Ptr<Packet> packet, const WifiMacHeader *hdr)
+{
 	NS_LOG_FUNCTION(this << packet << hdr);
-
 	NS_ASSERT(!hdr->IsCtl());
 	if (hdr->GetAddr3() == GetAddress()) {
 		NS_LOG_LOGIC("packet sent by us.");

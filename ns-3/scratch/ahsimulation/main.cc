@@ -8,7 +8,15 @@ using namespace ns3;
 #define UNUSED_PARAM
 #endif /* GCC */
 
-//#define COAP_SIM
+#define COAP_SIM
+/* We use CoAP through the libcoap library which is written in C and uses OS sockets.
+ * When doing the simulations with more than ~500 nodes make sure you have set the limit of socket descriptors to a value large enough.
+ * If not, when there is no more fd available on the system, simulation crashes.
+ * In Linux check: ulimit -n
+ * 		at /etc/sysctl.conf add: net.core.somaxconn=131072
+ * 								 fs.file-max=131072
+ * 		at /usr/include/linux/limits.h change NR_OPEN = 65536
+ * */
 NS_LOG_COMPONENT_DEFINE ("UdpOnHalow");
 
 
@@ -17,15 +25,17 @@ int main(int argc, char** argv) {
 	PacketMetadata::Enable();
 	TypeId tid = TypeId::LookupByName ("ns3::Ipv6RawSocketFactory");
 	Config::SetDefault ("ns3::TcpL4Protocol::SocketType", StringValue ("ns3::TcpWestwood"));
-	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
-	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
-	//LogComponentEnable("S1gApWifiMac", LOG_LEVEL_INFO);
+	//LogComponentEnable("DcfManager", LOG_LEVEL_DEBUG);
+	//LogComponentEnable("S1gApWifiMac", LOG_LEVEL_ALL);
+	//LogComponentEnable("StaWifiMac", LOG_LEVEL_ALL);
+
 	//LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
 	//LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_ALL);
 
-#ifdef false
+
 	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
 	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
+#ifdef false
 	LogComponentEnable("CoapPdu", LOG_LEVEL_ALL);
 	LogComponentEnable("StaWifiMac", LOG_LEVEL_ALL);
 	LogComponentEnable("S1gApWifiMac", LOG_LEVEL_ALL);
@@ -57,7 +67,6 @@ int main(int argc, char** argv) {
 	Config::SetDefault ("ns3::TcpSocket::SegmentSize",UintegerValue(config.TCPSegmentSize));
 	Config::SetDefault ("ns3::TcpSocket::InitialSlowStartThreshold",UintegerValue(config.TCPInitialSlowStartThreshold));
 	Config::SetDefault ("ns3::TcpSocket::InitialCwnd",UintegerValue(config.TCPInitialCwnd));
-
 
     configureChannel();
 
@@ -96,7 +105,7 @@ int main(int argc, char** argv) {
     if (!config.useV6)
     {
     	PopulateArpCache();
-    	//Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+    	Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
     }
     else
     {
@@ -150,6 +159,12 @@ int main(int argc, char** argv) {
 bool calculateParameters (Configuration &config)
 {
 	bool good (true);
+	config.NSSFile = config.trafficType + "_" +
+				std::to_string(config.Nsta) + "sta_"+
+				std::to_string(config.trafficInterval/1000)+ "sec_" +
+				std::to_string(config.NGroup) + "tim_" +
+				std::to_string(config.NRawSlotNum)+ "slots_" +
+				std::to_string(config.coapPayloadSize) + "payload" + ".nss";
 	// calculate parameters
 	if(config.trafficPacketSize == -1)
 		config.trafficPacketSize = ((int)config.TCPSegmentSize - 100) < 0 ? 100 : (config.TCPSegmentSize - 100);
@@ -173,7 +188,7 @@ bool calculateParameters (Configuration &config)
 		config.NRawSta = totalSta;
 	}
 
-	config.nControlLoops = config.Nsta / 2;
+	//config.nControlLoops = config.Nsta / 2;
 	/*if (config.Nsta < config.nControlLoops * 2)
 	{
 		config.nControlLoops = config.Nsta / 2;
@@ -1312,17 +1327,18 @@ void printStatistics() {
 			cout << "Number of receives: " << std::to_string(stats.get(i).NumberOfReceives) << endl;
 			cout << "Number of receives dropped: " << std::to_string(stats.get(i).NumberOfReceivesDropped) << endl;
 			cout << "" << endl;
-			cout << "Number of packets sent: " << std::to_string(stats.get(i).NumberOfSentPackets) << endl;
-			cout << "Number of packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulPackets) << endl;
-			cout << "Number of packets dropped: " << std::to_string(stats.get(i).getNumberOfDroppedPackets()) << endl;
-			cout << "Number of roundtrip packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulRoundtripPackets) << endl;
-			cout << "Average packet sent/receive time: " << std::to_string(stats.get(i).getAveragePacketSentReceiveTime().GetMicroSeconds()) << "µs" << std::endl;
-			cout << "Average packet roundtrip time: " << std::to_string(stats.get(i).getAveragePacketRoundTripTime(config.trafficType).GetMicroSeconds()) << "µs" << std::endl;
-			cout << "IP Camera Data sending rate: " << std::to_string(stats.get(i).getIPCameraSendingRate()) << "kbps" << std::endl;
+			cout << "Number of packets sent: " << std::to_string(stats.get(i).NumberOfSentPackets) << endl; // CORRECT
+			cout << "Number of packets successfuly arrived to the dst: " << std::to_string(stats.get(i).NumberOfSuccessfulPackets) << endl; //CORRECT
+			cout << "Number of packets dropped: " << std::to_string(stats.get(i).getNumberOfDroppedPackets()) << endl; // NOT CORRECT
+			cout << "Number of roundtrip packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulRoundtripPackets) << endl; //CORRECT
+			cout << "Average packet sent/receive time: " << std::to_string(stats.get(i).getAveragePacketSentReceiveTime().GetMicroSeconds()) << "µs" << std::endl; // CORRECT
+			cout << "Average packet roundtrip time: " << std::to_string(stats.get(i).getAveragePacketRoundTripTime(config.trafficType).GetMicroSeconds()) << "µs" << std::endl; //not
+			// Average packet roundtrip time NOT CORRECT, uracunato je send-rcv vrijeme dropped paketa a dijeljeno je samo sa brojem successfull RTT paketa
+			cout << "IP Camera Data sending rate: " << stats.get(i).getIPCameraSendingRate() << "kbps" << std::endl;
 			cout << "IP Camera Data receiving rate: " << std::to_string(stats.get(i).getIPCameraAPReceivingRate()) << "kbps" << std::endl;
 			cout << endl;
-			cout << "    maxLatency (C->S)= " << std::to_string(NodeEntry::maxLatency.GetMicroSeconds()) << "µs" << endl;
-			cout << "    minLatency (C->S) = " << std::to_string(NodeEntry::minLatency.GetMicroSeconds()) << "µs" << endl;
+			cout << "    global max Latency (C->S)= " << std::to_string(NodeEntry::maxLatency.GetMicroSeconds()) << "µs" << endl; // CORRECT
+			cout << "    global min Latency (C->S) = " << std::to_string(NodeEntry::minLatency.GetMicroSeconds()) << "µs" << endl; // CORRECT
 			cout << "    max diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::maxJitter.GetMicroSeconds()) << "µs" << endl;
 			cout << "    min diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::minJitter.GetMicroSeconds()) << "µs" << endl;
 			cout << "    Jitter (RTT)= " << std::to_string(stats.get(i).GetAverageJitter()) << "ms" << endl;
@@ -1331,11 +1347,14 @@ void printStatistics() {
 			cout << "    Average inter packet delay at client is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayClient).GetMicroSeconds()) << "µs" << endl;
 			cout << "    Inter-packet-delay at the client standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayClient) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayClient) << "%" <<endl;
 			//calculate the deviation between inter packet arrival times at the server
-			cout << "    Reliability " << std::to_string(stats.get(i).GetReliability()) << "%" << endl;
+			cout << "    Reliability " << std::to_string(stats.get(i).GetReliability()) << "%" << endl; //CORRECT
+
+			/*cout << "    Total packet send receive time " << std::to_string(stats.get(i).TotalPacketSentReceiveTime.GetMilliSeconds()) << " ms" << endl;
+			cout << "    Total packet payload size " << std::to_string(stats.get(i).TotalPacketPayloadSize) << endl;*/
 
 
 			cout << endl;
-			cout << "Goodput: " << (stats.get(i).getGoodputKbit()) << "Kbit" << endl;
+			cout << "Goodput: " << (stats.get(i).getGoodputKbit()) << "Kbit" << endl; //CORRECT
 			cout << "*********************" << endl;
 			/*std::vector<Time> x = stats.get(i).m_interPacketDelay;
 		for (uint32_t i=0; i< x.size(); i++)
@@ -1344,6 +1363,13 @@ void printStatistics() {
 		}*/
 			cout << endl;
 		}
+		else if (nodes[i]->m_nodeType == NodeEntry::SERVER)
+		{
+			cout << "Node " << std::to_string(i) << endl;
+			cout << "X: " << nodes[i]->x << ", Y: " << nodes[i]->y << endl;
+			cout << "Tx Remaining Queue size: " << nodes[i]->queueLength << endl;
+		}
+
 	}
 }
 

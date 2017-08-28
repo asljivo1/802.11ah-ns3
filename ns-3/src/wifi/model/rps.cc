@@ -237,7 +237,18 @@ namespace ns3 {
         m_rpsarry[m_length] = (uint8_t) (assignment.GetPRAW() >> 16);
         m_length++;
         m_rps = m_rpsarry;
+/*
+        std::cout << "GetRawControl-----" << (unsigned int)assignment.GetRawControl() << std::endl;
+        std::cout << "SetSlotCrossBoundary--" << (unsigned int)assignment.GetSlotCrossBoundary() << std::endl;
+        std::cout << "SetSlotFormat--" << (unsigned int)assignment.GetSlotFormat() << std::endl;
+        std::cout << "SetSlotDurationCount--" << assignment.GetSlotDurationCount() << std::endl;
+        std::cout << "SetSlotNum--" << assignment.GetSlotNum() << std::endl;
 
+        std::cout << "GetRawGroupAIDStart--" << assignment.GetRawGroupAIDStart()<< std::endl;
+        std::cout << "GetRawGroupAIDEnd--" << assignment.GetRawGroupAIDEnd()<< std::endl;
+        std::cout << "GetRawGroup--" << assignment.GetRawGroup()<< std::endl;
+        std::cout << "GetRawSlot--" << assignment.GetRawSlot()<< std::endl;
+        std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl << std::endl;*/
     }
 
     uint8_t *

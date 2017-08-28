@@ -44,8 +44,8 @@ long double NodeStatistics::GetInterPacketDelayDeviation(std::vector<Time>& dela
 //try whole net when testing max nr of control loops
 float NodeStatistics::GetReliability (void)
 {
-	if (NumberOfSentPackets != 0)
-		return 100 - 100*static_cast<float>(getNumberOfDroppedPackets())/NumberOfSentPackets;
+	if (NumberOfSuccessfulRoundtripPackets != 0) //was number of sent packets
+		return 100*NumberOfSuccessfulRoundtripPackets/NumberOfSentPackets;
 	else return 100;
 }
 
@@ -59,7 +59,7 @@ long double NodeStatistics::GetInterPacketDelayDeviationPercentage(std::vector<T
 
 
 Time NodeStatistics::getAveragePacketRoundTripTime (std::string trafficType) {
-	if(NumberOfSuccessfulRoundtripPacketsWithSeqHeader > 0)
+	if(NumberOfSuccessfulRoundtripPackets > 0)
 	{
 		if (trafficType != "coap")
 			return TotalPacketRoundtripTime / NumberOfSuccessfulRoundtripPacketsWithSeqHeader;
@@ -83,7 +83,9 @@ long NodeStatistics::getNumberOfDroppedPackets() {
 
 double NodeStatistics::getGoodputKbit() {
 	if(TotalPacketSentReceiveTime.GetSeconds() > 0)
-		return (TotalPacketPayloadSize * 8 / (1024)) / TotalPacketSentReceiveTime.GetSeconds();
+	{
+			return (TotalPacketPayloadSize * 8. / (1024)) / TotalPacketSentReceiveTime.GetSeconds();
+	}
 	else
 		return -1;
 }

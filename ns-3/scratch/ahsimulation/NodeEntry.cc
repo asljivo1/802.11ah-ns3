@@ -585,8 +585,8 @@ void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 		// time from the moment server sends a reply until the moment client receives it
 		auto timeDiff = (Simulator::Now() - seqTs.GetTs());
 		//cout << "=========================CLIENT SEQ " << seqTs.GetSeq() << endl;
-		if (seqTs.GetSeq() > 0)
-			stats->get(this->id).NumberOfSuccessfulRoundtripPacketsWithSeqHeader++;
+		//if (seqTs.GetSeq() >= 0) //allways true
+		stats->get(this->id).NumberOfSuccessfulRoundtripPacketsWithSeqHeader++;
 
 		stats->get(this->id).NumberOfSuccessfulRoundtripPackets++;
 		stats->get(this->id).TotalPacketRoundtripTime += timeDiff; //time from S to C is accumulated here and later added to the time from C to S
@@ -620,6 +620,17 @@ void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 			stats->get(this->id).m_interPacketDelayClient.push_back(newNow - stats->get(this->id).m_prevPacketTimeClient);
 			stats->get(this->id).interPacketDelayAtClient = newNow - stats->get(this->id).m_prevPacketTimeClient;
 		    //cout << "============================================================================ interPacketDelayAtClient " << this->id << " is" << newNow - stats->get(this->id).m_prevPacketTimeClient << endl;
+
+		}
+		else if (currentSequenceNumber > stats->get(this->id).m_prevPacketSeqClient + 1)
+		{
+			std::cout << "Packet(s) with seq number(s) ";
+			for (uint32_t i = stats->get(this->id).m_prevPacketSeqClient + 1; i < currentSequenceNumber; i++)
+				std::cout << std::to_string(i) << " ";
+			std::cout << " is(are) lost in path Server -> Client" << std::endl;
+
+			stats->get(this->id).m_interPacketDelayClient.push_back(newNow - stats->get(this->id).m_prevPacketTimeClient);
+			stats->get(this->id).interPacketDelayAtClient = newNow - stats->get(this->id).m_prevPacketTimeClient;
 
 		}
 		stats->get(this->id).m_prevPacketSeqClient = currentSequenceNumber;
@@ -665,8 +676,8 @@ void NodeEntry::OnCoapPacketReceivedAtServer(Ptr<const Packet> packet) {
 		if (NodeEntry::minLatency > timeDiff)
 			NodeEntry::minLatency = timeDiff;
 
-		if (seqTs.GetSeq() > 0)
-			stats->get(this->id).NumberOfSuccessfulPacketsWithSeqHeader++;
+		//if (seqTs.GetSeq() >= 0) allways true
+		stats->get(this->id).NumberOfSuccessfulPacketsWithSeqHeader++;
 		stats->get(this->id).NumberOfSuccessfulPackets++;
 		stats->get(this->id).TotalPacketSentReceiveTime += timeDiff;
 
@@ -685,10 +696,24 @@ void NodeEntry::OnCoapPacketReceivedAtServer(Ptr<const Packet> packet) {
 			stats->get(this->id).m_prevPacketSeqServer = currentSequenceNumber;
 			stats->get(this->id).m_prevPacketTimeServer = newNow;
 		}
-		//else if (currentSequenceNumber > stats->get(this->id).m_prevPacketSeqServer + 1 && currentSequenceNumber > stats->get(this->id).NumberOfSentPackets)
-		//	std::cout << "Packet with seq number " << currentSequenceNumber << " is lost." << std::endl;
+		else if (currentSequenceNumber > stats->get(this->id).m_prevPacketSeqServer + 1)
+		{
+			std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+			std::cout << "Packet(s) with seq number(s) ";
+			for (uint32_t i = stats->get(this->id).m_prevPacketSeqServer + 1; i < currentSequenceNumber; i++)
+				std::cout << std::to_string(i) << " ";
+			std::cout << " is(are) lost in path Client->Server" << std::endl;
 
+			Time newNow = Simulator::Now();
+			stats->get(this->id).m_interPacketDelayServer.push_back(newNow - stats->get(this->id).m_prevPacketTimeServer);
+			stats->get(this->id).interPacketDelayAtServer = newNow - stats->get(this->id).m_prevPacketTimeServer;
+			stats->get(this->id).m_time.push_back(newNow);
+			stats->get(this->id).m_prevPacketSeqServer = currentSequenceNumber;
+			stats->get(this->id).m_prevPacketTimeServer = newNow;
+
+		}
 		stats->get(this->id).TotalPacketPayloadSize += packet->GetSize() - 4 - 7; //deduct coap hdr & opts, only payload here
+		//std::cout << packet->GetSize() << std::endl;
 	} catch (std::runtime_error e) {
 		// packet fragmentation, unable to get header
 	}
