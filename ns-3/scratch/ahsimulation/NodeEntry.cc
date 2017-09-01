@@ -5,7 +5,7 @@
 using namespace ns3;
 using namespace std;
 
-
+NS_LOG_COMPONENT_DEFINE ("NodeEntry");
 bool showLog = false;
 Time NodeEntry::maxLatency = Time::Min();
 Time NodeEntry::minLatency = Time::Max();
@@ -556,6 +556,9 @@ void NodeEntry::OnCoapPacketSent(Ptr<const Packet> packet) {
 	unused(packet);
 	stats->get(this->id).NumberOfSentPackets++;
 }
+/* Jitter is calculated only for packet delivered in order
+ * Dropped packets are ignored
+ * */
 void NodeEntry::UpdateJitter (Time timeDiff)
 {
 	if (stats->get(this->id).NumberOfSuccessfulRoundtripPackets == 1)
@@ -591,26 +594,6 @@ void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 		stats->get(this->id).NumberOfSuccessfulRoundtripPackets++;
 		stats->get(this->id).TotalPacketRoundtripTime += timeDiff; //time from S to C is accumulated here and later added to the time from C to S
 		this->UpdateJitter(Simulator::Now() - this->timeSent);
-
-		// RT jitter calculation [server to client direction]
-		/*if (stats->get(this->id).NumberOfSuccessfulRoundtripPackets == 1)
-		{
-			delayFirst = timeDiff;
-		}
-		else
-		{
-			delaySecond = timeDiff;
-			Time var = Abs(delayFirst - delaySecond);
-			stats->get (this->id).jitter = var;
-			stats->get (this->id).jitterAcc += pow (var.GetMilliSeconds (), 2);
-			if (NodeEntry::maxJitter < var)
-				NodeEntry::maxJitter = var;
-			if (NodeEntry::minJitter > var)
-				NodeEntry::minJitter = var;
-			delayFirst = delaySecond;
-
-		}*/
-
 		uint32_t currentSequenceNumber = seqTs.GetSeq();
 	    //cout << "============================================================================ Client " << this->id << " received seq" << currentSequenceNumber << endl;
 
@@ -624,10 +607,10 @@ void NodeEntry::OnCoapPacketReceived(Ptr<const Packet> packet, Address from) {
 		}
 		else if (currentSequenceNumber > stats->get(this->id).m_prevPacketSeqClient + 1)
 		{
-			std::cout << "Packet(s) with seq number(s) ";
+			NS_LOG_INFO ("Packet(s) with seq number(s) ");
 			for (uint32_t i = stats->get(this->id).m_prevPacketSeqClient + 1; i < currentSequenceNumber; i++)
-				std::cout << std::to_string(i) << " ";
-			std::cout << " is(are) lost in path Server -> Client" << std::endl;
+				NS_LOG_INFO (std::to_string(i) << " ");
+			NS_LOG_INFO ("is(are) lost in path Server -> Client");
 
 			stats->get(this->id).m_interPacketDelayClient.push_back(newNow - stats->get(this->id).m_prevPacketTimeClient);
 			stats->get(this->id).interPacketDelayAtClient = newNow - stats->get(this->id).m_prevPacketTimeClient;
@@ -698,11 +681,10 @@ void NodeEntry::OnCoapPacketReceivedAtServer(Ptr<const Packet> packet) {
 		}
 		else if (currentSequenceNumber > stats->get(this->id).m_prevPacketSeqServer + 1)
 		{
-			std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-			std::cout << "Packet(s) with seq number(s) ";
+			NS_LOG_INFO ("Packet(s) with seq number(s) ");
 			for (uint32_t i = stats->get(this->id).m_prevPacketSeqServer + 1; i < currentSequenceNumber; i++)
-				std::cout << std::to_string(i) << " ";
-			std::cout << " is(are) lost in path Client->Server" << std::endl;
+				NS_LOG_INFO (std::to_string(i) << " ");
+			NS_LOG_INFO ("is(are) lost in path Client->Server");
 
 			Time newNow = Simulator::Now();
 			stats->get(this->id).m_interPacketDelayServer.push_back(newNow - stats->get(this->id).m_prevPacketTimeServer);

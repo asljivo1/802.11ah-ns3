@@ -65,6 +65,10 @@ TypeId CoapServer::GetTypeId(void) {
 					TimeValue (Seconds (0)),
 					MakeTimeAccessor (&CoapServer::m_processingDelay),
 					MakeTimeChecker ())
+			.AddAttribute ("PayloadSize", "Size of payload in sensor measurements.",
+					UintegerValue (64),
+					MakeUintegerAccessor (&CoapServer::m_size),
+					MakeUintegerChecker<uint32_t> (4,COAP_MAX_PDU_SIZE))
 			.AddTraceSource("Rx",
 					"A packet is received",
 					MakeTraceSourceAccessor(&CoapServer::m_packetReceived),
@@ -190,7 +194,7 @@ void CoapServer::HndGetControlValue(coap_context_t *ctx UNUSED_PARAM,
         str *token UNUSED_PARAM,
 		coap_pdu_t *response)
 {
-	/*uint8_t buf[4];
+	uint8_t buf[4];
 	// If m_controlValue was deleted, we pretend to have no such resource
 	response->hdr->code = (CoapServer::m_controlValue == 0) ? COAP_RESPONSE_CODE(205) : COAP_RESPONSE_CODE(404);
 	coap_add_option(response, COAP_OPTION_CONTENT_TYPE, coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
@@ -198,7 +202,7 @@ void CoapServer::HndGetControlValue(coap_context_t *ctx UNUSED_PARAM,
 	{
 		const char* responseData (std::to_string(CoapServer::m_controlValue).c_str());
 		coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
-	}*/
+	}
 }
 
 double CoapServer::m_controlValue = 0;

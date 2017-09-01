@@ -33,7 +33,7 @@
 #include "coap-pdu.h"
 #define WITH_NS3 1
 #include "coap/coap.h"
-
+#include "string.h"
 
 
 namespace ns3 {
@@ -124,6 +124,7 @@ private:
   //uint32_t m_dataSize; //!< packet payload size (must be equal to m_size)
   //uint8_t *m_data; //!< packet payload data
   uint32_t m_size; //!< Size of the sent packet (including the SeqTsHeader)
+  std::string m_payload; //!< Payload - if empty string then payload of size m_size is automatically generated
 
   uint32_t m_sent; //!< Counter for sent packets
   Ptr<Socket> m_socket; //!< Socket

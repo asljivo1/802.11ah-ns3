@@ -130,11 +130,11 @@ void SimulationEventManager::onUpdateStatistics(Statistics& stats) {
 			std::to_string(stats.get(i).NumberOfSentPackets),
 			std::to_string(stats.get(i).NumberOfSuccessfulPackets),
 			std::to_string(stats.get(i).getNumberOfDroppedPackets()),
-			std::to_string(stats.get(i).getAveragePacketSentReceiveTime().GetMilliSeconds()),
+			std::to_string(stats.get(i).getAveragePacketSentReceiveTime()),
 			std::to_string(stats.get(i).getGoodputKbit()),
 			std::to_string(stats.get(i).EDCAQueueLength),
 			std::to_string(stats.get(i).NumberOfSuccessfulRoundtripPackets),
-			std::to_string(stats.get(i).getAveragePacketRoundTripTime(m_config.trafficType).GetMilliSeconds()),
+			std::to_string(stats.get(i).getAveragePacketRoundTripTime(m_config.trafficType)),
 			std::to_string(stats.get(i).TCPCongestionWindow),
 			std::to_string(stats.get(i).NumberOfTCPRetransmissions),
 			std::to_string(stats.get(i).NumberOfTCPRetransmissionsFromAP),
@@ -162,8 +162,8 @@ void SimulationEventManager::onUpdateStatistics(Statistics& stats) {
 			std::to_string(stats.get(i).NumberOfTransmissionsCancelledDueToCrossingRAWBoundary),
 			std::to_string(stats.get(i).GetAverageJitter()), // I have jitter in micros abs delay between subsequent packets
 			std::to_string(stats.get(i).GetReliability()),
-			std::to_string(stats.get(i).interPacketDelayAtServer.GetMicroSeconds()),
-			std::to_string(stats.get(i).interPacketDelayAtClient.GetMicroSeconds()),
+			std::to_string(stats.get(i).GetInterPacketDelayAtServer()),
+			std::to_string(stats.get(i).GetInterPacketDelayAtClient()),
 			std::to_string(stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayServer)),
 			std::to_string(stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayClient))
 		});

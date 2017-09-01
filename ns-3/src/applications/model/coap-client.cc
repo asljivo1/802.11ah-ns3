@@ -24,6 +24,7 @@
 #include "arpa/inet.h"
 #include "seq-ts-header.h"
 
+
 #define WITH_SEQ_TS true
 
 namespace ns3 {
@@ -58,9 +59,13 @@ CoapClient::GetTypeId (void)
                    MakeUintegerAccessor (&CoapClient::m_peerPort),
                    MakeUintegerChecker<uint16_t> ())
 	.AddAttribute ("PayloadSize", "Size of payload in sensor measurements.",
-				   UintegerValue (100),
+				   UintegerValue (64),
 				   MakeUintegerAccessor (&CoapClient::m_size),
 				   MakeUintegerChecker<uint32_t> (4,COAP_MAX_PDU_SIZE))
+	.AddAttribute ("Payload", "Payload string.",
+					StringValue (),
+					MakeStringAccessor (&CoapClient::m_payload),
+					MakeStringChecker ())
 	.AddAttribute ("IntervalDeviation",
 					"The possible deviation from the interval to send packets",
 					TimeValue (Seconds (0)),
@@ -409,10 +414,9 @@ CoapClient::Send (uint8_t *data, size_t datalen)
 	{
 		if ((m_socket->Send (p)) >= 0)
 		{
-			++m_sent;
-
 			NS_LOG_INFO ("At time "<< (Simulator::Now ()).GetSeconds ()<< "s client sent " << p->GetSize() << " bytes to "
 					<< peerAddressStringStream.str () << " Uid: " << p->GetUid () << " seq = " << m_sent);
+			++m_sent;
 			retval = p->GetSize();
 			/*std::cout << "+++++++++++++++++++++++++++++++++++++Token for dst " << peerAddressStringStream.str () << " is " << m_token;
 			for (uint32_t l = 0; l < 8; l++){
@@ -489,7 +493,7 @@ ssize_t CoapClient::CoapHandleMessage(Address from, Ptr<Packet> packet){ //coap_
 		else if(COAP_RESPONSE_CLASS(node->pdu->hdr->code) > 2 && COAP_RESPONSE_CLASS(node->pdu->hdr->code) <= 5)
 		{
 			// Error response received. Drop response.
-			std::cout << "---------------------------- "  << std::endl;
+			//std::cout << "---------------------------- "  << std::endl;
 			coap_delete_pdu(node->pdu);
 			node->pdu = NULL;
 			return bytesRead;
@@ -501,7 +505,7 @@ ssize_t CoapClient::CoapHandleMessage(Address from, Ptr<Packet> packet){ //coap_
 	}
 
 	coap_transaction_id(from, node->pdu, &node->id);
-	std::cout << "---------------------------- "  << std::endl;
+	//std::cout << "---------------------------- "  << std::endl;
 
 	// drop if this was just some message, or send reset in case of notification - TODO
 

@@ -184,6 +184,7 @@ private:
   Ptr<Socket> m_fromSocket;
   std::vector<coap_resource_t*> m_resourceVectorPtr;
   coap_context_t* m_coapCtx;
+  uint32_t m_size; //!< Size of the sent packet (including the SeqTsHeader)
 
   // Control loop atrributes
   static double m_controlValue;

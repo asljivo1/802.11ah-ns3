@@ -16,6 +16,8 @@
 #include "ns3/drop-reason.h"
 #include "ns3/tcp-socket.h"
 #include "cleaning-helper.h"
+#include "ns3/log.h"
+
 
 using namespace ns3;
 

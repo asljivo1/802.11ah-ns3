@@ -2,20 +2,20 @@
 #include "Configuration.h"
 #include <cmath>
 
-Time NodeStatistics::getAveragePacketSentReceiveTime() {
+long double NodeStatistics::getAveragePacketSentReceiveTime() { //milliseconds
 	if(NumberOfSuccessfulPacketsWithSeqHeader > 0)
-		return TotalPacketSentReceiveTime / NumberOfSuccessfulPacketsWithSeqHeader;
+		return static_cast<long double>(TotalPacketSentReceiveTime.GetMilliSeconds()) / NumberOfSuccessfulPacketsWithSeqHeader;
 	else
-		return Time();
+		return -1;
 }
 
 // This is jitter in milliseconds
-uint64_t NodeStatistics::GetAverageJitter(void)
+long NodeStatistics::GetAverageJitter(void)
 {
-	if (NumberOfSuccessfulRoundtripPackets > 0)
-		return sqrt(jitterAcc/NumberOfSuccessfulRoundtripPackets);
+	if (NumberOfSuccessfulRoundtripPackets > 1)
+		return sqrt(jitterAcc/(NumberOfSuccessfulRoundtripPackets - 1));
 	else
-		return 0;
+		return -1;
 }
 
 Time NodeStatistics::GetAverageInterPacketDelay(std::vector<Time>& delayVector){
@@ -37,7 +37,7 @@ long double NodeStatistics::GetInterPacketDelayDeviation(std::vector<Time>& dela
 	}
 	if (delayVector.size() > 0)
 		return sqrt(dev/delayVector.size());
-	else return 0; //implement exception handling for dummy nodes TODO
+	else return -1; //implement exception handling for dummy nodes TODO
 }
 
 //reliability for one node or for all nodes in whole network? impossible with dummy nodes.
@@ -46,7 +46,7 @@ float NodeStatistics::GetReliability (void)
 {
 	if (NumberOfSuccessfulRoundtripPackets != 0) //was number of sent packets
 		return 100*NumberOfSuccessfulRoundtripPackets/NumberOfSentPackets;
-	else return 100;
+	else return -1;
 }
 
 long double NodeStatistics::GetInterPacketDelayDeviationPercentage(std::vector<Time>& delayVector){
@@ -54,24 +54,24 @@ long double NodeStatistics::GetInterPacketDelayDeviationPercentage(std::vector<T
 	if (avg != 0)
 		return (100*GetInterPacketDelayDeviation(delayVector)/avg);
 	else
-		return 0;
+		return -1;
 }
 
 
-Time NodeStatistics::getAveragePacketRoundTripTime (std::string trafficType) {
+long double NodeStatistics::getAveragePacketRoundTripTime (std::string trafficType) {
 	if(NumberOfSuccessfulRoundtripPackets > 0)
 	{
 		if (trafficType != "coap")
-			return TotalPacketRoundtripTime / NumberOfSuccessfulRoundtripPacketsWithSeqHeader;
+			return static_cast<long double>(TotalPacketRoundtripTime.GetMilliSeconds()) / NumberOfSuccessfulRoundtripPacketsWithSeqHeader;
 		else
-			return (TotalPacketRoundtripTime + TotalPacketSentReceiveTime) / NumberOfSuccessfulRoundtripPacketsWithSeqHeader;
+			return static_cast<long double>((TotalPacketRoundtripTime.GetMilliSeconds() + TotalPacketSentReceiveTime.GetMilliSeconds())) / NumberOfSuccessfulRoundtripPacketsWithSeqHeader;
 		// In coap case TotalPacketRoundtripTime is not RTT but total time between the moment server sends a reply and a moment client receives it
 		// same like TotalPacketSentReceiveTime just in the opposite direction
 		// optimize the code and add new container for this value because the name is not representative
 		// basically, true Total RTT = TotalPacketRoundtripTime + TotalPacketSentReceiveTime
 	}
 	else
-		return Time();
+		return -1;
 }
 
 long NodeStatistics::getNumberOfDroppedPackets() {
@@ -79,6 +79,24 @@ long NodeStatistics::getNumberOfDroppedPackets() {
 		return -1;
 	else
 		return NumberOfSentPackets - NumberOfSuccessfulPackets;
+}
+
+long double NodeStatistics::GetInterPacketDelayAtClient ()
+{
+	if (interPacketDelayAtClient.GetMilliSeconds() > 0)
+	{
+		return interPacketDelayAtClient.GetMilliSeconds();
+	}
+	else return -1;
+}
+
+long double NodeStatistics::GetInterPacketDelayAtServer ()
+{
+	if (interPacketDelayAtServer.GetMilliSeconds() > 0)
+	{
+		return interPacketDelayAtServer.GetMilliSeconds();
+	}
+	else return -1;
 }
 
 double NodeStatistics::getGoodputKbit() {

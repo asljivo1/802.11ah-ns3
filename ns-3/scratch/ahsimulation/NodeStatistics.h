@@ -24,6 +24,8 @@ public:
     long double GetInterPacketDelayDeviationPercentage(std::vector<Time>& delayVector);
     Time GetAverageInterPacketDelay(std::vector<Time>& delayVector);
     float GetReliability (void);
+    long double GetInterPacketDelayAtServer (void);
+    long double GetInterPacketDelayAtClient (void);
 
     uint32_t m_prevPacketSeqServer;
     Time m_prevPacketTimeServer;
@@ -56,13 +58,13 @@ public:
     // for jitter RMS - cumulative sum of abs differences
     uint64_t jitterAcc = 0;
     Time jitter = Time();
-    uint64_t GetAverageJitter(void);
+    long GetAverageJitter(void);
 
     long TotalPacketPayloadSize = 0;
     
     Time TotalPacketRoundtripTime = Time();
-    Time getAveragePacketSentReceiveTime();
-    Time getAveragePacketRoundTripTime(std::string trafficType);
+    long double getAveragePacketSentReceiveTime();
+    long double getAveragePacketRoundTripTime(std::string trafficType);
 
     double getGoodputKbit(void);
 

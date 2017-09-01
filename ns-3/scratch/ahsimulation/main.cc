@@ -32,10 +32,10 @@ int main(int argc, char** argv) {
 	//LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
 	//LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_ALL);
 
-
 	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
 	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
 #ifdef false
+
 	LogComponentEnable("CoapPdu", LOG_LEVEL_ALL);
 	LogComponentEnable("StaWifiMac", LOG_LEVEL_ALL);
 	LogComponentEnable("S1gApWifiMac", LOG_LEVEL_ALL);
@@ -1331,8 +1331,8 @@ void printStatistics() {
 			cout << "Number of packets successfuly arrived to the dst: " << std::to_string(stats.get(i).NumberOfSuccessfulPackets) << endl; //CORRECT
 			cout << "Number of packets dropped: " << std::to_string(stats.get(i).getNumberOfDroppedPackets()) << endl; // NOT CORRECT
 			cout << "Number of roundtrip packets successful: " << std::to_string(stats.get(i).NumberOfSuccessfulRoundtripPackets) << endl; //CORRECT
-			cout << "Average packet sent/receive time: " << std::to_string(stats.get(i).getAveragePacketSentReceiveTime().GetMicroSeconds()) << "µs" << std::endl; // CORRECT
-			cout << "Average packet roundtrip time: " << std::to_string(stats.get(i).getAveragePacketRoundTripTime(config.trafficType).GetMicroSeconds()) << "µs" << std::endl; //not
+			cout << "Average packet sent/receive time: " << std::to_string(stats.get(i).getAveragePacketSentReceiveTime()) << "ms" << std::endl; // CORRECT
+			cout << "Average packet roundtrip time: " << std::to_string(stats.get(i).getAveragePacketRoundTripTime(config.trafficType)) << "ms" << std::endl; //not
 			// Average packet roundtrip time NOT CORRECT, uracunato je send-rcv vrijeme dropped paketa a dijeljeno je samo sa brojem successfull RTT paketa
 			cout << "IP Camera Data sending rate: " << stats.get(i).getIPCameraSendingRate() << "kbps" << std::endl;
 			cout << "IP Camera Data receiving rate: " << std::to_string(stats.get(i).getIPCameraAPReceivingRate()) << "kbps" << std::endl;
@@ -1341,17 +1341,13 @@ void printStatistics() {
 			cout << "    global min Latency (C->S) = " << std::to_string(NodeEntry::minLatency.GetMicroSeconds()) << "µs" << endl; // CORRECT
 			cout << "    max diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::maxJitter.GetMicroSeconds()) << "µs" << endl;
 			cout << "    min diference in RTT between 2 subsequent packets = " << std::to_string(NodeEntry::minJitter.GetMicroSeconds()) << "µs" << endl;
-			cout << "    Jitter (RTT)= " << std::to_string(stats.get(i).GetAverageJitter()) << "ms" << endl;
+			cout << "    Jitter (RTT)= " << std::to_string(stats.get(i).GetAverageJitter()) << "ms" << endl; //CORRECT
 			cout << "    Average inter packet delay at server is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayServer).GetMicroSeconds()) << "µs" << endl;
 			cout << "    Inter-packet-delay at the server standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayServer) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayServer) << "%" <<endl;
 			cout << "    Average inter packet delay at client is " << std::to_string(stats.get(i).GetAverageInterPacketDelay(stats.get(i).m_interPacketDelayClient).GetMicroSeconds()) << "µs" << endl;
 			cout << "    Inter-packet-delay at the client standard deviation is " << stats.get(i).GetInterPacketDelayDeviation(stats.get(i).m_interPacketDelayClient) << " which is " << stats.get(i).GetInterPacketDelayDeviationPercentage(stats.get(i).m_interPacketDelayClient) << "%" <<endl;
 			//calculate the deviation between inter packet arrival times at the server
 			cout << "    Reliability " << std::to_string(stats.get(i).GetReliability()) << "%" << endl; //CORRECT
-
-			/*cout << "    Total packet send receive time " << std::to_string(stats.get(i).TotalPacketSentReceiveTime.GetMilliSeconds()) << " ms" << endl;
-			cout << "    Total packet payload size " << std::to_string(stats.get(i).TotalPacketPayloadSize) << endl;*/
-
 
 			cout << endl;
 			cout << "Goodput: " << (stats.get(i).getGoodputKbit()) << "Kbit" << endl; //CORRECT
