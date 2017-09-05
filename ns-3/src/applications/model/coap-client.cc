@@ -328,19 +328,20 @@ CoapClient::PrepareMsg (void)
 	// Implemented resources are "control", "hello" and empty resource.
 	// For "control" resources implemented methods are GET, PUT and DELETE.
 	// For empty resource and "hello" implementeh method is GET.
-	serverUri.append("/control");//.well-known/core
-
+	serverUri.append("/control"); //.well-known/core
 	static coap_uri_t uri;
 	int res = coap_split_uri((const unsigned char*)serverUri.c_str(), strlen(serverUri.c_str()), &uri);
 	if (res < 0){
 		NS_LOG_ERROR("Invalid CoAP URI. Abort.");
 		return;
 	}
+
 	// Prepare request
 	m_coapMsg.SetType(m_type);
 	m_coapMsg.SetCode(m_method);
 	m_coapMsg.SetId(coap_new_message_id(m_coapCtx));
-	// Measurement size of 100B - 12(seqTs) -2-4 m_size - 12
+
+	// Measurement size of 64B - 12(seqTs) -2-4 m_size - 12
 	if (m_size < 14)
 	{
 		NS_LOG_WARN("Minimum payload needs to be 14 because we store timing information in that payload.");
@@ -348,7 +349,7 @@ CoapClient::PrepareMsg (void)
 	}
 	std::string payload(m_size-2-12, '1');
 	//std::string payload("6740");
-	m_coapMsg.SetSize(sizeof(coap_hdr_t) + uri.path.length + 1 + strlen(payload.c_str()) + 1); //allocate space for the options (uri) and payload
+	m_coapMsg.SetSize(sizeof(coap_hdr_t) + uri.path.length + strlen(payload.c_str()) + 2); //allocate space for the options (uri) and payload
 	m_coapMsg.AddOption(COAP_OPTION_URI_PATH, uri.path.length, uri.path.s);
 	coap_add_data(m_coapMsg.GetPdu(), strlen(payload.c_str()), (const unsigned char *)payload.c_str());
 
@@ -563,11 +564,11 @@ void CoapClient::HandleRead(Ptr<Socket> socket) {
 		packet->RemoveHeader(seqTs);
 		if (InetSocketAddress::IsMatchingType (from)) {
 			NS_LOG_INFO(
-					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << InetSocketAddress::ConvertFrom (from).GetIpv4 ()
+					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () + seqTs.GetSerializedSize() << " bytes from " << InetSocketAddress::ConvertFrom (from).GetIpv4 ()
 					<< " port " << InetSocketAddress::ConvertFrom (from).GetPort () << " Uid: " << packet->GetUid() << " seq = " << seqTs.GetSeq() << " ts = " << seqTs.GetTs());
 		} else if (Inet6SocketAddress::IsMatchingType(from)) {
 			NS_LOG_INFO(
-					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " << Inet6SocketAddress::ConvertFrom (from).GetIpv6 ()
+					"At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () + seqTs.GetSerializedSize() << " bytes from " << Inet6SocketAddress::ConvertFrom (from).GetIpv6 ()
 					<< " port " << Inet6SocketAddress::ConvertFrom (from).GetPort () << " Uid: " << packet->GetUid() << " seq = " << seqTs.GetSeq() << " ts = " << seqTs.GetTs());
 		}
 #endif

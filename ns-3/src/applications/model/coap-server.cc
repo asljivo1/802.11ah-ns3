@@ -50,6 +50,8 @@ NS_LOG_COMPONENT_DEFINE("CoapServer");
 
 NS_OBJECT_ENSURE_REGISTERED(CoapServer);
 
+uint32_t CoapServer::m_payloadSize = 64;
+
 TypeId CoapServer::GetTypeId(void) {
 	static TypeId tid =
 			TypeId("ns3::CoapServer")
@@ -116,6 +118,9 @@ uint32_t CoapServer::GetLost(void) const {
 uint32_t CoapServer::GetReceived(void) const {
 	NS_LOG_FUNCTION(this);
 	return m_received;
+}
+uint32_t CoapServer::GetPayloadSize (void) {
+	return m_size;
 }
 
 bool CoapServer::PrepareContext(void)
@@ -204,7 +209,6 @@ void CoapServer::HndGetControlValue(coap_context_t *ctx UNUSED_PARAM,
 		coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
 	}
 }
-
 double CoapServer::m_controlValue = 0;
 double CoapServer::m_sensorValue = 0;
 
@@ -236,14 +240,17 @@ void CoapServer::HndPutControlValue(coap_context_t *ctx UNUSED_PARAM,
 			dataStringStream << data[i];
 		}
 		CoapServer::m_controlValue = std::stod(dataStringStream.str());
-		NS_LOG_INFO("Successfull PUT request. New control value is " << CoapServer::m_controlValue);
+		NS_LOG_INFO("Successfull PUT request. New control value is " << CoapServer::m_controlValue);//TODO m_controlValue doesnt need to be static
 	}
 
 	// Reply with a sensor reading
-	uint8_t buf[4];
+	uint8_t buf[76];
 	coap_add_option(response, COAP_OPTION_CONTENT_TYPE, coap_encode_var_bytes(buf, COAP_MEDIATYPE_TEXT_PLAIN), buf);
 	CoapServer::m_sensorValue += 0.001;
-	const char* responseData (std::to_string(CoapServer::m_sensorValue).c_str());
+	std::string valueString (std::to_string(CoapServer::m_sensorValue));
+	std::string payload(m_payloadSize+5-12-valueString.size(), 'S');
+	payload+=std::to_string(CoapServer::m_sensorValue);
+	const char* responseData (payload.c_str());
 	coap_add_data(response, strlen(responseData), (unsigned char *)responseData);
 }
 

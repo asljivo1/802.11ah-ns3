@@ -88,6 +88,8 @@ public:
    */
   void SetPacketWindowSize (uint16_t size);
 
+  uint32_t GetPayloadSize (void);
+
   typedef void (* PacketReceivedCallback)
             (Ptr<const Packet>, Address from);
 #ifdef __GNUC__
@@ -184,7 +186,8 @@ private:
   Ptr<Socket> m_fromSocket;
   std::vector<coap_resource_t*> m_resourceVectorPtr;
   coap_context_t* m_coapCtx;
-  uint32_t m_size; //!< Size of the sent packet (including the SeqTsHeader)
+  uint32_t m_size;//!< Size of the sent packet (including the SeqTsHeader)
+  static uint32_t m_payloadSize; //!< Size of the sent packet (including the SeqTsHeader)
 
   // Control loop atrributes
   static double m_controlValue;

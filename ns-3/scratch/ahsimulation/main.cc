@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
     if (!config.useV6)
     {
     	PopulateArpCache();
-    	Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+    	//Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
     }
     else
     {
