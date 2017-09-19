@@ -161,10 +161,11 @@ bool calculateParameters (Configuration &config)
 	bool good (true);
 	config.NSSFile = config.trafficType + "_" +
 				std::to_string(config.Nsta) + "sta_"+
-				std::to_string(config.trafficInterval/1000)+ "sec_" +
+				std::to_string(config.trafficInterval)+ "ms_" +
 				std::to_string(config.NGroup) + "tim_" +
 				std::to_string(config.NRawSlotNum)+ "slots_" +
-				std::to_string(config.coapPayloadSize) + "payload" + ".nss";
+				std::to_string(config.coapPayloadSize) + "payload_" +
+				std::to_string(config.BeaconInterval) + "BI" + ".nss";
 	// calculate parameters
 	if(config.trafficPacketSize == -1)
 		config.trafficPacketSize = ((int)config.TCPSegmentSize - 100) < 0 ? 100 : (config.TCPSegmentSize - 100);
@@ -188,7 +189,7 @@ bool calculateParameters (Configuration &config)
 		config.NRawSta = totalSta;
 	}
 
-	//config.nControlLoops = config.Nsta / 2;
+	config.nControlLoops = config.Nsta / 2;
 	/*if (config.Nsta < config.nControlLoops * 2)
 	{
 		config.nControlLoops = config.Nsta / 2;

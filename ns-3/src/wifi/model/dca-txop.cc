@@ -148,15 +148,17 @@ DcaTxop::GetTypeId (void)
                    MakePointerChecker<WifiMacQueue> ())
 
    .AddAttribute ("NrOfTransmissionsDuringRAW", "Number of transmissions done during RAW period",
-					  UintegerValue(),
-					  MakeUintegerAccessor(&DcaTxop::nrOfTransmissionsDuringRaw),
-					  MakeUintegerChecker<uint16_t> ())
+				    UintegerValue(),
+					MakeUintegerAccessor(&DcaTxop::nrOfTransmissionsDuringRaw),
+					MakeUintegerChecker<uint16_t> ())
 
 	.AddTraceSource("Collision", "Fired when a collision occurred",
-			MakeTraceSourceAccessor(&DcaTxop::m_collisionTrace), "ns3::DcaTxop::CollisionCallback")
+					MakeTraceSourceAccessor(&DcaTxop::m_collisionTrace),
+					"ns3::DcaTxop::CollisionCallback")
 
 	.AddTraceSource("TransmissionWillCrossRAWBoundary", "Fired when a transmission is held off because it won't fit inside the RAW slot",
-				MakeTraceSourceAccessor(&DcaTxop::m_transmissionWillCrossRAWBoundary), "ns3::DcaTxop::TransmissionWillCrossRAWBoundaryCallback")
+					MakeTraceSourceAccessor(&DcaTxop::m_transmissionWillCrossRAWBoundary),
+					"ns3::DcaTxop::TransmissionWillCrossRAWBoundaryCallback")
 
 
   ;

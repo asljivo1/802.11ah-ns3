@@ -1064,7 +1064,7 @@ void
 EdcaTxopN::StartAccessIfNeededRaw (void)
 {
     NS_LOG_FUNCTION (this);
-    if ((!m_queue->IsEmpty () || m_baManager->HasPackets ())
+    if ((!m_queue->IsEmpty () || m_baManager->HasPackets () || m_currentPacket != 0)
         && !m_dcf->IsAccessRequested ()
         && AccessIfRaw)
     {

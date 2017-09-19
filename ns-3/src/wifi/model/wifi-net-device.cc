@@ -276,22 +276,16 @@ bool
 WifiNetDevice::Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNumber)
 {
   NS_ASSERT (Mac48Address::IsMatchingType (dest));
-  //std::cout << "1 ovdje sam " << std::endl;
   Mac48Address realTo = Mac48Address::ConvertFrom (dest);
-//  std::cout << "2 ovdje sam " << std::endl;
 
   LlcSnapHeader llc;
   llc.SetType (protocolNumber);
-  //std::cout << "3 ovdje sam " << std::endl;
 
   packet->AddHeader (llc);
-  //std::cout << "4 ovdje sam " << std::endl;
 
   m_mac->NotifyTx (packet);
-  //std::cout << "5 ovdje sam " << std::endl;
 
   m_mac->Enqueue (packet, realTo);
-  //std::cout << "6 ovdje sam " << std::endl;
 
   return true;
 }
