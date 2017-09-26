@@ -46,12 +46,16 @@ class SimulationContainer {
     }
 
 }
+
+
 class SimulationGUI {
 
     public simulationContainer: SimulationContainer = new SimulationContainer();
     public selectedNode: number = 0;
     public selectedPropertyForChart: string = "totalTransmitTime";
     public selectedStream: string = "";
+    public automaticHideNullProperties: boolean = true;
+    public headersListFullyShown: string[] = [];
 
     private ctx: CanvasRenderingContext2D;
     private animations: Animation[] = [];
@@ -62,17 +66,17 @@ class SimulationGUI {
 
     private heatMapPalette: Palette;
     private rawGroupColors: Color[] = [new Color(200, 0, 0),
-        new Color(0, 200, 0),
-        new Color(0, 0, 200),
-        new Color(200, 0, 200),
-        new Color(200, 200, 0),
-        new Color(0, 200, 200),
-        new Color(100, 100, 0),
-        new Color(100, 0, 100),
-        new Color(0, 0, 100),
-        new Color(0, 0, 0)];
+    new Color(0, 200, 0),
+    new Color(0, 0, 200),
+    new Color(200, 0, 200),
+    new Color(200, 200, 0),
+    new Color(0, 200, 200),
+    new Color(100, 100, 0),
+    new Color(100, 0, 100),
+    new Color(0, 0, 100),
+    new Color(0, 0, 0)];
 
-    private charting:Charting;
+    private charting: Charting;
 
     constructor(private canvas: HTMLCanvasElement) {
         this.ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
@@ -90,6 +94,7 @@ class SimulationGUI {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         let selectedSimulation = this.simulationContainer.getSimulation(this.selectedStream);
+
         if (typeof selectedSimulation == "undefined")
             return;
 
@@ -300,7 +305,6 @@ class SimulationGUI {
                 this.ctx.stroke();
                 this.ctx.lineWidth = 1;
             }
-
         }
     }
 
@@ -372,6 +376,7 @@ class SimulationGUI {
         this.updateConfigGUI(selectedSimulation);
 
         $("#simChannelTraffic").text(`${selectedSimulation.totalTraffic}B (${(selectedSimulation.totalTraffic / selectedSimulation.currentTime * 1000).toFixed(2)}B/s)`);
+        var propertyElements = $(".nodeProperty");
 
         if (this.selectedNode < 0 || this.selectedNode >= selectedSimulation.nodes.length)
             this.updateGUIForAll(simulations, selectedSimulation, full);
@@ -387,7 +392,13 @@ class SimulationGUI {
         var configElements = $(".configProperty");
         for (let i = 0; i < configElements.length; i++) {
             let prop = $(configElements[i]).attr("data-property");
-            $($(configElements[i]).find("td").get(1)).text(selectedSimulation.config[prop]);
+            //if the property is nullable i.e. the metric is not measured for this particular scenario don't show it
+            if (selectedSimulation.config[prop] && selectedSimulation.config[prop] != -1) {
+                $($(configElements[i]).find("td").get(1)).text(selectedSimulation.config[prop]);
+            }
+            else {
+                $($(configElements[i]).find("td").get(1)).parent().hide();
+            }
         }
 
     }
@@ -397,7 +408,7 @@ class SimulationGUI {
 
         $("#nodeTitle").text("Node " + node.id);
 
-        let distance = Math.sqrt((node.x - selectedSimulation.apNode.x) ** 2 + (node.y - selectedSimulation.apNode.y) ** 2) 
+        let distance = Math.sqrt((node.x - selectedSimulation.apNode.x) ** 2 + (node.y - selectedSimulation.apNode.y) ** 2)
         $("#nodePosition").text(node.x.toFixed(2) + "," + node.y.toFixed(2) + ", dist: " + distance.toFixed(2));
         if (node.type == "STA" && !(<STANode>node).isAssociated) {
             $("#nodeAID").text("Not associated");
@@ -421,7 +432,6 @@ class SimulationGUI {
                 if (values.length > 0) {
 
                     let avgStdDev = this.getAverageAndStdDevValue(selectedSimulation, prop);
-
                     if (simulations.length > 1) {
                         // compare with avg of others
                         let sumVal = 0;
@@ -447,8 +457,24 @@ class SimulationGUI {
                     else {
                         el = values[values.length - 1][prop] + "";
                     }
+                    let prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                        $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
 
+                    if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                        prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
+                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                    }
 
+                    if (this.automaticHideNullProperties) {
+                        if ((selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] &&
+                            selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] != -1) ||
+                            this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                            $(propertyElements[i]).show();
+                        }
+                        else {
+                            $(propertyElements[i]).hide();
+                        }
+                    }
                     let propType = $(propertyElements[i]).attr("data-type");
                     let zScore = avgStdDev[1] == 0 ? 0 : ((values[values.length - 1][prop] - avgStdDev[0]) / avgStdDev[1]);
 
@@ -566,6 +592,21 @@ class SimulationGUI {
                 }
                 else {
                     el = text;
+                    let prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                        $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
+
+                    if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                    }
+                    if (this.automaticHideNullProperties) {
+                        if ((el != '0.00 (stddev: 0.00)' && el != '-1') || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                            $(propertyElements[i]).show();
+                        }
+                        else {
+                            //zero and -1 elements and the names of hidden metrics are shown in the browser console
+                            $(propertyElements[i]).hide();
+                        }
+                    }
                 }
 
                 $($(propertyElements[i]).find("td").get(1)).empty().append(el);
@@ -647,6 +688,7 @@ $(document).ready(function () {
         sock.emit("subscribe", {
             simulations: streams
         });
+
 
     }).on("error", function () {
         console.log("Unable to connect to server websocket endpoint");
@@ -742,12 +784,27 @@ $(document).ready(function () {
     });
 
     $('.header').click(function () {
-        $(this).find('span').text(function (_, value) { return value == '-' ? '+' : '-' });
-        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        $(this).find('span').text(function (_, value) {
+            return value == '-' ? '+' : '-'
         });
+        let sign = $(this).find('span').text();
+        let elem = $(this).find('th').text().substr(2);
+        if (sign == '-') {
+            sim.automaticHideNullProperties = true;
+            let i = sim.headersListFullyShown.indexOf(elem);
+            sim.headersListFullyShown.splice(i, 1);
+            sim.updateGUI(true);
+        }
+        else {
+            sim.automaticHideNullProperties = false;
+            $(this).nextUntil('tr.header').show();
+            elem.trim();
+            sim.headersListFullyShown.push(elem)
+        }
     });
 
-
+    /*$("#pnlDistribution").show();
+    sim.changeNodeSelection(-1);*/
     loop();
 
 

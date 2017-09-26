@@ -399,7 +399,8 @@ var Charting = (function () {
                     sum += simulations[s].slotUsageSTA[i][j];
                 data.push([
                     simulations[s].totalSlotUsageTimestamps[i],
-                    showDeltas ? sum - lastSums[s] : sum]);
+                    showDeltas ? sum - lastSums[s] : sum
+                ]);
                 lastSums[s] = sum;
             }
             series.push({
@@ -472,5 +473,5 @@ var Charting = (function () {
         });
     };
     return Charting;
-})();
+}());
 //# sourceMappingURL=charts.js.map

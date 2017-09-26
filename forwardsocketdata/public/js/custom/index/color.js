@@ -12,7 +12,7 @@ var Color = (function () {
         return "rgba(" + this.red + ", " + this.green + "," + this.blue + ", " + this.alpha + ")";
     };
     return Color;
-})();
+}());
 var Palette = (function () {
     function Palette() {
         this.colors = [];
@@ -64,5 +64,5 @@ var Palette = (function () {
         }
     };
     return Palette;
-})();
+}());
 //# sourceMappingURL=color.js.map

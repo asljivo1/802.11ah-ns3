@@ -31,7 +31,7 @@ var SimulationContainer = (function () {
         return sims;
     };
     return SimulationContainer;
-})();
+}());
 var SimulationGUI = (function () {
     function SimulationGUI(canvas) {
         this.canvas = canvas;
@@ -39,6 +39,8 @@ var SimulationGUI = (function () {
         this.selectedNode = 0;
         this.selectedPropertyForChart = "totalTransmitTime";
         this.selectedStream = "";
+        this.automaticHideNullProperties = true;
+        this.headersListFullyShown = [];
         this.animations = [];
         this.area = 2000;
         this.currentChart = null;
@@ -187,12 +189,12 @@ var SimulationGUI = (function () {
         if (this.selectedPropertyForChart != "") {
             var type = el.attr("data-type");
             if (typeof type != "undefined" && type != "") {
-                var min;
+                var min = void 0;
                 if (el.attr("data-max") == "*")
                     min = curMin;
                 else
                     min = parseInt(el.attr("data-min"));
-                var max;
+                var max = void 0;
                 if (el.attr("data-max") == "*")
                     max = curMax;
                 else
@@ -200,7 +202,7 @@ var SimulationGUI = (function () {
                 var values = n.values;
                 if (values.length > 0) {
                     var value = values[values.length - 1][this.selectedPropertyForChart];
-                    var alpha;
+                    var alpha = void 0;
                     if (max - min != 0)
                         alpha = (value - min) / (max - min);
                     else
@@ -299,6 +301,7 @@ var SimulationGUI = (function () {
             return;
         this.updateConfigGUI(selectedSimulation);
         $("#simChannelTraffic").text(selectedSimulation.totalTraffic + "B (" + (selectedSimulation.totalTraffic / selectedSimulation.currentTime * 1000).toFixed(2) + "B/s)");
+        var propertyElements = $(".nodeProperty");
         if (this.selectedNode < 0 || this.selectedNode >= selectedSimulation.nodes.length)
             this.updateGUIForAll(simulations, selectedSimulation, full);
         else
@@ -309,7 +312,13 @@ var SimulationGUI = (function () {
         var configElements = $(".configProperty");
         for (var i = 0; i < configElements.length; i++) {
             var prop = $(configElements[i]).attr("data-property");
-            $($(configElements[i]).find("td").get(1)).text(selectedSimulation.config[prop]);
+            //if the property is nullable i.e. the metric is not measured for this particular scenario don't show it
+            if (selectedSimulation.config[prop] && selectedSimulation.config[prop] != -1) {
+                $($(configElements[i]).find("td").get(1)).text(selectedSimulation.config[prop]);
+            }
+            else {
+                $($(configElements[i]).find("td").get(1)).parent().hide();
+            }
         }
     };
     SimulationGUI.prototype.updateGUIForSelectedNode = function (simulations, selectedSimulation, full) {
@@ -357,6 +366,20 @@ var SimulationGUI = (function () {
                     else {
                         el = values[values.length - 1][prop] + "";
                     }
+                    if (this.automaticHideNullProperties) {
+                        if (selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] &&
+                            selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] != -1) {
+                            // -1 elements are hidden because they are obviously not measured for this scenario
+                            //console.log("data "+ $('.header').data());
+                            //console.log("context "+ $('.header').context);
+                            //console.log("OVO "+$(propertyElements[i].get));
+                            $(propertyElements[i]).show();
+                        }
+                        else {
+                            $(propertyElements[i]).hide();
+                        }
+                    }
+                    else { }
                     var propType = $(propertyElements[i]).attr("data-type");
                     var zScore = avgStdDev[1] == 0 ? 0 : ((values[values.length - 1][prop] - avgStdDev[0]) / avgStdDev[1]);
                     if (!isNaN(avgStdDev[0]) && !isNaN(avgStdDev[1])) {
@@ -375,7 +398,7 @@ var SimulationGUI = (function () {
                         else
                             color = "black";
                         // prefix z-score
-                        el = ("<div class=\"zscore\" title=\"Z-score: " + zScore + "\" style=\"background-color: " + color + "\" />") + el;
+                        el = "<div class=\"zscore\" title=\"Z-score: " + zScore + "\" style=\"background-color: " + color + "\" />" + el;
                     }
                     $($(propertyElements[i]).find("td").get(1)).empty().append(el);
                 }
@@ -451,6 +474,15 @@ var SimulationGUI = (function () {
                 }
                 else {
                     el = text;
+                    if (this.automaticHideNullProperties) {
+                        if (el != '0.00 (stddev: 0.00)' && el != '-1') {
+                            $(propertyElements[i]).show();
+                        }
+                        else {
+                            //zero and -1 elements and the names of hidden metrics are shown in the browser console
+                            $(propertyElements[i]).hide();
+                        }
+                    }
                 }
                 $($(propertyElements[i]).find("td").get(1)).empty().append(el);
             }
@@ -458,7 +490,7 @@ var SimulationGUI = (function () {
         this.charting.deferUpdateCharts(simulations, full);
     };
     return SimulationGUI;
-})();
+}());
 function getParameterByName(name, url) {
     if (!url)
         url = window.location.href;
@@ -482,8 +514,8 @@ $(document).ready(function () {
         streams = ["live"];
     else
         streams = compare.split(',');
-    for (var _i = 0; _i < streams.length; _i++) {
-        var stream = streams[_i];
+    for (var _i = 0, streams_1 = streams; _i < streams_1.length; _i++) {
+        var stream = streams_1[_i];
         var rdb = "<input class=\"rdbStream\" name=\"streams\" type='radio' data-stream='" + stream + "'>&nbsp;";
         $("#rdbStreams").append(rdb);
     }
@@ -586,10 +618,29 @@ $(document).ready(function () {
         }
     });
     $('.header').click(function () {
-        $(this).find('span').text(function (_, value) { return value == '-' ? '+' : '-'; });
-        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        $(this).find('span').text(function (_, value) {
+            return value == '-' ? '+' : '-';
         });
+        var sign = $(this).find('span').text();
+        var elem = $(this).find('th').text().substr(2);
+        if (sign == '-') {
+            sim.automaticHideNullProperties = true;
+            var i = sim.headersListFullyShown.indexOf(elem);
+            console.log('element: ' + elem);
+            console.log('index: ' + i);
+            sim.headersListFullyShown.splice(i, 1);
+            console.log(sim.headersListFullyShown);
+            sim.updateGUI(true);
+        }
+        else {
+            sim.automaticHideNullProperties = false;
+            $(this).nextUntil('tr.header').show();
+            sim.headersListFullyShown.push(elem);
+            console.log(sim.headersListFullyShown);
+        }
     });
+    $("#pnlDistribution").show();
+    sim.changeNodeSelection(-1);
     loop();
     function loop() {
         sim.draw();

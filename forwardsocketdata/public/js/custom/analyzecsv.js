@@ -10,7 +10,7 @@ var SeriesValues = (function () {
         this.lines = [];
     }
     return SeriesValues;
-})();
+}());
 var seriesValues = {};
 var chart;
 function handleFiles(files) {
@@ -65,7 +65,7 @@ var Entry = (function () {
         }
     };
     return Entry;
-})();
+}());
 function processData(csv) {
     var allTextLines = csv.split(/\r\n|\n/);
     lines = [];
@@ -102,15 +102,15 @@ function dropdownChanged() {
     var seriesVal = $("#ddlSeries").val();
     if (!(seriesVal instanceof Array))
         seriesVal = [seriesVal];
-    for (var _i = 0; _i < seriesVal.length; _i++) {
-        var h = seriesVal[_i];
+    for (var _i = 0, seriesVal_1 = seriesVal; _i < seriesVal_1.length; _i++) {
+        var h = seriesVal_1[_i];
         dynamicProperties.push(h);
     }
-    for (var _a = 0; _a < headers.length; _a++) {
-        var h = headers[_a];
+    for (var _a = 0, headers_1 = headers; _a < headers_1.length; _a++) {
+        var h = headers_1[_a];
         var isDynamicProp = false;
-        for (var _b = 0; _b < dynamicProperties.length; _b++) {
-            var p = dynamicProperties[_b];
+        for (var _b = 0, dynamicProperties_1 = dynamicProperties; _b < dynamicProperties_1.length; _b++) {
+            var p = dynamicProperties_1[_b];
             if (h == p) {
                 isDynamicProp = true;
                 break;
@@ -137,8 +137,8 @@ function dropdownChanged() {
                 values = ["Too many to list"];
             var html = "";
             html += "<option value=\"\">[Ignore]</option>";
-            for (var _e = 0; _e < values.length; _e++) {
-                var v = values[_e];
+            for (var _e = 0, values_1 = values; _e < values_1.length; _e++) {
+                var v = values_1[_e];
                 html += "<option value=\"" + v + "\">" + v + "</option>";
             }
             ddl.get(0).innerHTML = html; //.html(html);
@@ -163,8 +163,8 @@ function getDistinctValuesFor(header) {
         return distinctValueCache[header];
     var isNumeric = false;
     var distinctValues = {};
-    for (var _i = 0; _i < lines.length; _i++) {
-        var l = lines[_i];
+    for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+        var l = lines_1[_i];
         if (typeof l[header] != "undefined") {
             distinctValues[l[header].value] = true;
             isNumeric = l[header].isNumber;
@@ -211,8 +211,8 @@ function matchesFixedValues(line, fixedVals) {
 function getFormattedPropertyValues(line) {
     var selectedTagIdx = $("#ddlTag").val();
     var str = "<table>";
-    for (var _i = 0; _i < headers.length; _i++) {
-        var h = headers[_i];
+    for (var _i = 0, headers_2 = headers; _i < headers_2.length; _i++) {
+        var h = headers_2[_i];
         if (h != selectedTagIdx) {
             str += "<tr>";
             str += "<td>" + h + "</td>";
@@ -234,13 +234,13 @@ $(document).on("click", "#btnRender", function (ev) {
     var selectedTagIdx = $("#ddlTag").val();
     var fixedValues = getFixedValues();
     var sortedLines = lines.sort(function (a, b) { return a[selectedXValueIdx].compareTo(b[selectedXValueIdx]); });
-    for (var _i = 0; _i < sortedLines.length; _i++) {
-        var l = sortedLines[_i];
+    for (var _i = 0, sortedLines_1 = sortedLines; _i < sortedLines_1.length; _i++) {
+        var l = sortedLines_1[_i];
         var isValid = true;
         var nameParts = [];
         var keyParts = [];
-        for (var _a = 0; _a < selectedSeriesIdx.length; _a++) {
-            var ss = selectedSeriesIdx[_a];
+        for (var _a = 0, selectedSeriesIdx_1 = selectedSeriesIdx; _a < selectedSeriesIdx_1.length; _a++) {
+            var ss = selectedSeriesIdx_1[_a];
             if (typeof l[ss] == "undefined") {
                 isValid = false;
                 break;
@@ -453,10 +453,12 @@ var QueryStringToHash = function QueryStringToHash(query) {
         // If first entry with this name
         if (typeof query_string[pair[0]] === "undefined") {
             query_string[pair[0]] = pair[1];
+            // If second entry with this name
         }
         else if (typeof query_string[pair[0]] === "string") {
             var arr = [query_string[pair[0]], pair[1]];
             query_string[pair[0]] = arr;
+            // If third or later entry with this name
         }
         else {
             query_string[pair[0]].push(pair[1]);
@@ -502,7 +504,7 @@ $(document).on("click", "#btnCreateDB", function (ev) {
     var suffix = ["_max", "_min", "_median", "_q1", "_q3", "_avg"];
     var colnames = [];
     if (lines.length > 0) {
-        var db = new SQL.Database();
+        var db_1 = new SQL.Database();
         var cols = [];
         for (var i = 0; i < headers.length; i++) {
             var name_1 = headers[i];
@@ -512,22 +514,22 @@ $(document).on("click", "#btnCreateDB", function (ev) {
                 colnames.push(name_1);
             }
             else {
-                for (var _i = 0; _i < suffix.length; _i++) {
-                    var s = suffix[_i];
+                for (var _i = 0, suffix_1 = suffix; _i < suffix_1.length; _i++) {
+                    var s = suffix_1[_i];
                     cols.push(name_1 + s + " " + type);
                     colnames.push(name_1 + s);
                 }
             }
         }
         var colStr = "(" + cols.join(", ") + ")";
-        db.exec("CREATE TABLE results " + colStr);
+        db_1.exec("CREATE TABLE results " + colStr);
         var headerStr = "(" + colnames.join(", ") + ")";
         $("#sqlGenerateProgressBar").show();
         doFor(lines, function (l) {
             //for (let l of lines) {
             var values = [];
-            for (var _i = 0; _i < headers.length; _i++) {
-                var h = headers[_i];
+            for (var _i = 0, headers_3 = headers; _i < headers_3.length; _i++) {
+                var h = headers_3[_i];
                 var isDetailed = lines[0][h].isNumber && lines[0][h].hasDetails;
                 if (!isDetailed) {
                     if (lines[0][h].isNumber)
@@ -536,8 +538,8 @@ $(document).on("click", "#btnCreateDB", function (ev) {
                         values.push("'" + l[h].value + "'"); // don't be a dick and add "'" in the strings now
                 }
                 else {
-                    for (var _a = 0; _a < suffix.length; _a++) {
-                        var s = suffix[_a];
+                    for (var _a = 0, suffix_2 = suffix; _a < suffix_2.length; _a++) {
+                        var s = suffix_2[_a];
                         switch (s) {
                             case "_max":
                                 values.push(typeof l[h].max != "undefined" && !isNaN(l[h].max) ? l[h].max : "NULL");
@@ -567,13 +569,13 @@ $(document).on("click", "#btnCreateDB", function (ev) {
             var valueStr = "(" + values.join(",") + ")";
             var query = "INSERT INTO results " + headerStr + " VALUES " + valueStr;
             console.log("Running query " + query);
-            db.exec(query);
+            db_1.exec(query);
         }, function (progress) {
             $("#sqlGenerateProgressBar .progress-bar").attr("aria-valuenow", Math.round(progress * 100));
             $("#sqlGenerateProgressBar .progress-bar").attr("style", "width: " + Math.round(progress * 100) + "%");
         }, function () {
             // done
-            var binaryArray = db.export();
+            var binaryArray = db_1.export();
             var blob = new Blob([binaryArray], { type: "octet/stream" });
             var a = document.createElement("a");
             document.body.appendChild(a);

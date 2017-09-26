@@ -90,7 +90,6 @@ var NodeValue = (function () {
         this.ipCameraSendingRate = 0;
         this.ipCameraReceivingRate = 0;
         this.numberOfTransmissionsCancelledDueToCrossingRAWBoundary = 0;
-        this.jitter = 0;
         this.reliability = 0;
     }
     return NodeValue;
@@ -134,3 +133,4 @@ var Simulation = (function () {
     }
     return Simulation;
 }());
+//# sourceMappingURL=simulation.js.map

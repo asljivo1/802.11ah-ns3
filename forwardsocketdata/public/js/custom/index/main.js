@@ -651,6 +651,8 @@ var EventManager = (function () {
         while (this.events.length > 0) {
             var ev = this.events[0];
             switch (ev.parts[1]) {
+                case 'startheader':
+                    break;
                 case 'start':
                     this.onStart(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), ev.parts[4], parseInt(ev.parts[5]), parseInt(ev.parts[6]), parseInt(ev.parts[7]), ev.parts[8], parseFloat(ev.parts[9]), parseFloat(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), ev.parts[14], parseFloat(ev.parts[15]), parseFloat(ev.parts[16]), ev.parts[17], parseInt(ev.parts[18]), parseInt(ev.parts[19]), ev.parts[20], parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), parseInt(ev.parts[25]), parseInt(ev.parts[26]), parseInt(ev.parts[27]), parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseInt(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseFloat(ev.parts[33]), parseFloat(ev.parts[34]), parseInt(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]));
                     break;
@@ -756,6 +758,7 @@ var EventManager = (function () {
         config.firmwareBlockSize = firmwareBlockSize;
         config.firmwareCorruptionProbability = firmwareCorruptionProbability;
         config.firmwareNewUpdateProbability = firmwareNewUpdateProbability;
+        config.sensorMeasurementSize = sensorMeasurementSize;
         config.contentionPerRAWSlot = contentionPerRAWSlot;
         config.contentionPerRAWSlotOnlyInFirstGroup = contentionPerRAWSlotOnlyInFirstGroup;
     };
@@ -978,6 +981,8 @@ var SimulationGUI = (function () {
         this.selectedNode = 0;
         this.selectedPropertyForChart = "totalTransmitTime";
         this.selectedStream = "";
+        this.automaticHideNullProperties = true;
+        this.headersListFullyShown = [];
         this.animations = [];
         this.area = 2000;
         this.currentChart = null;
@@ -1238,6 +1243,7 @@ var SimulationGUI = (function () {
             return;
         this.updateConfigGUI(selectedSimulation);
         $("#simChannelTraffic").text(selectedSimulation.totalTraffic + "B (" + (selectedSimulation.totalTraffic / selectedSimulation.currentTime * 1000).toFixed(2) + "B/s)");
+        var propertyElements = $(".nodeProperty");
         if (this.selectedNode < 0 || this.selectedNode >= selectedSimulation.nodes.length)
             this.updateGUIForAll(simulations, selectedSimulation, full);
         else
@@ -1248,7 +1254,13 @@ var SimulationGUI = (function () {
         var configElements = $(".configProperty");
         for (var i = 0; i < configElements.length; i++) {
             var prop = $(configElements[i]).attr("data-property");
-            $($(configElements[i]).find("td").get(1)).text(selectedSimulation.config[prop]);
+            //if the property is nullable i.e. the metric is not measured for this particular scenario don't show it
+            if (selectedSimulation.config[prop] && selectedSimulation.config[prop] != -1) {
+                $($(configElements[i]).find("td").get(1)).text(selectedSimulation.config[prop]);
+            }
+            else {
+                $($(configElements[i]).find("td").get(1)).parent().hide();
+            }
         }
     };
     SimulationGUI.prototype.updateGUIForSelectedNode = function (simulations, selectedSimulation, full) {
@@ -1295,6 +1307,22 @@ var SimulationGUI = (function () {
                     }
                     else {
                         el = values[values.length - 1][prop] + "";
+                    }
+                    var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                        $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
+                    if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                        prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
+                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                    }
+                    if (this.automaticHideNullProperties) {
+                        if ((selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] &&
+                            selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] != -1) ||
+                            this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                            $(propertyElements[i]).show();
+                        }
+                        else {
+                            $(propertyElements[i]).hide();
+                        }
                     }
                     var propType = $(propertyElements[i]).attr("data-type");
                     var zScore = avgStdDev[1] == 0 ? 0 : ((values[values.length - 1][prop] - avgStdDev[0]) / avgStdDev[1]);
@@ -1390,6 +1418,20 @@ var SimulationGUI = (function () {
                 }
                 else {
                     el = text;
+                    var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                        $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
+                    if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                    }
+                    if (this.automaticHideNullProperties) {
+                        if ((el != '0.00 (stddev: 0.00)' && el != '-1') || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                            $(propertyElements[i]).show();
+                        }
+                        else {
+                            //zero and -1 elements and the names of hidden metrics are shown in the browser console
+                            $(propertyElements[i]).hide();
+                        }
+                    }
                 }
                 $($(propertyElements[i]).find("td").get(1)).empty().append(el);
             }
@@ -1525,10 +1567,26 @@ $(document).ready(function () {
         }
     });
     $('.header').click(function () {
-        $(this).find('span').text(function (_, value) { return value == '-' ? '+' : '-'; });
-        $(this).nextUntil('tr.header').slideToggle(100, function () {
+        $(this).find('span').text(function (_, value) {
+            return value == '-' ? '+' : '-';
         });
+        var sign = $(this).find('span').text();
+        var elem = $(this).find('th').text().substr(2);
+        if (sign == '-') {
+            sim.automaticHideNullProperties = true;
+            var i = sim.headersListFullyShown.indexOf(elem);
+            sim.headersListFullyShown.splice(i, 1);
+            sim.updateGUI(true);
+        }
+        else {
+            sim.automaticHideNullProperties = false;
+            $(this).nextUntil('tr.header').show();
+            elem.trim();
+            sim.headersListFullyShown.push(elem);
+        }
     });
+    /*$("#pnlDistribution").show();
+    sim.changeNodeSelection(-1);*/
     loop();
     function loop() {
         sim.draw();

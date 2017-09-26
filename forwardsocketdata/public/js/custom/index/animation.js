@@ -1,8 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var Animation = (function () {
     function Animation() {
         this.time = 0;
@@ -12,16 +17,17 @@ var Animation = (function () {
         this.time += dt;
     };
     return Animation;
-})();
+}());
 var BroadcastAnimation = (function (_super) {
     __extends(BroadcastAnimation, _super);
     function BroadcastAnimation(x, y) {
-        _super.call(this);
-        this.x = x;
-        this.y = y;
-        this.max_radius = 50;
-        this.max_time = 1000;
-        this.color = new Color(255, 0, 0);
+        var _this = _super.call(this) || this;
+        _this.x = x;
+        _this.y = y;
+        _this.max_radius = 50;
+        _this.max_time = 1000;
+        _this.color = new Color(255, 0, 0);
+        return _this;
     }
     BroadcastAnimation.prototype.draw = function (canvas, ctx, area) {
         var radius = this.time / this.max_time * this.max_radius;
@@ -35,16 +41,17 @@ var BroadcastAnimation = (function (_super) {
         return this.time >= this.max_time;
     };
     return BroadcastAnimation;
-})(Animation);
+}(Animation));
 var ReceivedAnimation = (function (_super) {
     __extends(ReceivedAnimation, _super);
     function ReceivedAnimation(x, y) {
-        _super.call(this);
-        this.x = x;
-        this.y = y;
-        this.max_radius = 10;
-        this.max_time = 1000;
-        this.color = new Color(0, 255, 0);
+        var _this = _super.call(this) || this;
+        _this.x = x;
+        _this.y = y;
+        _this.max_radius = 10;
+        _this.max_time = 1000;
+        _this.color = new Color(0, 255, 0);
+        return _this;
     }
     ReceivedAnimation.prototype.draw = function (canvas, ctx, area) {
         var radius = (1 - this.time / this.max_time) * this.max_radius;
@@ -59,14 +66,15 @@ var ReceivedAnimation = (function (_super) {
         return this.time >= this.max_time;
     };
     return ReceivedAnimation;
-})(Animation);
+}(Animation));
 var AssociatedAnimation = (function (_super) {
     __extends(AssociatedAnimation, _super);
     function AssociatedAnimation(x, y) {
-        _super.call(this);
-        this.x = x;
-        this.y = y;
-        this.max_time = 3000;
+        var _this = _super.call(this) || this;
+        _this.x = x;
+        _this.y = y;
+        _this.max_time = 3000;
+        return _this;
     }
     AssociatedAnimation.prototype.draw = function (canvas, ctx, area) {
         var offset = this.time / this.max_time * Math.PI * 2;
@@ -84,5 +92,5 @@ var AssociatedAnimation = (function (_super) {
         return this.time >= this.max_time;
     };
     return AssociatedAnimation;
-})(Animation);
+}(Animation));
 //# sourceMappingURL=animation.js.map

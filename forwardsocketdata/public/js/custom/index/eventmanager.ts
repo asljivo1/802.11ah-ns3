@@ -24,6 +24,9 @@ class EventManager {
 
 
             switch (ev.parts[1]) {
+                case 'startheader':
+                    
+                    break;
                 case 'start':
                     this.onStart(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), ev.parts[4], parseInt(ev.parts[5]), parseInt(ev.parts[6]),
                         parseInt(ev.parts[7]), ev.parts[8], parseFloat(ev.parts[9]), parseFloat(ev.parts[10]),
@@ -124,13 +127,13 @@ class EventManager {
         trafficType: string, trafficIntervalDeviation: number, tcpSegmentSize: number, tcpInitialSlowStartThreshold: number, tcpInitialCWnd: number,
         maxTimeOfPacketsInQueue: number, ipCameraMotionPercentage: number, ipCameraMotionDuration: number, ipCameraDataRate: number, nsta: number, cooldownPeriod: number,
         firmwareSize: number, firmwareBlockSize: number, firmwareCorruptionProbability: number, firmwareNewUpdateProbability: number, sensorMeasurementSize: number,
-        contentionPerRAWSlot: number, contentionPerRAWSlotOnlyInFirstGroup: number) {
+        contentionPerRAWSlot: number, contentionPerRAWSlotOnlyInFirstGroup?: number) {
         let simulation = this.sim.simulationContainer.getSimulation(stream);
         if (typeof simulation == "undefined") {
             simulation = new Simulation();
             this.sim.simulationContainer.setSimulation(stream, simulation);
         }
-
+        
         simulation.nodes = [];
         simulation.slotUsageAP = [];
         simulation.slotUsageSTA = [];
@@ -177,9 +180,10 @@ class EventManager {
         config.firmwareBlockSize = firmwareBlockSize;
         config.firmwareCorruptionProbability = firmwareCorruptionProbability;
         config.firmwareNewUpdateProbability = firmwareNewUpdateProbability;
-
+        config.sensorMeasurementSize = sensorMeasurementSize;
         config.contentionPerRAWSlot = contentionPerRAWSlot;
         config.contentionPerRAWSlotOnlyInFirstGroup = contentionPerRAWSlotOnlyInFirstGroup;
+        
     }
 
 
@@ -394,13 +398,13 @@ class EventManager {
         nodeVal.ipCameraSendingRate = ipCameraSendingRate;
         nodeVal.ipCameraReceivingRate = ipCameraReceivingRate;
         nodeVal.numberOfTransmissionsCancelledDueToCrossingRAWBoundary = numberOfTransmissionsCancelledDueToCrossingRAWBoundary;
-
+        
         if (this.updateGUI && stream == this.sim.selectedStream) {
             if (this.hasIncreased(n, "totalTransmitTime")) {
                 this.sim.addAnimation(new BroadcastAnimation(n.x, n.y));
             }
         }
-
+        
         //if(this.hasIncreased(n.totalReceiveActiveTime))
         //   this.sim.addAnimation(new ReceivedAnimation(n.x, n.y));
 

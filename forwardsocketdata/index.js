@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var path = require("path");
 var net = require("net");
@@ -36,21 +38,21 @@ var SocketManager = (function () {
         }
     };
     return SocketManager;
-})();
+}());
 var Entry = (function () {
     function Entry(stream, line) {
         this.stream = stream;
         this.line = line;
     }
     return Entry;
-})();
+}());
 var Entries = (function () {
     function Entries(stream, lines) {
         this.stream = stream;
         this.lines = lines;
     }
     return Entries;
-})();
+}());
 var Program = (function () {
     function Program(args) {
         // a list of active connections from the website
@@ -234,7 +236,7 @@ var Program = (function () {
         }
     };
     return Program;
-})();
+}());
 exports.Program = Program;
 // export the main program
 var args = process.argv.slice(2);
