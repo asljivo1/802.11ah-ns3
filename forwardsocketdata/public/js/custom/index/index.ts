@@ -556,14 +556,12 @@ class SimulationGUI {
         for (let i = 0; i < propertyElements.length; i++) {
             let prop = $(propertyElements[i]).attr("data-property");
 
-
             let avgAndStdDev = this.getAverageAndStdDevValue(selectedSimulation, prop);
 
             let el: string = "";
 
             if (avgAndStdDev.length > 0) {
                 let text = `${avgAndStdDev[0].toFixed(2)} (stddev: ${avgAndStdDev[1].toFixed(2)})`;
-
                 if (simulations.length > 1) {
                     // compare with avg of others
                     let sumVal = 0;
@@ -592,23 +590,23 @@ class SimulationGUI {
                 }
                 else {
                     el = text;
-                    let prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
-                        $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
+                }
+                let prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                    $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
 
-                    if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
-                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
-                    }
-                    if (this.automaticHideNullProperties) {
-                        if ((el != '0.00 (stddev: 0.00)' && el != '-1') || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
-                            $(propertyElements[i]).show();
-                        }
-                        else {
-                            //zero and -1 elements and the names of hidden metrics are shown in the browser console
-                            $(propertyElements[i]).hide();
-                        }
-                    }
+                if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                    prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
                 }
 
+                if (this.automaticHideNullProperties) {
+                    if ((el != '0.00 (stddev: 0.00)' && el != "-1") || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                        $(propertyElements[i]).show();
+                    }
+                    else {
+                        //zero and -1 elements and the names of hidden metrics are shown in the browser console
+                        $(propertyElements[i]).hide();
+                    }
+                }
                 $($(propertyElements[i]).find("td").get(1)).empty().append(el);
             }
         }
@@ -793,7 +791,7 @@ $(document).ready(function () {
             sim.automaticHideNullProperties = true;
             let i = sim.headersListFullyShown.indexOf(elem);
             sim.headersListFullyShown.splice(i, 1);
-            sim.updateGUI(true);
+            sim.updateGUI();
         }
         else {
             sim.automaticHideNullProperties = false;

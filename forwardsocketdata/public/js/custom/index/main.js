@@ -1418,19 +1418,19 @@ var SimulationGUI = (function () {
                 }
                 else {
                     el = text;
-                    var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
-                        $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
-                    if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
-                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                }
+                var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                    $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
+                if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                    prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                }
+                if (this.automaticHideNullProperties) {
+                    if ((el != '0.00 (stddev: 0.00)' && el != "-1") || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                        $(propertyElements[i]).show();
                     }
-                    if (this.automaticHideNullProperties) {
-                        if ((el != '0.00 (stddev: 0.00)' && el != '-1') || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
-                            $(propertyElements[i]).show();
-                        }
-                        else {
-                            //zero and -1 elements and the names of hidden metrics are shown in the browser console
-                            $(propertyElements[i]).hide();
-                        }
+                    else {
+                        //zero and -1 elements and the names of hidden metrics are shown in the browser console
+                        $(propertyElements[i]).hide();
                     }
                 }
                 $($(propertyElements[i]).find("td").get(1)).empty().append(el);
@@ -1576,7 +1576,7 @@ $(document).ready(function () {
             sim.automaticHideNullProperties = true;
             var i = sim.headersListFullyShown.indexOf(elem);
             sim.headersListFullyShown.splice(i, 1);
-            sim.updateGUI(true);
+            sim.updateGUI();
         }
         else {
             sim.automaticHideNullProperties = false;
