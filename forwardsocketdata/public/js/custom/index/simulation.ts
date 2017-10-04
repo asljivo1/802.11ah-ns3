@@ -182,6 +182,10 @@ class SimulationConfiguration {
     rawSlotBoundary: number[] = [];
     rawGroupAidStart: number[] = [];
     rawGroupAidEnd: number[] = [];
+
+    coefProp: number; // to scale drawing RAW elements
+    multiGroupWidths: number[][] = [];
+    multiSlotWidths: number[][] = [];
 }
 
 class Simulation {

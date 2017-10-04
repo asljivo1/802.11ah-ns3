@@ -139,46 +139,10 @@ class SimulationGUI {
             let nRps = selectedSimulation.config.numRpsElements;    // 2
             let groupsPerRps = selectedSimulation.config.nGroupsPerRps; // [2  1]
             let slotsPerGroup = selectedSimulation.config.nRawSlots; // [2 1   3   1 2 3]
-            let ind = 0;
-            let rawLengths: number[] = []; // sum of durations of all RAW groups in the same RPS; length same as nRps
-            for (let i = 0; i < nRps; i++) {
-                let totalRawDuration = 0;
-                for (let j = ind; j < groupsPerRps[i] + ind; j++) {
-                    totalRawDuration += selectedSimulation.config.rawGroupDurations[j];
-                }
-                rawLengths.push(totalRawDuration);
-                ind += groupsPerRps[i];
-            }
-            //console.log("totalRawLengthsPerRps " + rawLengths);
-            var m = rawLengths.reduce(function (a, b) { return Math.max(a, b) });
-            let iRps = rawLengths.indexOf(m); // index of the most filled RPS with RAW groups
-            //console.log("index of the most filled RPS with RAW groups " + iRps);
-            
-            // we want to scale the longest total raw groups in one rps to the window width
-            // all the other groups in RPSs will be scaled to the longest
-            // the goal is to have a feeling about RAW slot durations and RAW groups' durations
-            let coefProp = width / (rawLengths[iRps]);
-            //console.log("canvas width " + width);
-            //console.log("coefProp width / (rawLengths[iRps]) " + coefProp);
-            
-            let multiGroupWidths: number[][] = [];
-            let multiSlotWidths: number[][] = [];
-            
 
-            ind = 0;
-            for (let i = 0; i < nRps; i++) {
-                multiGroupWidths[i] = [];
-                multiSlotWidths[i] = [];
-                for (let j = ind; j < ind + groupsPerRps[i]; j++) {
-                    let groupWidth = coefProp * selectedSimulation.config.rawGroupDurations[j] - 2 * padding;
-                    multiGroupWidths[i].push(groupWidth);
-                    //widths of groups for [i][j] where i is index of RPS and j index of RAW group inside the i-th RPS
-                    multiSlotWidths[i].push(groupWidth/slotsPerGroup[j]);
-                }
-                ind += groupsPerRps[i];
-            }
             let rectHeight = height/nRps - (nRps + 1) * padding;
-            
+            let multiGroupWidths = selectedSimulation.config.multiGroupWidths;
+            let multiSlotWidths = selectedSimulation.config.multiSlotWidths;
             for (let i = 0; i < nRps; i++) { // iterate through RPS elements
                 for (let j = 0; j < multiGroupWidths[i].length; j++) {// iterate through RAW groups within RPS elements
                     ctx.beginPath();
@@ -202,11 +166,11 @@ class SimulationGUI {
                             ctx.fillRect(padding + j * (padding + multiGroupWidths[i][j] + 0.5) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
                             
                             // not needed
-                            ctx.beginPath();
+                            /*ctx.beginPath();
                             ctx.rect(padding + j * (padding + multiGroupWidths[i][j]) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5), multiSlotWidths[i][j], rectHeight);
                             //ctx.rect(padding + 0 * (padding + multiGroupWidths[0][0]) + 0 * multiSlotWidths[0][0] + 0.5, 0 * rectHeight + (0 + 1) * (padding + 0.5), multiSlotWidths[0][0], rectHeight);
                             ctx.stroke();
-    
+    */
                             y += barHeight;
                             barHeight = fullBarHeight * percSTA;
                             ctx.fillStyle = "#7cb5ec";
@@ -480,20 +444,6 @@ class SimulationGUI {
 
         $("#simulationName").text(selectedSimulation.config.name);
         var configElements = $(".configProperty");
-
-        //let k = $("[data-property='numRpsElements']").index();
-        //var row = table.insertRow(k);
-        //let el = `<tr class="configProperty" data-property="nRawSlots"/><td>================</td><td>${selectedSimulation.config.nRawSlots[0]}</td>`;
-
-
-        //var cell1 = row.insertCell(0);
-        //cell1.innerHTML = "NEW CELL";
-        //console.log(k);
-
-        //let newRow = "";
-        //newRow = '<tr class="configProperty" data-property="${nRawSlots}"><td>nSlots </td><td>---</td>';
-        //$($('.table').eq(1)).eq(k).after(newRow);
-
         for (let i = 0; i < configElements.length; i++) {
             let prop = $(configElements[i]).attr("data-property");
             //if the property is nullable i.e. the metric is not measured for this particular scenario don't show it
