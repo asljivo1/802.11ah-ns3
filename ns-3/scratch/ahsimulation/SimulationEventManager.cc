@@ -21,17 +21,10 @@ SimulationEventManager::SimulationEventManager(string hostname, int port, string
 	}
 }
 
-
 void SimulationEventManager::onStart(Configuration& config) {
 	m_config = config;
 	send({"start",
 		  std::to_string(config.NRawSta),
-		  std::to_string(config.NGroup),
-		  std::to_string(config.SlotFormat),
-		  std::to_string(config.NRawSlotCount),
-		  std::to_string(config.NRawSlotCount * 120 + 500),
-		  std::to_string(config.NRawSlotNum),
-
 		  config.DataMode,
 		  "",
 		  "",
@@ -65,6 +58,12 @@ void SimulationEventManager::onStart(Configuration& config) {
 		  std::to_string(config.firmwareCorruptionProbability),
 		  std::to_string(config.firmwareNewUpdateProbability),
 		  std::to_string(config.sensorMeasurementSize),
+
+		  std::to_string(config.NGroup),
+		  std::to_string(config.SlotFormat),
+		  std::to_string(config.NRawSlotCount),
+		  //std::to_string(config.NRawSlotCount * 120 + 500),
+		  std::to_string(config.NRawSlotNum),
 		  std::to_string(config.ContentionPerRAWSlot),
 		  std::to_string(config.ContentionPerRAWSlotOnlyInFirstGroup)
 	});
@@ -79,8 +78,8 @@ void SimulationEventManager::onSTANodeCreated(NodeEntry& node) {
 	send({"stanodeadd", std::to_string(node.id), std::to_string(node.x), std::to_string(node.y), std::to_string(node.aId)});
 }
 
-void SimulationEventManager::onNodeAssociated(NodeEntry& node) {
-	send({"stanodeassoc", std::to_string(node.id), std::to_string(node.aId), std::to_string(node.rawGroupNumber), std::to_string(node.rawSlotIndex)});
+void SimulationEventManager::onNodeAssociated(NodeEntry& node) { //TODO RPS
+	send({"stanodeassoc", std::to_string(node.id), std::to_string(node.aId), "0", std::to_string(node.rawGroupNumber), std::to_string(node.rawSlotIndex)});
 }
 
 void SimulationEventManager::onNodeDeassociated(NodeEntry& node) {

@@ -32,10 +32,10 @@ int main(int argc, char** argv) {
 	//LogComponentEnable("PointToPointNetDevice", LOG_LEVEL_ALL);
 	//LogComponentEnable ("SixLowPanNetDevice", LOG_LEVEL_ALL);
 
+
+#ifdef false
 	LogComponentEnable("CoapClient", LOG_LEVEL_ALL);
 	LogComponentEnable("CoapServer", LOG_LEVEL_ALL);
-#ifdef false
-
 	LogComponentEnable("CoapPdu", LOG_LEVEL_ALL);
 	LogComponentEnable("StaWifiMac", LOG_LEVEL_ALL);
 	LogComponentEnable("S1gApWifiMac", LOG_LEVEL_ALL);
@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
         i++;
     }
 
-    eventManager.onStartHeader();
+    //eventManager.onStartHeader();
     eventManager.onStart(config);
 
 

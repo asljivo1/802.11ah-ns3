@@ -125,9 +125,13 @@
 
                                     <div class="col-md-6">
                                         <div class="scrollTable">
-                                            <table class="table">
+                                            <table class="table" id="RawConfig">
                                                 <tr class="configProperty" data-property="beaconInterval">
                                                     <td>Beacon interval [µs]</td>
+                                                    <td>---</td>
+                                                </tr>
+                                                <tr class="configProperty" data-property="numRpsElements">
+                                                    <td>Number of RPS elements</td>
                                                     <td>---</td>
                                                 </tr>
                                                 <tr class="configProperty" data-property="apAlwaysSchedulesForNextSlot">
@@ -211,8 +215,8 @@
                                                     <td id="nodePosition">---</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Association ID, TIM group and RAW slot</td>
-                                                    <td><span id="nodeAID">---</span> (grp: <span id="nodeGroupNumber">---</span>)
+                                                    <td>Association ID, RPS, RAW group and RAW slot</td>
+                                                    <td><span id="nodeAID">---</span> (rps: <span id="nodeRpsIndex">---</span>)(grp: <span id="nodeGroupNumber">---</span>)
                                                         (slot: <span id="nodeRawSlotIndex">---</span>)</td>
                                                 </tr>
 
@@ -610,8 +614,8 @@
                     <div class="panel-heading">
                         <h3 class="panel-title">TIM group/slot usage</h3>
                     </div>
-                    <div class="panel-body" style="padding:5px">
-                        <canvas height="100" id="canvSlots" width="480"></canvas>
+                    <div class="panel-body" style="overflow:scroll; height:180px; padding5px">
+                        <canvas id="canvSlots" width="470"></canvas>
                     </div>
                 </div>
                 <div class="panel panel-default">

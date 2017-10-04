@@ -5,6 +5,7 @@ abstract class SimulationNode {
     x: number = 0;
     y: number = 0;
     aId: number = 0;
+    rpsIndex: number = 0;
     groupNumber: number = 0;
     rawSlotIndex: number = 0;
 
@@ -170,6 +171,17 @@ class SimulationConfiguration {
     contentionPerRAWSlot: number;
     contentionPerRAWSlotOnlyInFirstGroup: number;
 
+    numRpsElements: number;
+    // rpsIndex:number, rawIndex: number,
+    nGroupsPerRps: number[] = [];
+    rawGroupDurations: number[] = [];
+    rawSlotFormat: number[] = [];
+    rawSlotDurationCount: number[] = [];
+    rawSlotDuration: number[] = [];
+    nRawSlots: number[] = [];
+    rawSlotBoundary: number[] = [];
+    rawGroupAidStart: number[] = [];
+    rawGroupAidEnd: number[] = [];
 }
 
 class Simulation {

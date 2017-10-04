@@ -27,13 +27,17 @@ class EventManager {
                 case 'startheader':
                     
                     break;
+                case 'rawconfig':
+                    this.onRawConfig(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), parseInt(ev.parts[4]), parseInt(ev.parts[5]),
+                        parseInt(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), parseInt(ev.parts[9]));
+                        break;
                 case 'start':
-                    this.onStart(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), ev.parts[4], parseInt(ev.parts[5]), parseInt(ev.parts[6]),
-                        parseInt(ev.parts[7]), ev.parts[8], parseFloat(ev.parts[9]), parseFloat(ev.parts[10]),
-                        parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), ev.parts[14],
-                        parseFloat(ev.parts[15]), parseFloat(ev.parts[16]), ev.parts[17], parseInt(ev.parts[18]), parseInt(ev.parts[19]), ev.parts[20], parseInt(ev.parts[21]),
-                        parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), parseInt(ev.parts[25]), parseInt(ev.parts[26]), parseInt(ev.parts[27]), parseInt(ev.parts[28]),
-                        parseInt(ev.parts[29]), parseInt(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseFloat(ev.parts[33]), parseFloat(ev.parts[34]),
+                    this.onStart(ev.stream, parseInt(ev.parts[2]), ev.parts[3], parseFloat(ev.parts[4]), parseFloat(ev.parts[5]),
+                        parseInt(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), ev.parts[9],
+                        parseFloat(ev.parts[10]), parseFloat(ev.parts[11]), ev.parts[12], parseInt(ev.parts[13]), parseInt(ev.parts[14]), ev.parts[15], parseInt(ev.parts[16]),
+                        parseInt(ev.parts[17]), parseInt(ev.parts[18]), parseInt(ev.parts[19]), parseInt(ev.parts[20]), parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]),
+                        parseInt(ev.parts[24]), parseInt(ev.parts[25]), parseInt(ev.parts[26]), parseInt(ev.parts[27]), parseFloat(ev.parts[28]), parseFloat(ev.parts[29]),
+                        parseInt(ev.parts[30]),parseInt(ev.parts[31]), ev.parts[32], parseInt(ev.parts[33]), parseInt(ev.parts[34]),
                         parseInt(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]));
                     break;
 
@@ -42,7 +46,7 @@ class EventManager {
                     break;
 
                 case 'stanodeassoc':
-                    this.onNodeAssociated(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), parseInt(ev.parts[4]), parseInt(ev.parts[5]));
+                    this.onNodeAssociated(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), parseInt(ev.parts[4]), parseInt(ev.parts[5]), parseInt(ev.parts[6]));
                     break;
 
                 case 'stanodedeassoc':
@@ -121,13 +125,14 @@ class EventManager {
         this.events.push(ev);
     }
 
-    onStart(stream: string, aidRAWRange: number, numberOfRAWGroups: number, RAWSlotFormat: string, RAWSlotCount: number, RAWSlotDuration: number, numberOfRAWSlots: number,
+    onStart(stream: string, aidRAWRange: number,
         dataMode: string, dataRate: number, bandwidth: number, trafficInterval: number, trafficPacketsize: number, beaconInterval: number,
         name: string, propagationLossExponent: number, propagationLossReferenceLoss: number, apAlwaysSchedulesForNextSlot: string, minRTO: number, simulationTime: number,
         trafficType: string, trafficIntervalDeviation: number, tcpSegmentSize: number, tcpInitialSlowStartThreshold: number, tcpInitialCWnd: number,
         maxTimeOfPacketsInQueue: number, ipCameraMotionPercentage: number, ipCameraMotionDuration: number, ipCameraDataRate: number, nsta: number, cooldownPeriod: number,
-        firmwareSize: number, firmwareBlockSize: number, firmwareCorruptionProbability: number, firmwareNewUpdateProbability: number, sensorMeasurementSize: number,
-        contentionPerRAWSlot: number, contentionPerRAWSlotOnlyInFirstGroup?: number) {
+        firmwareSize: number, firmwareBlockSize: number, firmwareCorruptionProbability: number, firmwareNewUpdateProbability: number, sensorMeasurementSize: number, 
+        numberOfRAWGroups: number, RAWSlotFormat: string, RAWSlotCount: number, numberOfRAWSlots: number,
+        contentionPerRAWSlot: number, contentionPerRAWSlotOnlyInFirstGroup: number, numRpsElements?: number) {
         let simulation = this.sim.simulationContainer.getSimulation(stream);
         if (typeof simulation == "undefined") {
             simulation = new Simulation();
@@ -142,12 +147,22 @@ class EventManager {
         simulation.totalTraffic = 0;
 
         let config = simulation.config;
+        simulation.config.nGroupsPerRps = [];
+        simulation.config.rawSlotFormat = [];
+        simulation.config.rawSlotDurationCount = [];
+        simulation.config.rawSlotDuration = [];
+        simulation.config.nRawSlots = [];
+        simulation.config.rawSlotBoundary = [];
+        simulation.config.rawGroupAidStart = [];
+        simulation.config.rawGroupAidEnd = [];
+        simulation.config.rawGroupDurations = [];
+
         config.AIDRAWRange = aidRAWRange;
         config.numberOfRAWGroups = numberOfRAWGroups;
         config.RAWSlotFormat = RAWSlotFormat;
         config.numberOfRAWSlots = numberOfRAWSlots;
         config.RAWSlotCount = RAWSlotCount;
-        config.RAWSlotDuration = RAWSlotDuration;
+        config.RAWSlotDuration = 500 + 120 * RAWSlotCount;
         config.dataMode = dataMode;
         config.dataRate = dataRate;
         config.bandwidth = bandwidth;
@@ -183,6 +198,8 @@ class EventManager {
         config.sensorMeasurementSize = sensorMeasurementSize;
         config.contentionPerRAWSlot = contentionPerRAWSlot;
         config.contentionPerRAWSlotOnlyInFirstGroup = contentionPerRAWSlotOnlyInFirstGroup;
+        
+        config.numRpsElements = numRpsElements;
         
     }
 
@@ -223,6 +240,40 @@ class EventManager {
         }
     }
 
+    onRawConfig(stream: string, rpsIndex:number, rawIndex: number, rawSlotFormat: number, rawSlotDurationCount: number, 
+        nRawSlots: number, rawSlotBoundary: number, rawGroupAidStart: number, rawGroupAidEnd: number) {
+            let config = this.sim.simulationContainer.getSimulation(stream).config;
+            if (config.nGroupsPerRps.length == 0){
+                config.nGroupsPerRps.push(rawIndex + 1); 
+            }
+            else{
+                if (config.nGroupsPerRps[config.nGroupsPerRps.length - 1] >= rawIndex + 1){
+                    config.nGroupsPerRps.push(rawIndex + 1);
+                }
+                else {
+                    config.nGroupsPerRps[config.nGroupsPerRps.length - 1]++;
+                }
+            }
+            config.rawSlotFormat.push(rawSlotFormat);
+            config.rawSlotDurationCount.push(rawSlotDurationCount);
+            let slotDuration = 500+120*rawSlotDurationCount;
+            config.rawSlotDuration.push(slotDuration);
+            config.nRawSlots.push(nRawSlots);
+            config.rawSlotBoundary.push(rawSlotBoundary);
+            config.rawGroupAidStart.push(rawGroupAidStart);
+            config.rawGroupAidEnd.push(rawGroupAidEnd);
+            config.rawGroupDurations.push(nRawSlots * slotDuration);
+/*            console.log("config.rawSlotFormat " + config.rawSlotFormat);
+            console.log("config.rawSlotDurationCount " + config.rawSlotDurationCount);
+            console.log("config.rawSlotDuration " + config.rawSlotDuration);
+            console.log("config.nRawSlots " + config.nRawSlots);
+            console.log("config.rawSlotBoundary " + config.rawSlotBoundary);
+            console.log("config.rawGroupAidStart " + config.rawGroupAidStart);
+            console.log("config.rawGroupAidEnd " + config.rawGroupAidEnd);
+            console.log("config.rawGroupDurations " + config.rawGroupDurations);
+            console.log("rawSlotFormat " + rawSlotFormat);*/
+    }
+
     onNodeAdded(stream: string, isSTA: boolean, id: number, x: number, y: number, aId: number) {
         let n: SimulationNode = isSTA ? new STANode() : new APNode();
         n.id = id;
@@ -236,12 +287,13 @@ class EventManager {
         // this.sim.onNodeAdded(stream, id);
     }
 
-    onNodeAssociated(stream: string, id: number, aId: number, groupNumber: number, rawSlotIndex: number) {
+    onNodeAssociated(stream: string, id: number, aId: number, rpsIndex:number, groupNumber: number, rawSlotIndex: number) {
         let simulation = this.sim.simulationContainer.getSimulation(stream);
         if (id < 0 || id >= simulation.nodes.length) return;
 
         let n = simulation.nodes[id];
         n.aId = aId;
+        n.rpsIndex = rpsIndex;
         n.groupNumber = groupNumber;
         n.rawSlotIndex = rawSlotIndex;
         (<STANode>n).isAssociated = true;
