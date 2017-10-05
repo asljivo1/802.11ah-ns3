@@ -182,6 +182,7 @@ class SimulationGUI {
             //console.log("multiwidth ya 1 " + multiGroupWidths[1]);
             let rectHeight = height / nRps - (nRps + 1) * padding;
 
+            let currentSlotNum = 0;
             for (let i = 0; i < nRps; i++) { // iterate through RPS elements
                 for (let j = 0; j < multiGroupWidths[i].length; j++) {// iterate through RAW groups within RPS elements
                     ctx.beginPath();
@@ -195,31 +196,35 @@ class SimulationGUI {
                         
                     ctx.stroke();
                     let slots = multiGroupWidths[i][j] / multiSlotWidths[i][j]; // number of slots in current group
+
                     for (let k = 0; k < slots; k++) { // iterate through slots within RAW groups
-                        let sum = selectedSimulation.totalSlotUsageAP[j * slots + k] + selectedSimulation.totalSlotUsageSTA[j * slots + k];
+                        
+                        let sum = selectedSimulation.totalSlotUsageAP[currentSlotNum] + selectedSimulation.totalSlotUsageSTA[currentSlotNum];
+
                         if (sum > 0) {
-                            let percAP = selectedSimulation.totalSlotUsageAP[j * slots + k] / sum;
-                            let percSTA = selectedSimulation.totalSlotUsageSTA[j * slots + k] / sum;
+                            let percAP = selectedSimulation.totalSlotUsageAP[currentSlotNum] / sum;
+                            let percSTA = selectedSimulation.totalSlotUsageSTA[currentSlotNum] / sum;
 
                             let value;
                             let y;
-                            value = selectedSimulation.totalSlotUsageAP[j * slots + k];
+                            value = selectedSimulation.totalSlotUsageAP[currentSlotNum];
+                            currentSlotNum++;
                             y = (1 - sum / max) * rectHeight; // supljina u slotu prazno vertikalno
 
                             let fullBarHeight = (rectHeight - y); // ap+sta bar height orange+blue
                             let barHeight = fullBarHeight * percAP; // ap bar height orange
                             ctx.fillStyle = "#ecb57c";
-                            ctx.fillRect(padding + j * (padding + multiGroupWidths[i][j] + 0.5) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
-
+                            ctx.fillRect(xGroupCoord + k * multiSlotWidths[i][j], i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
+                            /*
                             // not needed
                             ctx.beginPath();
                             ctx.rect(padding + j * (padding + multiGroupWidths[i][j]) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5), multiSlotWidths[i][j], rectHeight);
-                            ctx.stroke();
+                            ctx.stroke();*/
 
                             y += barHeight;
                             barHeight = fullBarHeight * percSTA;
                             ctx.fillStyle = "#7cb5ec";
-                            ctx.fillRect(padding + j * (padding + multiGroupWidths[i][j] + 0.5) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
+                            ctx.fillRect(xGroupCoord + k * multiSlotWidths[i][j], i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
 
                         }
                         ctx.beginPath();
