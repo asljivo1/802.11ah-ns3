@@ -183,9 +183,9 @@ class SimulationConfiguration {
     rawGroupAidStart: number[] = [];
     rawGroupAidEnd: number[] = [];
 
-    coefProp: number; // to scale drawing RAW elements
+    /*coefProp: number[] = []; // to scale drawing RAW elements, take the smallest one
     multiGroupWidths: number[][] = [];
-    multiSlotWidths: number[][] = [];
+    multiSlotWidths: number[][] = [];*/
 }
 
 class Simulation {

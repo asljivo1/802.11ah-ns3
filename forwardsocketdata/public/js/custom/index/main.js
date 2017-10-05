@@ -838,41 +838,6 @@ var EventManager = (function () {
                     console.log("config.rawGroupAidEnd " + config.rawGroupAidEnd);
                     console.log("config.rawGroupDurations " + config.rawGroupDurations);
                     console.log("rawSlotFormat " + rawSlotFormat);*/
-        var ind = 0;
-        config.numRpsElements;
-        var rawLengths = []; // sum of durations of all RAW groups in the same RPS; length same as nRps
-        for (var i = 0; i < config.numRpsElements; i++) {
-            var totalRawDuration = 0;
-            for (var j = ind; j < config.nGroupsPerRps[i] + ind; j++) {
-                totalRawDuration += config.rawGroupDurations[j];
-            }
-            rawLengths.push(totalRawDuration);
-            ind += config.nGroupsPerRps[i];
-        }
-        //console.log("totalRawLengthsPerRps " + rawLengths);
-        var m = rawLengths.reduce(function (a, b) { return Math.max(a, b); });
-        var iRps = rawLengths.indexOf(m); // index of the most filled RPS with RAW groups
-        //console.log("index of the most filled RPS with RAW groups " + iRps);
-        var canvas = document.getElementById("canvSlots");
-        var width = canvas.width;
-        // we want to scale the longest total raw groups in one rps to the window width
-        // all the other groups in RPSs will be scaled to the longest
-        // the goal is to have a feeling about RAW slot durations and RAW groups' durations
-        config.coefProp = width / rawLengths[iRps];
-        //console.log("canvas width " + width);
-        //console.log("coefProp width / (rawLengths[iRps]) " + coefProp);
-        ind = 0;
-        for (var i = 0; i < config.numRpsElements; i++) {
-            config.multiGroupWidths[i] = [];
-            config.multiSlotWidths[i] = [];
-            for (var j = ind; j < ind + config.nGroupsPerRps[i]; j++) {
-                var groupWidth = config.coefProp * config.rawGroupDurations[j] - 2 * 5; //padding=5
-                config.multiGroupWidths[i].push(groupWidth);
-                //widths of groups for [i][j] where i is index of RPS and j index of RAW group inside the i-th RPS
-                config.multiSlotWidths[i].push(groupWidth / config.nRawSlots[j]);
-            }
-            ind += config.nGroupsPerRps[i];
-        }
     };
     EventManager.prototype.onNodeAdded = function (stream, isSTA, id, x, y, aId) {
         var n = isSTA ? new STANode() : new APNode();
@@ -1127,13 +1092,53 @@ var SimulationGUI = (function () {
             var nRps = selectedSimulation.config.numRpsElements; // 2
             var groupsPerRps = selectedSimulation.config.nGroupsPerRps; // [2  1]
             var slotsPerGroup = selectedSimulation.config.nRawSlots; // [2 1   3   1 2 3]
+            var ind = 0;
+            var rawLengths = []; // sum of durations of all RAW groups in the same RPS; length same as nRps
+            for (var i = 0; i < nRps; i++) {
+                var totalRawDuration = 0;
+                for (var j = ind; j < groupsPerRps[i] + ind; j++) {
+                    totalRawDuration += selectedSimulation.config.rawGroupDurations[j];
+                }
+                rawLengths.push(totalRawDuration);
+                ind += groupsPerRps[i];
+            }
+            //console.log("totalRawLengthsPerRps " + rawLengths);
+            var m = rawLengths.reduce(function (a, b) { return Math.max(a, b); });
+            var iRps = rawLengths.indexOf(m); // index of the most filled RPS with RAW groups
+            //console.log("index of the most filled RPS with RAW groups " + iRps);
+            // we want to scale the longest total raw groups in one rps to the window width
+            // all the other groups in RPSs will be scaled to the longest
+            // the goal is to have a feeling about RAW slot durations and RAW groups' durations
+            var numerous = groupsPerRps.reduce(function (a, b) { return Math.max(a, b); });
+            var coefProp = (width - (2 + numerous) * padding) / (rawLengths[iRps]);
+            //console.log("canvas width " + width);
+            //console.log("coefProp width / (rawLengths[iRps]) " + coefProp);
+            var multiGroupWidths = [];
+            var multiSlotWidths = [];
+            ind = 0;
+            for (var i = 0; i < nRps; i++) {
+                multiGroupWidths[i] = [];
+                multiSlotWidths[i] = [];
+                for (var j = ind; j < ind + groupsPerRps[i]; j++) {
+                    var groupWidth = coefProp * selectedSimulation.config.rawGroupDurations[j];
+                    multiGroupWidths[i].push(groupWidth);
+                    //widths of groups for [i][j] where i is index of RPS and j index of RAW group inside the i-th RPS
+                    multiSlotWidths[i].push(groupWidth / slotsPerGroup[j]);
+                }
+                ind += groupsPerRps[i];
+            }
+            //console.log("multiwidth ya 0 " + multiGroupWidths[0]);
+            //console.log("multiwidth ya 1 " + multiGroupWidths[1]);
             var rectHeight = height / nRps - (nRps + 1) * padding;
-            var multiGroupWidths = selectedSimulation.config.multiGroupWidths;
-            var multiSlotWidths = selectedSimulation.config.multiSlotWidths;
             for (var i = 0; i < nRps; i++) {
                 for (var j = 0; j < multiGroupWidths[i].length; j++) {
                     ctx.beginPath();
-                    ctx.rect(padding + j * (padding + multiGroupWidths[i][j] + 0.5) + 0.5, i * rectHeight + (i + 1) * (padding + 0.5), multiGroupWidths[i][j], rectHeight);
+                    var xGroupCoord = void 0;
+                    if (j != 0)
+                        xGroupCoord = padding + j * (padding + multiGroupWidths[i][j - 1] + 0.5) + 0.5;
+                    else
+                        xGroupCoord = padding + 0.5, i * rectHeight + (i + 1) * (padding + 0.5);
+                    ctx.rect(xGroupCoord, i * rectHeight + (i + 1) * (padding + 0.5), multiGroupWidths[i][j], rectHeight);
                     ctx.stroke();
                     var slots = multiGroupWidths[i][j] / multiSlotWidths[i][j]; // number of slots in current group
                     for (var k = 0; k < slots; k++) {
@@ -1150,18 +1155,16 @@ var SimulationGUI = (function () {
                             ctx.fillStyle = "#ecb57c";
                             ctx.fillRect(padding + j * (padding + multiGroupWidths[i][j] + 0.5) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
                             // not needed
-                            /*ctx.beginPath();
+                            ctx.beginPath();
                             ctx.rect(padding + j * (padding + multiGroupWidths[i][j]) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5), multiSlotWidths[i][j], rectHeight);
-                            //ctx.rect(padding + 0 * (padding + multiGroupWidths[0][0]) + 0 * multiSlotWidths[0][0] + 0.5, 0 * rectHeight + (0 + 1) * (padding + 0.5), multiSlotWidths[0][0], rectHeight);
                             ctx.stroke();
-    */
                             y += barHeight;
                             barHeight = fullBarHeight * percSTA;
                             ctx.fillStyle = "#7cb5ec";
                             ctx.fillRect(padding + j * (padding + multiGroupWidths[i][j] + 0.5) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
                         }
                         ctx.beginPath();
-                        ctx.rect(padding + j * (padding + multiGroupWidths[i][j] + 0.5) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5), multiSlotWidths[i][j], rectHeight);
+                        ctx.rect(xGroupCoord + k * multiSlotWidths[i][j], i * rectHeight + (i + 1) * (padding + 0.5), multiSlotWidths[i][j], rectHeight);
                         ctx.stroke();
                     }
                 }
@@ -1857,8 +1860,9 @@ var SimulationConfiguration = (function () {
         this.rawSlotBoundary = [];
         this.rawGroupAidStart = [];
         this.rawGroupAidEnd = [];
-        this.multiGroupWidths = [];
-        this.multiSlotWidths = [];
+        /*coefProp: number[] = []; // to scale drawing RAW elements, take the smallest one
+        multiGroupWidths: number[][] = [];
+        multiSlotWidths: number[][] = [];*/
     }
     return SimulationConfiguration;
 }());

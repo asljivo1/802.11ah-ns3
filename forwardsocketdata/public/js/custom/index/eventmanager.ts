@@ -274,43 +274,7 @@ class EventManager {
             console.log("config.rawGroupAidEnd " + config.rawGroupAidEnd);
             console.log("config.rawGroupDurations " + config.rawGroupDurations);
             console.log("rawSlotFormat " + rawSlotFormat);*/
-            let ind = 0;
-            config.numRpsElements;
-            let rawLengths: number[] = []; // sum of durations of all RAW groups in the same RPS; length same as nRps
-            for (let i = 0; i < config.numRpsElements; i++) {
-                let totalRawDuration = 0;
-                for (let j = ind; j < config.nGroupsPerRps[i] + ind; j++) {
-                    totalRawDuration += config.rawGroupDurations[j];
-                }
-                rawLengths.push(totalRawDuration);
-                ind += config.nGroupsPerRps[i];
-            }
-            //console.log("totalRawLengthsPerRps " + rawLengths);
-            var m = rawLengths.reduce(function (a, b) { return Math.max(a, b) });
-            let iRps = rawLengths.indexOf(m); // index of the most filled RPS with RAW groups
-            //console.log("index of the most filled RPS with RAW groups " + iRps);
-            let canvas = <HTMLCanvasElement>document.getElementById("canvSlots");
-            let width = canvas.width;
-                                    // we want to scale the longest total raw groups in one rps to the window width
-            // all the other groups in RPSs will be scaled to the longest
-            // the goal is to have a feeling about RAW slot durations and RAW groups' durations
-            config.coefProp = width / rawLengths[iRps];
-            //console.log("canvas width " + width);
-            //console.log("coefProp width / (rawLengths[iRps]) " + coefProp);
-            
-
-            ind = 0;
-            for (let i = 0; i < config.numRpsElements; i++) {
-                config.multiGroupWidths[i] = [];
-                config.multiSlotWidths[i] = [];
-                for (let j = ind; j < ind + config.nGroupsPerRps[i]; j++) {
-                    let groupWidth = config.coefProp * config.rawGroupDurations[j] - 2 * 5; //padding=5
-                    config.multiGroupWidths[i].push(groupWidth);
-                    //widths of groups for [i][j] where i is index of RPS and j index of RAW group inside the i-th RPS
-                    config.multiSlotWidths[i].push(groupWidth/config.nRawSlots[j]);
-                }
-                ind += config.nGroupsPerRps[i];
-            }
+    
     }
 
     onNodeAdded(stream: string, isSTA: boolean, id: number, x: number, y: number, aId: number) {
