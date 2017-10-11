@@ -14,6 +14,7 @@ var SimulationNode = (function () {
         this.x = 0;
         this.y = 0;
         this.aId = 0;
+        this.rpsIndex = 0;
         this.groupNumber = 0;
         this.rawSlotIndex = 0;
         this.type = "";
@@ -116,6 +117,15 @@ var STANode = (function (_super) {
 var SimulationConfiguration = (function () {
     function SimulationConfiguration() {
         this.name = "";
+        this.nGroupsPerRps = [];
+        this.rawGroupDurations = [];
+        this.rawSlotFormat = [];
+        this.rawSlotDurationCount = [];
+        this.rawSlotDuration = [];
+        this.nRawSlots = [];
+        this.rawSlotBoundary = [];
+        this.rawGroupAidStart = [];
+        this.rawGroupAidEnd = [];
     }
     return SimulationConfiguration;
 }());

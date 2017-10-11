@@ -648,6 +648,9 @@ var EventManager = (function () {
         else
             this.updateGUI = true;
         var lastTime;
+        for (var f = 0; f < this.events.length; f++) {
+            //console.log(this.events[f].parts[1]);
+        }
         while (this.events.length > 0) {
             var ev = this.events[0];
             switch (ev.parts[1]) {
@@ -711,6 +714,7 @@ var EventManager = (function () {
     EventManager.prototype.onReceive = function (entry) {
         var parts = entry.line.split(';');
         var time = parseInt(parts[0]);
+        //console.log("evManager3 " + parts);
         time = time / (1000 * 1000); // ns -> ms
         var ev = new SimulationEvent(entry.stream, time, parts);
         this.events.push(ev);
@@ -721,6 +725,7 @@ var EventManager = (function () {
             simulation = new Simulation();
             this.sim.simulationContainer.setSimulation(stream, simulation);
         }
+        console.log("ON START");
         simulation.nodes = [];
         simulation.slotUsageAP = [];
         simulation.slotUsageSTA = [];
@@ -728,17 +733,15 @@ var EventManager = (function () {
         simulation.totalSlotUsageSTA = [];
         simulation.totalTraffic = 0;
         var config = simulation.config;
-        simulation.config.nGroupsPerRps = [];
-        simulation.config.rawSlotFormat = [];
-        simulation.config.rawSlotDurationCount = [];
-        simulation.config.rawSlotDuration = [];
-        simulation.config.nRawSlots = [];
-        simulation.config.rawSlotBoundary = [];
-        simulation.config.rawGroupAidStart = [];
-        simulation.config.rawGroupAidEnd = [];
-        simulation.config.rawGroupDurations = [];
-        config.multiGroupWidths = [];
-        config.multiSlotWidths = [];
+        /*config.nGroupsPerRps = [];
+        config.rawSlotFormat = [];
+        config.rawSlotDurationCount = [];
+        config.rawSlotDuration = [];
+        config.nRawSlots = [];
+        config.rawSlotBoundary = [];
+        config.rawGroupAidStart = [];
+        config.rawGroupAidEnd = [];
+        config.rawGroupDurations = [];*/
         config.AIDRAWRange = aidRAWRange;
         config.numberOfRAWGroups = numberOfRAWGroups;
         config.RAWSlotFormat = RAWSlotFormat;
@@ -749,7 +752,7 @@ var EventManager = (function () {
         config.dataRate = dataRate;
         config.bandwidth = bandwidth;
         config.trafficInterval = trafficInterval;
-        config.trafficPacketsize = trafficPacketsize;
+        config.payloadSize = trafficPacketsize;
         config.beaconInterval = beaconInterval;
         config.name = name;
         config.propagationLossExponent = propagationLossExponent;
@@ -809,17 +812,32 @@ var EventManager = (function () {
     };
     EventManager.prototype.onRawConfig = function (stream, rpsIndex, rawIndex, rawSlotFormat, rawSlotDurationCount, nRawSlots, rawSlotBoundary, rawGroupAidStart, rawGroupAidEnd) {
         var config = this.sim.simulationContainer.getSimulation(stream).config;
-        if (config.nGroupsPerRps.length == 0) {
-            config.nGroupsPerRps.push(rawIndex + 1);
-        }
-        else {
-            if (config.nGroupsPerRps[config.nGroupsPerRps.length - 1] >= rawIndex + 1) {
+        console.log("ON RAW CONF");
+        /*//if make
+        if (!config.nGroupsPerRps) {
+            console.log("UNDEFINED+++");
+            config.nGroupsPerRps = [];
+            config.rawGroupDurations = [];
+            config.rawSlotFormat = [];
+            config.rawSlotDurationCount = [];
+            config.rawSlotDuration = [];
+            config.nRawSlots = [];
+            config.rawSlotBoundary = [];
+            config.rawGroupAidStart = [];
+            config.rawGroupAidEnd = [];
+        }*/
+        if (config.nGroupsPerRps)
+            if (config.nGroupsPerRps.length == 0) {
                 config.nGroupsPerRps.push(rawIndex + 1);
             }
             else {
-                config.nGroupsPerRps[config.nGroupsPerRps.length - 1]++;
+                if (config.nGroupsPerRps[config.nGroupsPerRps.length - 1] >= rawIndex + 1) {
+                    config.nGroupsPerRps.push(rawIndex + 1);
+                }
+                else {
+                    config.nGroupsPerRps[config.nGroupsPerRps.length - 1]++;
+                }
             }
-        }
         config.rawSlotFormat.push(rawSlotFormat);
         config.rawSlotDurationCount.push(rawSlotDurationCount);
         var slotDuration = 500 + 120 * rawSlotDurationCount;
@@ -1022,8 +1040,10 @@ var SimulationContainer = (function () {
     };
     return SimulationContainer;
 }());
+var toolTipContainer = [];
 // The Tool-Tip instance:
 function ToolTip(canvas, region, text, width, timeout) {
+    toolTipContainer = [];
     var me = this, // self-reference for event handlers
     div = document.createElement("div"), // the tool-tip div
     parent = canvas.parentNode, // parent node for canvas
@@ -1099,8 +1119,6 @@ var SimulationGUI = (function () {
             new Color(100, 0, 100),
             new Color(0, 0, 100),
             new Color(0, 0, 0)];
-        this.refreshTimerId = -1;
-        this.lastUpdatedOn = new Date();
         this.ctx = canvas.getContext("2d");
         this.heatMapPalette = new Palette();
         this.heatMapPalette.addColor(new Color(255, 0, 0, 1, 0));
@@ -1144,9 +1162,9 @@ var SimulationGUI = (function () {
         ctx.fillStyle = "#7cb5ec";
         ctx.lineWidth = 1;
         if (selectedSimulation.config.nRawSlots.length > 1) {
-            var nRps = selectedSimulation.config.numRpsElements; // 2
-            var groupsPerRps = selectedSimulation.config.nGroupsPerRps; // [2  1]
-            var slotsPerGroup = selectedSimulation.config.nRawSlots; // [2 1   3   1 2 3]
+            var nRps = selectedSimulation.config.numRpsElements;
+            var groupsPerRps = selectedSimulation.config.nGroupsPerRps;
+            var slotsPerGroup = selectedSimulation.config.nRawSlots;
             var ind = 0;
             var rawLengths = []; // sum of durations of all RAW groups in the same RPS; length same as nRps
             for (var i = 0; i < nRps; i++) {
@@ -1157,17 +1175,13 @@ var SimulationGUI = (function () {
                 rawLengths.push(totalRawDuration);
                 ind += groupsPerRps[i];
             }
-            //console.log("totalRawLengthsPerRps " + rawLengths);
             var m = rawLengths.reduce(function (a, b) { return Math.max(a, b); });
             var iRps = rawLengths.indexOf(m); // index of the most filled RPS with RAW groups
-            //console.log("index of the most filled RPS with RAW groups " + iRps);
             // we want to scale the longest total raw groups in one rps to the window width
             // all the other groups in RPSs will be scaled to the longest
             // the goal is to have a feeling about RAW slot durations and RAW groups' durations
             var numerous = groupsPerRps.reduce(function (a, b) { return Math.max(a, b); });
             var coefProp = (width - (2 + numerous) * padding) / (rawLengths[iRps]);
-            //console.log("canvas width " + width);
-            //console.log("coefProp width / (rawLengths[iRps]) " + coefProp);
             var multiGroupWidths = [];
             var multiSlotWidths = [];
             ind = 0;
@@ -1182,8 +1196,6 @@ var SimulationGUI = (function () {
                 }
                 ind += groupsPerRps[i];
             }
-            //console.log("multiwidth ya 0 " + multiGroupWidths[0]);
-            //console.log("multiwidth ya 1 " + multiGroupWidths[1]);
             var rectHeight = height / nRps - (nRps + 1) * padding;
             var currentSlotNum = 0;
             ind = 0;
@@ -1230,7 +1242,7 @@ var SimulationGUI = (function () {
                     var region = { x: xGroupCoord, y: i * rectHeight + (i + 1) * (padding + 0.5), w: multiGroupWidths[i][j], h: rectHeight };
                     var showtext = "Cross-slot: " + selectedSimulation.config.rawSlotBoundary[ind] + "; Slot count: " + selectedSimulation.config.rawSlotDurationCount[ind] + "; AID start: " + selectedSimulation.config.rawGroupAidStart[ind] + "; AID end: " + selectedSimulation.config.rawGroupAidEnd[ind];
                     ind++;
-                    var t1 = new ToolTip(canv, region, showtext, 150, 4000);
+                    toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
                 }
             }
         }
@@ -1432,6 +1444,8 @@ var SimulationGUI = (function () {
         this.selectedNode = id;
         this.updateGUI(true);
     };
+    /*private refreshTimerId: number = -1;
+    private lastUpdatedOn: Date = new Date();*/
     SimulationGUI.prototype.updateGUI = function (full) {
         if (!this.simulationContainer.hasSimulations())
             return;
@@ -1440,7 +1454,12 @@ var SimulationGUI = (function () {
         if (typeof selectedSimulation == "undefined")
             return;
         this.updateConfigGUI(selectedSimulation);
-        $("#simChannelTraffic").text(selectedSimulation.totalTraffic + "B (" + (selectedSimulation.totalTraffic / selectedSimulation.currentTime * 1000).toFixed(2) + "B/s)");
+        if (selectedSimulation.totalTraffic) {
+            $("#simChannelTraffic").text(selectedSimulation.totalTraffic + "B (" + (selectedSimulation.totalTraffic * 8 / selectedSimulation.currentTime).toFixed(2) + "Kbit/s)");
+        }
+        else {
+            $("#simChannelTraffic").text("0 B (0 Kbit/s)");
+        }
         var propertyElements = $(".nodeProperty");
         if (this.selectedNode < 0 || this.selectedNode >= selectedSimulation.nodes.length)
             this.updateGUIForAll(simulations, selectedSimulation, full);
@@ -1696,11 +1715,9 @@ $(document).ready(function () {
     });
     sock.on("entry", function (data) {
         evManager.onReceive(data);
-        //console.log("Received " + data.stream + ": " + data.line);
     });
     sock.on("bulkentry", function (data) {
         evManager.onReceiveBulk(data);
-        //console.log("Received " + data.stream + ": " + data.line);
     });
     $(canvas).keydown(function (ev) {
         if (!sim.simulationContainer.hasSimulations())
@@ -1914,7 +1931,6 @@ var STANode = (function (_super) {
 var SimulationConfiguration = (function () {
     function SimulationConfiguration() {
         this.name = "";
-        // rpsIndex:number, rawIndex: number,
         this.nGroupsPerRps = [];
         this.rawGroupDurations = [];
         this.rawSlotFormat = [];
@@ -1924,9 +1940,6 @@ var SimulationConfiguration = (function () {
         this.rawSlotBoundary = [];
         this.rawGroupAidStart = [];
         this.rawGroupAidEnd = [];
-        /*coefProp: number[] = []; // to scale drawing RAW elements, take the smallest one
-        multiGroupWidths: number[][] = [];
-        multiSlotWidths: number[][] = [];*/
     }
     return SimulationConfiguration;
 }());

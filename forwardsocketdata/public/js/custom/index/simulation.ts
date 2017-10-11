@@ -137,7 +137,7 @@ class SimulationConfiguration {
     bandwidth: number;
 
     trafficInterval: number;
-    trafficPacketsize: number;
+    payloadSize: number;
 
     beaconInterval: number;
 
@@ -172,7 +172,7 @@ class SimulationConfiguration {
     contentionPerRAWSlotOnlyInFirstGroup: number;
 
     numRpsElements: number;
-    // rpsIndex:number, rawIndex: number,
+
     nGroupsPerRps: number[] = [];
     rawGroupDurations: number[] = [];
     rawSlotFormat: number[] = [];
@@ -182,10 +182,6 @@ class SimulationConfiguration {
     rawSlotBoundary: number[] = [];
     rawGroupAidStart: number[] = [];
     rawGroupAidEnd: number[] = [];
-
-    /*coefProp: number[] = []; // to scale drawing RAW elements, take the smallest one
-    multiGroupWidths: number[][] = [];
-    multiSlotWidths: number[][] = [];*/
 }
 
 class Simulation {

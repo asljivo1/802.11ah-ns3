@@ -47,14 +47,18 @@ class SimulationContainer {
 
 }
 
+var toolTipContainer: any[] = [];
+
 // The Tool-Tip instance:
 function ToolTip(canvas, region, text, width, timeout) {
-
+    
+    toolTipContainer = [];
+    
     var me = this,                                // self-reference for event handlers
         div = document.createElement("div"),      // the tool-tip div
         parent = canvas.parentNode,               // parent node for canvas
         visible = false;                          // current status
-
+      
     // set some initial styles, can be replaced by class-name etc.
     div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.5;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";    
     div.innerHTML = text;
@@ -197,9 +201,9 @@ class SimulationGUI {
 
         ctx.lineWidth = 1;
         if (selectedSimulation.config.nRawSlots.length > 1) {
-            let nRps = selectedSimulation.config.numRpsElements;    // 2
-            let groupsPerRps = selectedSimulation.config.nGroupsPerRps; // [2  1]
-            let slotsPerGroup = selectedSimulation.config.nRawSlots; // [2 1   3   1 2 3]
+            let nRps = selectedSimulation.config.numRpsElements;
+            let groupsPerRps = selectedSimulation.config.nGroupsPerRps;
+            let slotsPerGroup = selectedSimulation.config.nRawSlots;
             let ind = 0;
             let rawLengths: number[] = []; // sum of durations of all RAW groups in the same RPS; length same as nRps
             for (let i = 0; i < nRps; i++) {
@@ -210,18 +214,14 @@ class SimulationGUI {
                 rawLengths.push(totalRawDuration);
                 ind += groupsPerRps[i];
             }
-            //console.log("totalRawLengthsPerRps " + rawLengths);
             var m = rawLengths.reduce(function (a, b) { return Math.max(a, b) });
             let iRps = rawLengths.indexOf(m); // index of the most filled RPS with RAW groups
-            //console.log("index of the most filled RPS with RAW groups " + iRps);
 
             // we want to scale the longest total raw groups in one rps to the window width
             // all the other groups in RPSs will be scaled to the longest
             // the goal is to have a feeling about RAW slot durations and RAW groups' durations
             var numerous = groupsPerRps.reduce(function (a, b) { return Math.max(a, b) });
             let coefProp = (width - (2 + numerous) * padding) / (rawLengths[iRps]);
-            //console.log("canvas width " + width);
-            //console.log("coefProp width / (rawLengths[iRps]) " + coefProp);
 
             let multiGroupWidths: number[][] = [];
             let multiSlotWidths: number[][] = [];
@@ -239,8 +239,6 @@ class SimulationGUI {
                 }
                 ind += groupsPerRps[i];
             }
-            //console.log("multiwidth ya 0 " + multiGroupWidths[0]);
-            //console.log("multiwidth ya 1 " + multiGroupWidths[1]);
             let rectHeight = height / nRps - (nRps + 1) * padding;
 
             let currentSlotNum = 0;
@@ -297,8 +295,7 @@ class SimulationGUI {
                     let region = { x: xGroupCoord, y: i * rectHeight + (i + 1) * (padding + 0.5), w: multiGroupWidths[i][j], h: rectHeight };
                     let showtext = "Cross-slot: " + selectedSimulation.config.rawSlotBoundary[ind] + "; Slot count: " + selectedSimulation.config.rawSlotDurationCount[ind] + "; AID start: " + selectedSimulation.config.rawGroupAidStart[ind] + "; AID end: " + selectedSimulation.config.rawGroupAidEnd[ind];
                     ind++;
-                    let t1 = new ToolTip(canv, region, showtext, 150, 4000);
-
+                    toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
                 }
             }
         }
@@ -529,8 +526,8 @@ class SimulationGUI {
         this.updateGUI(true);
     }
 
-    private refreshTimerId: number = -1;
-    private lastUpdatedOn: Date = new Date();
+    /*private refreshTimerId: number = -1;
+    private lastUpdatedOn: Date = new Date();*/
 
     updateGUI(full: boolean) {
         if (!this.simulationContainer.hasSimulations())
@@ -545,7 +542,12 @@ class SimulationGUI {
 
         this.updateConfigGUI(selectedSimulation);
 
-        $("#simChannelTraffic").text(`${selectedSimulation.totalTraffic}B (${(selectedSimulation.totalTraffic / selectedSimulation.currentTime * 1000).toFixed(2)}B/s)`);
+        if (selectedSimulation.totalTraffic){
+            $("#simChannelTraffic").text(`${selectedSimulation.totalTraffic}B (${(selectedSimulation.totalTraffic * 8 / selectedSimulation.currentTime).toFixed(2)}Kbit/s)`);            
+        }
+        else {
+            $("#simChannelTraffic").text(`0 B (0 Kbit/s)`);
+        }
         var propertyElements = $(".nodeProperty");
 
         if (this.selectedNode < 0 || this.selectedNode >= selectedSimulation.nodes.length)
@@ -809,7 +811,7 @@ function getParameterByName(name: string, url?: string) {
 
 $(document).ready(function () {
 
-
+    
     let sim: SimulationGUI = null;
     let evManager: EventManager = null;
 
@@ -852,12 +854,11 @@ $(document).ready(function () {
         evManager = new EventManager(sim);
 
 
-
         console.log("Subscribing to " + streams);
         sock.emit("subscribe", {
             simulations: streams
         });
-
+        
 
     }).on("error", function () {
         console.log("Unable to connect to server websocket endpoint");
@@ -867,16 +868,15 @@ $(document).ready(function () {
         alert("Error: " + data);
     });
 
-    sock.on("entry", function (data: IEntry) {
-        evManager.onReceive(data);
-        //console.log("Received " + data.stream + ": " + data.line);
+    sock.on("entry", function (data: IEntry) {           
+        evManager.onReceive(data);     
+        
     });
 
     sock.on("bulkentry", function (data: IEntries) {
         evManager.onReceiveBulk(data);
-        //console.log("Received " + data.stream + ": " + data.line);
     });
-
+    
     $(canvas).keydown(ev => {
         if (!sim.simulationContainer.hasSimulations())
             return;
@@ -984,8 +984,8 @@ $(document).ready(function () {
         let dt = newTime - time;
 
         sim.update(dt);
-        if (evManager != null) {
-            try {
+        if (evManager != null) {            
+            try {                
                 evManager.processEvents();
             }
             catch (e) {

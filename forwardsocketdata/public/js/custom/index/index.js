@@ -32,6 +32,61 @@ var SimulationContainer = (function () {
     };
     return SimulationContainer;
 }());
+// The Tool-Tip instance:
+function ToolTip(canvas, region, text, width, timeout) {
+    var me = this, // self-reference for event handlers
+    div = document.createElement("div"), // the tool-tip div
+    parent = canvas.parentNode, // parent node for canvas
+    visible = false; // current status
+    // set some initial styles, can be replaced by class-name etc.
+    div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.5;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";
+    div.innerHTML = text;
+    // show the tool-tip
+    this.show = function (pos) {
+        if (!visible) {
+            visible = true; // lock so it's only shown once
+            setDivPos(pos); // set position
+            parent.appendChild(div); // add to parent of canvas
+            setTimeout(hide, timeout); // timeout for hide
+        }
+    };
+    // hide the tool-tip
+    function hide() {
+        visible = false; // hide it after timeout
+        parent.removeChild(div); // remove from DOM
+    }
+    // check mouse position, add limits as wanted... just for example:
+    function check(e) {
+        var pos = getPos(e), posAbs = { x: e.clientX, y: e.clientY }; // div is fixed, so use clientX/Y
+        if (!visible &&
+            pos.x >= region.x && pos.x < region.x + region.w &&
+            pos.y >= region.y && pos.y < region.y + region.h) {
+            me.show(posAbs); // show tool-tip at this pos
+        }
+        else
+            setDivPos(posAbs); // otherwise, update position
+    }
+    // get mouse position relative to canvas
+    function getPos(e) {
+        var r = canvas.getBoundingClientRect();
+        return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+    // update and adjust div position if needed (anchor to a different corner etc.)
+    function setDivPos(pos) {
+        if (visible) {
+            if (pos.x < 0)
+                pos.x = 0;
+            if (pos.y < 0)
+                pos.y = 0;
+            // other bound checks here
+            div.style.left = pos.x + "px";
+            div.style.top = pos.y + "px";
+        }
+    }
+    // we need to use shared event handlers:
+    canvas.addEventListener("mousemove", check);
+    canvas.addEventListener("click", check);
+}
 var SimulationGUI = (function () {
     function SimulationGUI(canvas) {
         this.canvas = canvas;
@@ -54,8 +109,6 @@ var SimulationGUI = (function () {
             new Color(100, 0, 100),
             new Color(0, 0, 100),
             new Color(0, 0, 0)];
-        this.refreshTimerId = -1;
-        this.lastUpdatedOn = new Date();
         this.ctx = canvas.getContext("2d");
         this.heatMapPalette = new Palette();
         this.heatMapPalette.addColor(new Color(255, 0, 0, 1, 0));
@@ -81,8 +134,6 @@ var SimulationGUI = (function () {
         var canv = document.getElementById("canvSlots");
         var ctx = canv.getContext("2d");
         var selectedSimulation = this.simulationContainer.getSimulation(this.selectedStream);
-        var groups = selectedSimulation.config.numberOfRAWGroups;
-        var slots = selectedSimulation.config.numberOfRAWSlots;
         if (selectedSimulation.slotUsageAP.length == 0 || selectedSimulation.slotUsageSTA.length == 0)
             return;
         //let lastValues = selectedSimulation.totalSlotUsageAP;
@@ -95,42 +146,133 @@ var SimulationGUI = (function () {
         var width = canv.width;
         var height = canv.height;
         var padding = 5;
-        var groupWidth = Math.floor(width / groups) - 2 * padding;
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, width, height);
         ctx.strokeStyle = "#CCC";
         ctx.fillStyle = "#7cb5ec";
-        var rectHeight = height - 2 * padding;
         ctx.lineWidth = 1;
-        for (var g = 0; g < groups; g++) {
-            ctx.beginPath();
-            ctx.rect(padding + g * (padding + groupWidth) + 0.5, padding + 0.5, groupWidth, rectHeight);
-            ctx.stroke();
-            var slotWidth = groupWidth / slots;
-            for (var s = 0; s < slots; s++) {
-                var sum = selectedSimulation.totalSlotUsageAP[g * slots + s] + selectedSimulation.totalSlotUsageSTA[g * slots + s];
-                if (sum > 0) {
-                    var percAP = selectedSimulation.totalSlotUsageAP[g * slots + s] / sum;
-                    var percSTA = selectedSimulation.totalSlotUsageSTA[g * slots + s] / sum;
-                    var value = void 0;
-                    var y = void 0;
-                    value = selectedSimulation.totalSlotUsageAP[g * slots + s];
-                    y = (1 - sum / max) * rectHeight;
-                    var fullBarHeight = (rectHeight - y);
-                    var barHeight = fullBarHeight * percAP;
-                    ctx.fillStyle = "#ecb57c";
-                    ctx.fillRect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + y + 0.5, slotWidth, barHeight);
+        if (selectedSimulation.config.nRawSlots.length > 1) {
+            var nRps = selectedSimulation.config.numRpsElements;
+            var groupsPerRps = selectedSimulation.config.nGroupsPerRps;
+            var slotsPerGroup = selectedSimulation.config.nRawSlots;
+            var ind = 0;
+            var rawLengths = []; // sum of durations of all RAW groups in the same RPS; length same as nRps
+            for (var i = 0; i < nRps; i++) {
+                var totalRawDuration = 0;
+                for (var j = ind; j < groupsPerRps[i] + ind; j++) {
+                    totalRawDuration += selectedSimulation.config.rawGroupDurations[j];
+                }
+                rawLengths.push(totalRawDuration);
+                ind += groupsPerRps[i];
+            }
+            var m = rawLengths.reduce(function (a, b) { return Math.max(a, b); });
+            var iRps = rawLengths.indexOf(m); // index of the most filled RPS with RAW groups
+            // we want to scale the longest total raw groups in one rps to the window width
+            // all the other groups in RPSs will be scaled to the longest
+            // the goal is to have a feeling about RAW slot durations and RAW groups' durations
+            var numerous = groupsPerRps.reduce(function (a, b) { return Math.max(a, b); });
+            var coefProp = (width - (2 + numerous) * padding) / (rawLengths[iRps]);
+            var multiGroupWidths = [];
+            var multiSlotWidths = [];
+            ind = 0;
+            for (var i = 0; i < nRps; i++) {
+                multiGroupWidths[i] = [];
+                multiSlotWidths[i] = [];
+                for (var j = ind; j < ind + groupsPerRps[i]; j++) {
+                    var groupWidth = coefProp * selectedSimulation.config.rawGroupDurations[j];
+                    multiGroupWidths[i].push(groupWidth);
+                    //widths of groups for [i][j] where i is index of RPS and j index of RAW group inside the i-th RPS
+                    multiSlotWidths[i].push(groupWidth / slotsPerGroup[j]);
+                }
+                ind += groupsPerRps[i];
+            }
+            var rectHeight = height / nRps - (nRps + 1) * padding;
+            var currentSlotNum = 0;
+            ind = 0;
+            for (var i = 0; i < nRps; i++) {
+                for (var j = 0; j < multiGroupWidths[i].length; j++) {
+                    ctx.beginPath();
+                    var xGroupCoord = void 0;
+                    if (j != 0)
+                        xGroupCoord = padding + j * (padding + multiGroupWidths[i][j - 1] + 0.5) + 0.5;
+                    else
+                        xGroupCoord = padding + 0.5, i * rectHeight + (i + 1) * (padding + 0.5);
+                    ctx.rect(xGroupCoord, i * rectHeight + (i + 1) * (padding + 0.5), multiGroupWidths[i][j], rectHeight);
+                    ctx.stroke();
+                    var slots = multiGroupWidths[i][j] / multiSlotWidths[i][j]; // number of slots in current group
+                    for (var k = 0; k < slots; k++) {
+                        var sum = selectedSimulation.totalSlotUsageAP[currentSlotNum] + selectedSimulation.totalSlotUsageSTA[currentSlotNum];
+                        if (sum > 0) {
+                            var percAP = selectedSimulation.totalSlotUsageAP[currentSlotNum] / sum;
+                            var percSTA = selectedSimulation.totalSlotUsageSTA[currentSlotNum] / sum;
+                            var value = void 0;
+                            var y = void 0;
+                            value = selectedSimulation.totalSlotUsageAP[currentSlotNum];
+                            currentSlotNum++;
+                            y = (1 - sum / max) * rectHeight; // supljina u slotu prazno vertikalno
+                            var fullBarHeight = (rectHeight - y); // ap+sta bar height orange+blue
+                            var barHeight = fullBarHeight * percAP; // ap bar height orange
+                            ctx.fillStyle = "#ecb57c";
+                            ctx.fillRect(xGroupCoord + k * multiSlotWidths[i][j], i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
+                            /*
+                            // not needed
+                            ctx.beginPath();
+                            ctx.rect(padding + j * (padding + multiGroupWidths[i][j]) + k * multiSlotWidths[i][j] + 0.5, i * rectHeight + (i + 1) * (padding + 0.5), multiSlotWidths[i][j], rectHeight);
+                            ctx.stroke();*/
+                            y += barHeight;
+                            barHeight = fullBarHeight * percSTA;
+                            ctx.fillStyle = "#7cb5ec";
+                            ctx.fillRect(xGroupCoord + k * multiSlotWidths[i][j], i * rectHeight + (i + 1) * (padding + 0.5) + y, multiSlotWidths[i][j], barHeight);
+                        }
+                        ctx.beginPath();
+                        ctx.rect(xGroupCoord + k * multiSlotWidths[i][j], i * rectHeight + (i + 1) * (padding + 0.5), multiSlotWidths[i][j], rectHeight);
+                        ctx.stroke();
+                    }
+                    // hover xGroupCoord, i * rectHeight + (i + 1) * (padding + 0.5), multiGroupWidths[i][j], rectHeight
+                    var region = { x: xGroupCoord, y: i * rectHeight + (i + 1) * (padding + 0.5), w: multiGroupWidths[i][j], h: rectHeight };
+                    var showtext = "Cross-slot: " + selectedSimulation.config.rawSlotBoundary[ind] + "; Slot count: " + selectedSimulation.config.rawSlotDurationCount[ind] + "; AID start: " + selectedSimulation.config.rawGroupAidStart[ind] + "; AID end: " + selectedSimulation.config.rawGroupAidEnd[ind];
+                    ind++;
+                    var t1 = new ToolTip(canv, region, showtext, 150, 4000);
+                }
+            }
+        }
+        else {
+            var groups = selectedSimulation.config.numberOfRAWGroups;
+            var slots = selectedSimulation.config.numberOfRAWSlots;
+            var groupWidth = Math.floor(width / groups) - 2 * padding;
+            var rectHeight = height - 2 * padding;
+            for (var g = 0; g < groups; g++) {
+                ctx.beginPath();
+                ctx.rect(padding + g * (padding + groupWidth) + 0.5, padding + 0.5, groupWidth, rectHeight);
+                ctx.stroke();
+                var slotWidth = groupWidth / slots;
+                for (var s = 0; s < slots; s++) {
+                    var sum = selectedSimulation.totalSlotUsageAP[g * slots + s] + selectedSimulation.totalSlotUsageSTA[g * slots + s];
+                    if (sum > 0) {
+                        var percAP = selectedSimulation.totalSlotUsageAP[g * slots + s] / sum;
+                        var percSTA = selectedSimulation.totalSlotUsageSTA[g * slots + s] / sum;
+                        var value = void 0;
+                        var y = void 0;
+                        value = selectedSimulation.totalSlotUsageAP[g * slots + s];
+                        y = (1 - sum / max) * rectHeight;
+                        var fullBarHeight = (rectHeight - y);
+                        var barHeight = fullBarHeight * percAP;
+                        ctx.fillStyle = "#ecb57c";
+                        ctx.fillRect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + y + 0.5, slotWidth, barHeight);
+                        // these 3 lines below are unnecessary
+                        /*ctx.beginPath();
+                        ctx.rect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + 0.5, slotWidth, height - 2 * padding);
+                        ctx.stroke();
+                        */
+                        y += barHeight;
+                        barHeight = fullBarHeight * percSTA;
+                        ctx.fillStyle = "#7cb5ec";
+                        ctx.fillRect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + y + 0.5, slotWidth, barHeight);
+                    }
                     ctx.beginPath();
                     ctx.rect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + 0.5, slotWidth, height - 2 * padding);
                     ctx.stroke();
-                    y += barHeight;
-                    barHeight = fullBarHeight * percSTA;
-                    ctx.fillStyle = "#7cb5ec";
-                    ctx.fillRect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + y + 0.5, slotWidth, barHeight);
                 }
-                ctx.beginPath();
-                ctx.rect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + 0.5, slotWidth, height - 2 * padding);
-                ctx.stroke();
             }
         }
     };
@@ -292,6 +434,8 @@ var SimulationGUI = (function () {
         this.selectedNode = id;
         this.updateGUI(true);
     };
+    /*private refreshTimerId: number = -1;
+    private lastUpdatedOn: Date = new Date();*/
     SimulationGUI.prototype.updateGUI = function (full) {
         if (!this.simulationContainer.hasSimulations())
             return;
@@ -331,6 +475,7 @@ var SimulationGUI = (function () {
         }
         else {
             $("#nodeAID").text(node.aId);
+            $("#nodeRpsIndex").text(node.rpsIndex);
             $("#nodeGroupNumber").text(node.groupNumber);
             $("#nodeRawSlotIndex").text(node.rawSlotIndex);
         }
@@ -366,20 +511,22 @@ var SimulationGUI = (function () {
                     else {
                         el = values[values.length - 1][prop] + "";
                     }
+                    var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                        $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
+                    if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                        prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
+                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                    }
                     if (this.automaticHideNullProperties) {
-                        if (selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] &&
-                            selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] != -1) {
-                            // -1 elements are hidden because they are obviously not measured for this scenario
-                            //console.log("data "+ $('.header').data());
-                            //console.log("context "+ $('.header').context);
-                            //console.log("OVO "+$(propertyElements[i].get));
+                        if ((selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] &&
+                            selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] != -1) ||
+                            this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
                             $(propertyElements[i]).show();
                         }
                         else {
                             $(propertyElements[i]).hide();
                         }
                     }
-                    else { }
                     var propType = $(propertyElements[i]).attr("data-type");
                     var zScore = avgStdDev[1] == 0 ? 0 : ((values[values.length - 1][prop] - avgStdDev[0]) / avgStdDev[1]);
                     if (!isNaN(avgStdDev[0]) && !isNaN(avgStdDev[1])) {
@@ -442,6 +589,7 @@ var SimulationGUI = (function () {
         $("#nodeTitle").text("All nodes");
         $("#nodePosition").text("---");
         $("#nodeAID").text("---");
+        $("#nodeRpsIndex").text("---");
         $("#nodeGroupNumber").text("---");
         $("#nodeRawSlotIndex").text("---");
         var propertyElements = $(".nodeProperty");
@@ -474,14 +622,19 @@ var SimulationGUI = (function () {
                 }
                 else {
                     el = text;
-                    if (this.automaticHideNullProperties) {
-                        if (el != '0.00 (stddev: 0.00)' && el != '-1') {
-                            $(propertyElements[i]).show();
-                        }
-                        else {
-                            //zero and -1 elements and the names of hidden metrics are shown in the browser console
-                            $(propertyElements[i]).hide();
-                        }
+                }
+                var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                    $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
+                if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                    prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                }
+                if (this.automaticHideNullProperties) {
+                    if ((el != '0.00 (stddev: 0.00)' && el != "-1") || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                        $(propertyElements[i]).show();
+                    }
+                    else {
+                        //zero and -1 elements and the names of hidden metrics are shown in the browser console
+                        $(propertyElements[i]).hide();
                     }
                 }
                 $($(propertyElements[i]).find("td").get(1)).empty().append(el);
@@ -547,11 +700,9 @@ $(document).ready(function () {
     });
     sock.on("entry", function (data) {
         evManager.onReceive(data);
-        //console.log("Received " + data.stream + ": " + data.line);
     });
     sock.on("bulkentry", function (data) {
         evManager.onReceiveBulk(data);
-        //console.log("Received " + data.stream + ": " + data.line);
     });
     $(canvas).keydown(function (ev) {
         if (!sim.simulationContainer.hasSimulations())
@@ -626,21 +777,18 @@ $(document).ready(function () {
         if (sign == '-') {
             sim.automaticHideNullProperties = true;
             var i = sim.headersListFullyShown.indexOf(elem);
-            console.log('element: ' + elem);
-            console.log('index: ' + i);
             sim.headersListFullyShown.splice(i, 1);
-            console.log(sim.headersListFullyShown);
             sim.updateGUI(true);
         }
         else {
             sim.automaticHideNullProperties = false;
             $(this).nextUntil('tr.header').show();
+            elem.trim();
             sim.headersListFullyShown.push(elem);
-            console.log(sim.headersListFullyShown);
         }
     });
-    $("#pnlDistribution").show();
-    sim.changeNodeSelection(-1);
+    /*$("#pnlDistribution").show();
+    sim.changeNodeSelection(-1);*/
     loop();
     function loop() {
         sim.draw();

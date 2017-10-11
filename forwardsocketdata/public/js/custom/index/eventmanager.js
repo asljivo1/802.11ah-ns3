@@ -10,19 +10,25 @@ var EventManager = (function () {
         else
             this.updateGUI = true;
         var lastTime;
+        for (var f = 0; f < this.events.length; f++) {
+            //console.log(this.events[f].parts[1]);
+        }
         while (this.events.length > 0) {
             var ev = this.events[0];
             switch (ev.parts[1]) {
                 case 'startheader':
                     break;
+                case 'rawconfig':
+                    this.onRawConfig(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), parseInt(ev.parts[4]), parseInt(ev.parts[5]), parseInt(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), parseInt(ev.parts[9]));
+                    break;
                 case 'start':
-                    this.onStart(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), ev.parts[4], parseInt(ev.parts[5]), parseInt(ev.parts[6]), parseInt(ev.parts[7]), ev.parts[8], parseFloat(ev.parts[9]), parseFloat(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), ev.parts[14], parseFloat(ev.parts[15]), parseFloat(ev.parts[16]), ev.parts[17], parseInt(ev.parts[18]), parseInt(ev.parts[19]), ev.parts[20], parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), parseInt(ev.parts[25]), parseInt(ev.parts[26]), parseInt(ev.parts[27]), parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseInt(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseFloat(ev.parts[33]), parseFloat(ev.parts[34]), parseInt(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]));
+                    this.onStart(ev.stream, parseInt(ev.parts[2]), ev.parts[3], parseFloat(ev.parts[4]), parseFloat(ev.parts[5]), parseInt(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), ev.parts[9], parseFloat(ev.parts[10]), parseFloat(ev.parts[11]), ev.parts[12], parseInt(ev.parts[13]), parseInt(ev.parts[14]), ev.parts[15], parseInt(ev.parts[16]), parseInt(ev.parts[17]), parseInt(ev.parts[18]), parseInt(ev.parts[19]), parseInt(ev.parts[20]), parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), parseInt(ev.parts[25]), parseInt(ev.parts[26]), parseInt(ev.parts[27]), parseFloat(ev.parts[28]), parseFloat(ev.parts[29]), parseInt(ev.parts[30]), parseInt(ev.parts[31]), ev.parts[32], parseInt(ev.parts[33]), parseInt(ev.parts[34]), parseInt(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]));
                     break;
                 case 'stanodeadd':
                     this.onNodeAdded(ev.stream, true, parseInt(ev.parts[2]), parseFloat(ev.parts[3]), parseFloat(ev.parts[4]), parseInt(ev.parts[5]));
                     break;
                 case 'stanodeassoc':
-                    this.onNodeAssociated(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), parseInt(ev.parts[4]), parseInt(ev.parts[5]));
+                    this.onNodeAssociated(ev.stream, parseInt(ev.parts[2]), parseInt(ev.parts[3]), parseInt(ev.parts[4]), parseInt(ev.parts[5]), parseInt(ev.parts[6]));
                     break;
                 case 'stanodedeassoc':
                     this.onNodeDeassociated(ev.stream, parseInt(ev.parts[2]));
@@ -70,16 +76,18 @@ var EventManager = (function () {
     EventManager.prototype.onReceive = function (entry) {
         var parts = entry.line.split(';');
         var time = parseInt(parts[0]);
+        //console.log("evManager3 " + parts);
         time = time / (1000 * 1000); // ns -> ms
         var ev = new SimulationEvent(entry.stream, time, parts);
         this.events.push(ev);
     };
-    EventManager.prototype.onStart = function (stream, aidRAWRange, numberOfRAWGroups, RAWSlotFormat, RAWSlotCount, RAWSlotDuration, numberOfRAWSlots, dataMode, dataRate, bandwidth, trafficInterval, trafficPacketsize, beaconInterval, name, propagationLossExponent, propagationLossReferenceLoss, apAlwaysSchedulesForNextSlot, minRTO, simulationTime, trafficType, trafficIntervalDeviation, tcpSegmentSize, tcpInitialSlowStartThreshold, tcpInitialCWnd, maxTimeOfPacketsInQueue, ipCameraMotionPercentage, ipCameraMotionDuration, ipCameraDataRate, nsta, cooldownPeriod, firmwareSize, firmwareBlockSize, firmwareCorruptionProbability, firmwareNewUpdateProbability, sensorMeasurementSize, contentionPerRAWSlot, contentionPerRAWSlotOnlyInFirstGroup) {
+    EventManager.prototype.onStart = function (stream, aidRAWRange, dataMode, dataRate, bandwidth, trafficInterval, trafficPacketsize, beaconInterval, name, propagationLossExponent, propagationLossReferenceLoss, apAlwaysSchedulesForNextSlot, minRTO, simulationTime, trafficType, trafficIntervalDeviation, tcpSegmentSize, tcpInitialSlowStartThreshold, tcpInitialCWnd, maxTimeOfPacketsInQueue, ipCameraMotionPercentage, ipCameraMotionDuration, ipCameraDataRate, nsta, cooldownPeriod, firmwareSize, firmwareBlockSize, firmwareCorruptionProbability, firmwareNewUpdateProbability, sensorMeasurementSize, numberOfRAWGroups, RAWSlotFormat, RAWSlotCount, numberOfRAWSlots, contentionPerRAWSlot, contentionPerRAWSlotOnlyInFirstGroup, numRpsElements) {
         var simulation = this.sim.simulationContainer.getSimulation(stream);
         if (typeof simulation == "undefined") {
             simulation = new Simulation();
             this.sim.simulationContainer.setSimulation(stream, simulation);
         }
+        console.log("ON START");
         simulation.nodes = [];
         simulation.slotUsageAP = [];
         simulation.slotUsageSTA = [];
@@ -87,12 +95,21 @@ var EventManager = (function () {
         simulation.totalSlotUsageSTA = [];
         simulation.totalTraffic = 0;
         var config = simulation.config;
+        /*config.nGroupsPerRps = [];
+        config.rawSlotFormat = [];
+        config.rawSlotDurationCount = [];
+        config.rawSlotDuration = [];
+        config.nRawSlots = [];
+        config.rawSlotBoundary = [];
+        config.rawGroupAidStart = [];
+        config.rawGroupAidEnd = [];
+        config.rawGroupDurations = [];*/
         config.AIDRAWRange = aidRAWRange;
         config.numberOfRAWGroups = numberOfRAWGroups;
         config.RAWSlotFormat = RAWSlotFormat;
         config.numberOfRAWSlots = numberOfRAWSlots;
         config.RAWSlotCount = RAWSlotCount;
-        config.RAWSlotDuration = RAWSlotDuration;
+        config.RAWSlotDuration = 500 + 120 * RAWSlotCount;
         config.dataMode = dataMode;
         config.dataRate = dataRate;
         config.bandwidth = bandwidth;
@@ -123,6 +140,7 @@ var EventManager = (function () {
         config.sensorMeasurementSize = sensorMeasurementSize;
         config.contentionPerRAWSlot = contentionPerRAWSlot;
         config.contentionPerRAWSlotOnlyInFirstGroup = contentionPerRAWSlotOnlyInFirstGroup;
+        config.numRpsElements = numRpsElements;
     };
     EventManager.prototype.onSlotStats = function (stream, timestamp, values, isAP) {
         var sim = this.sim.simulationContainer.getSimulation(stream);
@@ -154,6 +172,53 @@ var EventManager = (function () {
             }
         }
     };
+    EventManager.prototype.onRawConfig = function (stream, rpsIndex, rawIndex, rawSlotFormat, rawSlotDurationCount, nRawSlots, rawSlotBoundary, rawGroupAidStart, rawGroupAidEnd) {
+        var config = this.sim.simulationContainer.getSimulation(stream).config;
+        console.log("ON RAW CONF");
+        /*//if make
+        if (!config.nGroupsPerRps) {
+            console.log("UNDEFINED+++");
+            config.nGroupsPerRps = [];
+            config.rawGroupDurations = [];
+            config.rawSlotFormat = [];
+            config.rawSlotDurationCount = [];
+            config.rawSlotDuration = [];
+            config.nRawSlots = [];
+            config.rawSlotBoundary = [];
+            config.rawGroupAidStart = [];
+            config.rawGroupAidEnd = [];
+        }*/
+        if (config.nGroupsPerRps)
+            if (config.nGroupsPerRps.length == 0) {
+                config.nGroupsPerRps.push(rawIndex + 1);
+            }
+            else {
+                if (config.nGroupsPerRps[config.nGroupsPerRps.length - 1] >= rawIndex + 1) {
+                    config.nGroupsPerRps.push(rawIndex + 1);
+                }
+                else {
+                    config.nGroupsPerRps[config.nGroupsPerRps.length - 1]++;
+                }
+            }
+        config.rawSlotFormat.push(rawSlotFormat);
+        config.rawSlotDurationCount.push(rawSlotDurationCount);
+        var slotDuration = 500 + 120 * rawSlotDurationCount;
+        config.rawSlotDuration.push(slotDuration);
+        config.nRawSlots.push(nRawSlots);
+        config.rawSlotBoundary.push(rawSlotBoundary);
+        config.rawGroupAidStart.push(rawGroupAidStart);
+        config.rawGroupAidEnd.push(rawGroupAidEnd);
+        config.rawGroupDurations.push(nRawSlots * slotDuration);
+        /*            console.log("config.rawSlotFormat " + config.rawSlotFormat);
+                    console.log("config.rawSlotDurationCount " + config.rawSlotDurationCount);
+                    console.log("config.rawSlotDuration " + config.rawSlotDuration);
+                    console.log("config.nRawSlots " + config.nRawSlots);
+                    console.log("config.rawSlotBoundary " + config.rawSlotBoundary);
+                    console.log("config.rawGroupAidStart " + config.rawGroupAidStart);
+                    console.log("config.rawGroupAidEnd " + config.rawGroupAidEnd);
+                    console.log("config.rawGroupDurations " + config.rawGroupDurations);
+                    console.log("rawSlotFormat " + rawSlotFormat);*/
+    };
     EventManager.prototype.onNodeAdded = function (stream, isSTA, id, x, y, aId) {
         var n = isSTA ? new STANode() : new APNode();
         n.id = id;
@@ -165,12 +230,13 @@ var EventManager = (function () {
             this.sim.simulationContainer.getSimulation(stream).apNode = n;
         // this.sim.onNodeAdded(stream, id);
     };
-    EventManager.prototype.onNodeAssociated = function (stream, id, aId, groupNumber, rawSlotIndex) {
+    EventManager.prototype.onNodeAssociated = function (stream, id, aId, rpsIndex, groupNumber, rawSlotIndex) {
         var simulation = this.sim.simulationContainer.getSimulation(stream);
         if (id < 0 || id >= simulation.nodes.length)
             return;
         var n = simulation.nodes[id];
         n.aId = aId;
+        n.rpsIndex = rpsIndex;
         n.groupNumber = groupNumber;
         n.rawSlotIndex = rawSlotIndex;
         n.isAssociated = true;
