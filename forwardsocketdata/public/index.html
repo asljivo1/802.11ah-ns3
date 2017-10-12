@@ -49,7 +49,10 @@
                                                     <td>Channel Traffic</td>
                                                     <td id="simChannelTraffic">---</td>
                                                 </tr>
-
+                                                <tr class="chartProperty" data-property="totalPacketLoss">
+                                                    <td>Total Packet Loss</td>
+                                                    <td id="simTotalPacketLoss">---</td>
+                                                </tr>
                                                 <tr class="configProperty" data-property="trafficInterval">
                                                     <td>Traffic interval [ms]</td>
                                                     <td>---</td>
@@ -262,8 +265,8 @@
                                                     <td>Jitter (deviation from average RTT) [µs]</td>
                                                     <td>---</td>
                                                 </tr>
-                                                <tr class="chartProperty nodeProperty" data-property="reliability" data-max="*" data-min="0" data-type="HIGHER_IS_BETTER">
-                                                    <td>Reliability [%]</td>
+                                                <tr class="chartProperty nodeProperty" data-property="reliability" data-max="*" data-min="0" data-type="LOWER_IS_BETTER">
+                                                    <td>Packet loss [%]</td>
                                                     <td>---</td>
                                                 </tr>
 

@@ -1,14 +1,14 @@
 
 class Charting {
 
-  private refreshTimerId: number = -1;
-  private lastUpdatedOn: Date = new Date();
+    private refreshTimerId: number = -1;
+    private lastUpdatedOn: Date = new Date();
 
-  constructor(private simGUI:SimulationGUI) {
-      
-  }
-  
-  deferUpdateCharts(simulations: Simulation[], full: boolean) {
+    constructor(private simGUI: SimulationGUI) {
+
+    }
+
+    deferUpdateCharts(simulations: Simulation[], full: boolean) {
         // prevent update flood by max 1 update per second or when gui changed
         let timeDiff = new Date().getTime() - this.lastUpdatedOn.getTime();
         if (timeDiff > 1000 || full) {
@@ -54,19 +54,19 @@ class Charting {
                 var selectedData = [];
 
                 if (!showDeltas) {
-                    for (let i = 0; i < values.length; i++) { 
+                    for (let i = 0; i < values.length; i++) {
                         let value = values[i][this.simGUI.selectedPropertyForChart];
-                        if(value != -1)
+                        if (value != -1)
                             selectedData.push([values[i].timestamp, value]);
                     }
                 }
                 else {
-                    if(values[0][this.simGUI.selectedPropertyForChart] != -1)
+                    if (values[0][this.simGUI.selectedPropertyForChart] != -1)
                         selectedData.push([values[0].timestamp, values[0][this.simGUI.selectedPropertyForChart]]);
                     for (let i = 1; i < values.length; i++) {
                         let value = values[i][this.simGUI.selectedPropertyForChart];
                         let beforeValue = values[i - 1][this.simGUI.selectedPropertyForChart];
-                        if(value != -1 && beforeValue != -1)
+                        if (value != -1 && beforeValue != -1)
                             selectedData.push([values[i].timestamp, value - beforeValue]);
                     }
                 }
@@ -146,25 +146,25 @@ class Charting {
         let lastValue = firstNode.values[firstNode.values.length - 1];
 
         let activeDozePieData = [{ name: "Active", y: lastValue.totalActiveTime },
-            { name: "Doze", y: lastValue.totalDozeTime }]
+        { name: "Doze", y: lastValue.totalDozeTime }]
         this.createPieChart("#nodeChartActiveDoze", 'Active/doze time', activeDozePieData);
 
 
 
         let activeTransmissionsSuccessDroppedData = [{ name: "OK", y: lastValue.nrOfTransmissions - lastValue.nrOfTransmissionsDropped },
-            { name: "Dropped", y: lastValue.nrOfTransmissionsDropped }]
+        { name: "Dropped", y: lastValue.nrOfTransmissionsDropped }]
         this.createPieChart("#nodeChartTxSuccessDropped", 'TX OK/dropped', activeTransmissionsSuccessDroppedData);
 
 
 
         let activeReceivesSuccessDroppedData = [{ name: "OK", y: lastValue.nrOfReceives - lastValue.nrOfReceivesDropped },
-            { name: "Dropped", y: lastValue.nrOfReceivesDropped }]
+        { name: "Dropped", y: lastValue.nrOfReceivesDropped }]
         this.createPieChart("#nodeChartRxSuccessDropped", 'RX OK/dropped', activeReceivesSuccessDroppedData);
 
 
 
         let activePacketsSuccessDroppedData = [{ name: "OK", y: lastValue.nrOfSuccessfulPackets },
-            { name: "Dropped", y: lastValue.nrOfDroppedPackets }]
+        { name: "Dropped", y: lastValue.nrOfDroppedPackets }]
         this.createPieChart("#nodeChartPacketSuccessDropped", 'Packets OK/dropped', activePacketsSuccessDroppedData);
 
     }
@@ -174,6 +174,9 @@ class Charting {
 
         if (this.simGUI.selectedPropertyForChart == "channelTraffic")
             this.updateChartsForTraffic(simulations, full, showDeltas);
+        else if (this.simGUI.selectedPropertyForChart == "totalPacketLoss") {
+            this.updateChartsForPacketLoss(simulations, full, showDeltas);
+        }
         else {
             if ($("#chkShowDistribution").prop("checked"))
                 this.updateDistributionChart(selectedSimulation, showDeltas);
@@ -186,7 +189,7 @@ class Charting {
 
         if (totalReceiveActiveTime.length > 0 && totalReceiveDozeTime.length > 0) {
             let activeDozePieData = [{ name: "Active", y: totalReceiveActiveTime[0] },
-                { name: "Doze", y: totalReceiveDozeTime[0] }]
+            { name: "Doze", y: totalReceiveDozeTime[0] }]
             this.createPieChart("#nodeChartActiveDoze", 'Active/doze time', activeDozePieData);
         }
 
@@ -195,7 +198,7 @@ class Charting {
 
         if (nrOfTransmissions.length > 0 && nrOfTransmissionsDropped.length > 0) {
             let activeTransmissionsSuccessDroppedData = [{ name: "OK", y: nrOfTransmissions[0] - nrOfTransmissionsDropped[0] },
-                { name: "Dropped", y: nrOfTransmissionsDropped[0] }]
+            { name: "Dropped", y: nrOfTransmissionsDropped[0] }]
             this.createPieChart("#nodeChartTxSuccessDropped", 'TX OK/dropped', activeTransmissionsSuccessDroppedData);
         }
 
@@ -204,7 +207,7 @@ class Charting {
 
         if (nrOfReceives.length > 0 && nrOfReceivesDropped.length > 0) {
             let activeReceivesSuccessDroppedData = [{ name: "OK", y: nrOfReceives[0] - nrOfReceivesDropped[0] },
-                { name: "Dropped", y: nrOfReceivesDropped[0] }]
+            { name: "Dropped", y: nrOfReceivesDropped[0] }]
             this.createPieChart("#nodeChartRxSuccessDropped", 'RX OK/dropped', activeReceivesSuccessDroppedData);
         }
 
@@ -213,7 +216,7 @@ class Charting {
 
         if (nrOfSuccessfulPackets.length > 0 && nrOfDroppedPackets.length > 0) {
             let activePacketsSuccessDroppedData = [{ name: "OK", y: nrOfSuccessfulPackets[0] },
-                { name: "Dropped", y: nrOfDroppedPackets[0] }]
+            { name: "Dropped", y: nrOfDroppedPackets[0] }]
             this.createPieChart("#nodeChartPacketSuccessDropped", 'Packets OK/dropped', activePacketsSuccessDroppedData);
         }
     }
@@ -491,6 +494,8 @@ class Charting {
             });
         }
 
+
+
         $('#nodeChart').empty().highcharts({
             chart: {
                 animation: "Highcharts.svg", // don't animate in old IE
@@ -509,6 +514,74 @@ class Charting {
                 }
             },
             title: { text: 'Channel traffic' },
+            xAxis: {
+                type: 'linear',
+                tickPixelInterval: 100,
+            },
+            yAxis: {
+                title: { text: 'Value' },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            legend: { enabled: true },
+            series: series,
+            credits: false
+        });
+    }
+
+    private updateChartsForPacketLoss(simulations: Simulation[], full: boolean, showDeltas: boolean) {
+        let self = this;
+        let series = [];
+
+        let lastSums: number[] = [];
+        for (let s = 0; s < simulations.length; s++)
+            lastSums.push(0);
+
+        for (let s = 0; s < simulations.length; s++) {
+            let data = [];
+            //data.push([showDeltas ? simulations[s].totalPacketLoss - lastSums[s] : simulations[s].totalPacketLoss]);
+            for (let i = 0; i < simulations[s].totalPacketLoss.length; i++) {
+                if (simulations[s].totalSlotUsageTimestamps[i] >= 0) {
+                    data.push([
+                        simulations[s].totalSlotUsageTimestamps[i],
+                        showDeltas ? simulations[s].totalPacketLoss[i] - lastSums[s] : simulations[s].totalPacketLoss[i]]
+                    );
+                    lastSums[s] = simulations[s].totalPacketLoss[simulations[s].totalPacketLoss.length - 1];
+                    console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
+                    console.log("----------------------" + s);
+                }
+            }
+            series.push({
+                name: simulations[s].config.name,
+                type: "spline",
+                data: data,
+                zIndex: 2,
+            });
+        }
+
+
+
+        $('#nodeChart').empty().highcharts({
+            chart: {
+                animation: "Highcharts.svg", // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+                        self.simGUI.currentChart = (<HighchartsChartObject>this);
+                    }
+                },
+                zoomType: "x"
+            },
+            plotOptions: {
+                series: {
+                    animation: false,
+                    marker: { enabled: false }
+                }
+            },
+            title: { text: 'Total Packet Loss' },
             xAxis: {
                 type: 'linear',
                 tickPixelInterval: 100,

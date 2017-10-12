@@ -151,6 +151,7 @@ console.log("ON START");
         simulation.totalSlotUsageAP = [];
         simulation.totalSlotUsageSTA = [];
         simulation.totalTraffic = 0;
+        simulation.totalPacketLoss = [];
 
         let config = simulation.config;
         

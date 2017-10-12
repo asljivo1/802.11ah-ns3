@@ -518,7 +518,7 @@ class SimulationGUI {
     changeNodeSelection(id: number) {
 
         // don't change the node if channel traffic is selected
-        if (id != -1 && this.selectedPropertyForChart == "channelTraffic")
+        if (id != -1 && (this.selectedPropertyForChart == "channelTraffic" || this.selectedPropertyForChart == "totalPacketLoss"))
             return;
 
         this.selectedNode = id;
@@ -541,6 +541,13 @@ class SimulationGUI {
             return;
 
         this.updateConfigGUI(selectedSimulation);
+        let sp = this.getAverageAndStdDevValue(selectedSimulation, "nrOfSuccessfulPackets")[0];
+        if (sp){
+            let pl = 100 - 100 * sp / this.getAverageAndStdDevValue(selectedSimulation, "nrOfSentPackets")[0];
+            selectedSimulation.totalPacketLoss.push(pl);
+            $("#simTotalPacketLoss").text(`${pl.toFixed(2)} %`);            
+        }
+        else {$("#simTotalPacketLoss").text(`100 %`);}
 
         if (selectedSimulation.totalTraffic){
             $("#simChannelTraffic").text(`${selectedSimulation.totalTraffic}B (${(selectedSimulation.totalTraffic * 8 / selectedSimulation.currentTime).toFixed(2)}Kbit/s)`);            

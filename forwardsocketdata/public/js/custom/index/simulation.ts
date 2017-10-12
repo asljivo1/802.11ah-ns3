@@ -199,5 +199,7 @@ class Simulation {
     totalTraffic: number = 0;
     currentTime: number = 0;
 
+    //totalPacketLoss: number = 0;
+    totalPacketLoss: number[] = [];
     config: SimulationConfiguration = new SimulationConfiguration();
 }

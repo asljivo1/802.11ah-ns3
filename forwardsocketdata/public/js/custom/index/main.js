@@ -231,6 +231,9 @@ var Charting = (function () {
     Charting.prototype.updateChartsForAll = function (selectedSimulation, simulations, full, showDeltas) {
         if (this.simGUI.selectedPropertyForChart == "channelTraffic")
             this.updateChartsForTraffic(simulations, full, showDeltas);
+        else if (this.simGUI.selectedPropertyForChart == "totalPacketLoss") {
+            this.updateChartsForPacketLoss(simulations, full, showDeltas);
+        }
         else {
             if ($("#chkShowDistribution").prop("checked"))
                 this.updateDistributionChart(selectedSimulation, showDeltas);
@@ -540,6 +543,68 @@ var Charting = (function () {
             credits: false
         });
     };
+    Charting.prototype.updateChartsForPacketLoss = function (simulations, full, showDeltas) {
+        var self = this;
+        var series = [];
+        var lastSums = [];
+        for (var s = 0; s < simulations.length; s++)
+            lastSums.push(0);
+        for (var s = 0; s < simulations.length; s++) {
+            var data = [];
+            //data.push([showDeltas ? simulations[s].totalPacketLoss - lastSums[s] : simulations[s].totalPacketLoss]);
+            for (var i = 0; i < simulations[s].totalPacketLoss.length; i++) {
+                if (simulations[s].totalSlotUsageTimestamps[i] >= 0) {
+                    data.push([
+                        simulations[s].totalSlotUsageTimestamps[i],
+                        showDeltas ? simulations[s].totalPacketLoss[i] - lastSums[s] : simulations[s].totalPacketLoss[i]
+                    ]);
+                    lastSums[s] = simulations[s].totalPacketLoss[simulations[s].totalPacketLoss.length - 1];
+                    console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
+                    console.log("----------------------" + s);
+                }
+            }
+            series.push({
+                name: simulations[s].config.name,
+                type: "spline",
+                data: data,
+                zIndex: 2
+            });
+        }
+        $('#nodeChart').empty().highcharts({
+            chart: {
+                animation: "Highcharts.svg",
+                marginRight: 10,
+                events: {
+                    load: function () {
+                        self.simGUI.currentChart = this;
+                    }
+                },
+                zoomType: "x"
+            },
+            plotOptions: {
+                series: {
+                    animation: false,
+                    marker: { enabled: false }
+                }
+            },
+            title: { text: 'Total Packet Loss' },
+            xAxis: {
+                type: 'linear',
+                tickPixelInterval: 100
+            },
+            yAxis: {
+                title: { text: 'Value' },
+                plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+            },
+            legend: { enabled: true },
+            series: series,
+            credits: false
+        });
+    };
     Charting.prototype.createPieChart = function (selector, title, data) {
         $(selector).empty().highcharts({
             chart: {
@@ -732,6 +797,7 @@ var EventManager = (function () {
         simulation.totalSlotUsageAP = [];
         simulation.totalSlotUsageSTA = [];
         simulation.totalTraffic = 0;
+        simulation.totalPacketLoss = [];
         var config = simulation.config;
         /*config.nGroupsPerRps = [];
         config.rawSlotFormat = [];
@@ -1439,7 +1505,7 @@ var SimulationGUI = (function () {
     };
     SimulationGUI.prototype.changeNodeSelection = function (id) {
         // don't change the node if channel traffic is selected
-        if (id != -1 && this.selectedPropertyForChart == "channelTraffic")
+        if (id != -1 && (this.selectedPropertyForChart == "channelTraffic" || this.selectedPropertyForChart == "totalPacketLoss"))
             return;
         this.selectedNode = id;
         this.updateGUI(true);
@@ -1454,6 +1520,15 @@ var SimulationGUI = (function () {
         if (typeof selectedSimulation == "undefined")
             return;
         this.updateConfigGUI(selectedSimulation);
+        var sp = this.getAverageAndStdDevValue(selectedSimulation, "nrOfSuccessfulPackets")[0];
+        if (sp) {
+            var pl = 100 - 100 * sp / this.getAverageAndStdDevValue(selectedSimulation, "nrOfSentPackets")[0];
+            selectedSimulation.totalPacketLoss.push(pl);
+            $("#simTotalPacketLoss").text(pl.toFixed(2) + " %");
+        }
+        else {
+            $("#simTotalPacketLoss").text("100 %");
+        }
         if (selectedSimulation.totalTraffic) {
             $("#simChannelTraffic").text(selectedSimulation.totalTraffic + "B (" + (selectedSimulation.totalTraffic * 8 / selectedSimulation.currentTime).toFixed(2) + "Kbit/s)");
         }
@@ -1953,6 +2028,8 @@ var Simulation = (function () {
         this.totalSlotUsageTimestamps = [];
         this.totalTraffic = 0;
         this.currentTime = 0;
+        //totalPacketLoss: number = 0;
+        this.totalPacketLoss = [];
         this.config = new SimulationConfiguration();
     }
     return Simulation;
