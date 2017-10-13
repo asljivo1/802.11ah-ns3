@@ -48,19 +48,17 @@ class SimulationContainer {
 }
 
 var toolTipContainer: any[] = [];
-
 // The Tool-Tip instance:
 function ToolTip(canvas, region, text, width, timeout) {
-    
-    toolTipContainer = [];
-    
+
+
     var me = this,                                // self-reference for event handlers
         div = document.createElement("div"),      // the tool-tip div
         parent = canvas.parentNode,               // parent node for canvas
         visible = false;                          // current status
-      
+
     // set some initial styles, can be replaced by class-name etc.
-    div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.5;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";    
+    div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.5;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";
     div.innerHTML = text;
 
     // show the tool-tip
@@ -69,14 +67,19 @@ function ToolTip(canvas, region, text, width, timeout) {
             visible = true;                           // lock so it's only shown once
             setDivPos(pos);                           // set position
             parent.appendChild(div);                  // add to parent of canvas
-            setTimeout(hide, timeout);                // timeout for hide
+            setTimeout(hideTooltip, timeout);                // timeout for hide
+            //console.log("SHOW");
         }
+        //console.log("show nothing");
     }
 
     // hide the tool-tip
-    function hide() {
+    function hideTooltip() {
         visible = false;                            // hide it after timeout
         parent.removeChild(div);                    // remove from DOM
+        canvas.removeEventListener("click", check);
+        canvas.removeEventListener("mousemove", check);        
+        //console.log("HIDE");
     }
 
     // check mouse position, add limits as wanted... just for example:
@@ -112,6 +115,7 @@ function ToolTip(canvas, region, text, width, timeout) {
     canvas.addEventListener("mousemove", check);
     canvas.addEventListener("click", check);
 }
+
 
 class SimulationGUI {
 
@@ -295,7 +299,14 @@ class SimulationGUI {
                     let region = { x: xGroupCoord, y: i * rectHeight + (i + 1) * (padding + 0.5), w: multiGroupWidths[i][j], h: rectHeight };
                     let showtext = "Cross-slot: " + selectedSimulation.config.rawSlotBoundary[ind] + "; Slot count: " + selectedSimulation.config.rawSlotDurationCount[ind] + "; AID start: " + selectedSimulation.config.rawGroupAidStart[ind] + "; AID end: " + selectedSimulation.config.rawGroupAidEnd[ind];
                     ind++;
-                    toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
+                    if (toolTipContainer.length == 1){
+                        setTimeout(toolTipContainer[0].hideTooltip, 0);
+                        toolTipContainer[0] = new ToolTip(canv, region, showtext, 150, 4000);
+                    }
+                    else {
+                        toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));                        
+                    }
+                    //console.log(toolTipContainer);
                 }
             }
         }
@@ -542,15 +553,15 @@ class SimulationGUI {
 
         this.updateConfigGUI(selectedSimulation);
         let sp = this.getAverageAndStdDevValue(selectedSimulation, "nrOfSuccessfulPackets")[0];
-        if (sp){
+        if (sp) {
             let pl = 100 - 100 * sp / this.getAverageAndStdDevValue(selectedSimulation, "nrOfSentPackets")[0];
             selectedSimulation.totalPacketLoss.push(pl);
-            $("#simTotalPacketLoss").text(`${pl.toFixed(2)} %`);            
+            $("#simTotalPacketLoss").text(`${pl.toFixed(2)} %`);
         }
-        else {$("#simTotalPacketLoss").text(`100 %`);}
+        else { $("#simTotalPacketLoss").text(`100 %`); }
 
-        if (selectedSimulation.totalTraffic){
-            $("#simChannelTraffic").text(`${selectedSimulation.totalTraffic}B (${(selectedSimulation.totalTraffic * 8 / selectedSimulation.currentTime).toFixed(2)}Kbit/s)`);            
+        if (selectedSimulation.totalTraffic) {
+            $("#simChannelTraffic").text(`${selectedSimulation.totalTraffic}B (${(selectedSimulation.totalTraffic * 8 / selectedSimulation.currentTime).toFixed(2)}Kbit/s)`);
         }
         else {
             $("#simChannelTraffic").text(`0 B (0 Kbit/s)`);
@@ -640,8 +651,9 @@ class SimulationGUI {
                         $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
 
                     if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
-                        prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
-                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                        //prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
+                        prevSiblingHeader = (prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) != "") ? prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) : prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                        //console.log("BEG-"+prevSiblingHeader+"-END")
                     }
 
                     if (this.automaticHideNullProperties) {
@@ -797,6 +809,8 @@ class SimulationGUI {
 
 }
 
+interface Releasable{}
+
 interface IEntry {
     stream: string;
     line: string;
@@ -818,7 +832,7 @@ function getParameterByName(name: string, url?: string) {
 
 $(document).ready(function () {
 
-    
+
     let sim: SimulationGUI = null;
     let evManager: EventManager = null;
 
@@ -865,7 +879,7 @@ $(document).ready(function () {
         sock.emit("subscribe", {
             simulations: streams
         });
-        
+
 
     }).on("error", function () {
         console.log("Unable to connect to server websocket endpoint");
@@ -875,15 +889,15 @@ $(document).ready(function () {
         alert("Error: " + data);
     });
 
-    sock.on("entry", function (data: IEntry) {           
-        evManager.onReceive(data);     
-        
+    sock.on("entry", function (data: IEntry) {
+        evManager.onReceive(data);
+
     });
 
     sock.on("bulkentry", function (data: IEntries) {
         evManager.onReceiveBulk(data);
     });
-    
+
     $(canvas).keydown(ev => {
         if (!sim.simulationContainer.hasSimulations())
             return;
@@ -991,8 +1005,8 @@ $(document).ready(function () {
         let dt = newTime - time;
 
         sim.update(dt);
-        if (evManager != null) {            
-            try {                
+        if (evManager != null) {
+            try {
                 evManager.processEvents();
             }
             catch (e) {

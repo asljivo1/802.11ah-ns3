@@ -32,6 +32,7 @@ class NodeValue {
     nrOfSuccessfulPackets: number = 0;
     nrOfDroppedPackets: number = 0;
 
+    latency: number = 0;
     avgSentReceiveTime: number = 0;
     goodputKbit: number = 0;
 

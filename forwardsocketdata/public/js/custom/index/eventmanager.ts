@@ -74,7 +74,7 @@ class EventManager {
                         parseInt(ev.parts[37]), parseInt(ev.parts[38]), parseInt(ev.parts[39]),
                         parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]),
                         parseInt(ev.parts[43]), parseFloat(ev.parts[44]), parseFloat(ev.parts[45]), parseFloat(ev.parts[46]), parseFloat(ev.parts[47]),
-                        parseFloat(ev.parts[48]), parseFloat(ev.parts[49]));
+                        parseFloat(ev.parts[48]), parseFloat(ev.parts[49]), parseFloat(ev.parts[50]));
                     break;
 
                 case 'slotstatsSTA':
@@ -358,7 +358,9 @@ console.log("ON START");
         tcpRtoValue: number, numberOfAPScheduledPacketForNodeInNextSlot: number, numberOfAPSentPacketForNodeImmediately: number, avgRemainingSlotTimeWhenAPSendingInSameSlot: number,
         numberOfCollisions: number, numberofMACTxMissedACKAndDroppedPacket: number, tcpConnected: number,
         tcpSlowStartThreshold: number, tcpEstimatedBandwidth: number, tcpRTT: number, numberOfBeaconsMissed: number, numberOfTransmissionsDuringRAWSlot: number,
-        totalNumberOfDrops: number, firmwareTransferTime: number, ipCameraSendingRate: number, ipCameraReceivingRate: number, numberOfTransmissionsCancelledDueToCrossingRAWBoundary: number, jitter: number, reliability: number, interPacketDelayAtServer: number, interPacketDelayAtClient: number, interPacketDelayDeviationPercentageAtServer: number, interPacketDelayDeviationPercentageAtClient: number) {
+        totalNumberOfDrops: number, firmwareTransferTime: number, ipCameraSendingRate: number, ipCameraReceivingRate: number, numberOfTransmissionsCancelledDueToCrossingRAWBoundary: number, 
+        jitter: number, reliability: number, interPacketDelayAtServer: number, interPacketDelayAtClient: number, interPacketDelayDeviationPercentageAtServer: number, 
+        interPacketDelayDeviationPercentageAtClient: number, latency: number) {
         // ^- it's getting awfully crowded around here
 
 
@@ -389,6 +391,7 @@ console.log("ON START");
         nodeVal.nrOfSuccessfulPackets = nrOfSuccessfulPackets;
         nodeVal.nrOfDroppedPackets = nrOfDroppedPackets;
 
+        nodeVal.latency = latency;
         nodeVal.avgSentReceiveTime = avgPacketTimeOfFlight;
         nodeVal.goodputKbit = goodputKbit;
 

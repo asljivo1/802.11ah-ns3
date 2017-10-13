@@ -550,8 +550,8 @@ class Charting {
                         showDeltas ? simulations[s].totalPacketLoss[i] - lastSums[s] : simulations[s].totalPacketLoss[i]]
                     );
                     lastSums[s] = simulations[s].totalPacketLoss[simulations[s].totalPacketLoss.length - 1];
-                    console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
-                    console.log("----------------------" + s);
+                    //console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
+                    //console.log("----------------------" + s);
                 }
             }
             series.push({

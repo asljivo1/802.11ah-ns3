@@ -559,8 +559,8 @@ var Charting = (function () {
                         showDeltas ? simulations[s].totalPacketLoss[i] - lastSums[s] : simulations[s].totalPacketLoss[i]
                     ]);
                     lastSums[s] = simulations[s].totalPacketLoss[simulations[s].totalPacketLoss.length - 1];
-                    console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
-                    console.log("----------------------" + s);
+                    //console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
+                    //console.log("----------------------" + s);
                 }
             }
             series.push({
@@ -740,7 +740,7 @@ var EventManager = (function () {
                     this.onNodeAdded(ev.stream, false, -1, parseFloat(ev.parts[2]), parseFloat(ev.parts[3]), -1);
                     break;
                 case 'nodestats':
-                    this.onStatsUpdated(ev.stream, ev.time, parseInt(ev.parts[2]), parseFloat(ev.parts[3]), parseFloat(ev.parts[4]), parseFloat(ev.parts[5]), parseFloat(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), parseInt(ev.parts[9]), parseInt(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), parseFloat(ev.parts[14]), parseFloat(ev.parts[15]), parseInt(ev.parts[16]), parseInt(ev.parts[17]), parseFloat(ev.parts[18]), parseInt(ev.parts[19]), parseInt(ev.parts[20]), parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), ev.parts[25], ev.parts[26], parseInt(ev.parts[27]), parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseFloat(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseInt(ev.parts[33]), parseInt(ev.parts[34]), parseFloat(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]), parseInt(ev.parts[38]), parseInt(ev.parts[39]), parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]), parseInt(ev.parts[43]), parseFloat(ev.parts[44]), parseFloat(ev.parts[45]), parseFloat(ev.parts[46]), parseFloat(ev.parts[47]), parseFloat(ev.parts[48]), parseFloat(ev.parts[49]));
+                    this.onStatsUpdated(ev.stream, ev.time, parseInt(ev.parts[2]), parseFloat(ev.parts[3]), parseFloat(ev.parts[4]), parseFloat(ev.parts[5]), parseFloat(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), parseInt(ev.parts[9]), parseInt(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), parseFloat(ev.parts[14]), parseFloat(ev.parts[15]), parseInt(ev.parts[16]), parseInt(ev.parts[17]), parseFloat(ev.parts[18]), parseInt(ev.parts[19]), parseInt(ev.parts[20]), parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), ev.parts[25], ev.parts[26], parseInt(ev.parts[27]), parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseFloat(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseInt(ev.parts[33]), parseInt(ev.parts[34]), parseFloat(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]), parseInt(ev.parts[38]), parseInt(ev.parts[39]), parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]), parseInt(ev.parts[43]), parseFloat(ev.parts[44]), parseFloat(ev.parts[45]), parseFloat(ev.parts[46]), parseFloat(ev.parts[47]), parseFloat(ev.parts[48]), parseFloat(ev.parts[49]), parseFloat(ev.parts[50]));
                     break;
                 case 'slotstatsSTA':
                     {
@@ -963,7 +963,7 @@ var EventManager = (function () {
         else
             return false;
     };
-    EventManager.prototype.onStatsUpdated = function (stream, timestamp, id, totalTransmitTime, totalReceiveTime, totalDozeTime, totalActiveTime, nrOfTransmissions, nrOfTransmissionsDropped, nrOfReceives, nrOfReceivesDropped, nrOfSentPackets, nrOfSuccessfulPackets, nrOfDroppedPackets, avgPacketTimeOfFlight, goodputKbit, edcaQueueLength, nrOfSuccessfulRoundtripPackets, avgRoundTripTime, tcpCongestionWindow, numberOfTCPRetransmissions, numberOfTCPRetransmissionsFromAP, nrOfReceivesDroppedByDestination, numberOfMACTxRTSFailed, numberOfMACTxMissedACK, numberOfDropsByReason, numberOfDropsByReasonAtAP, tcpRtoValue, numberOfAPScheduledPacketForNodeInNextSlot, numberOfAPSentPacketForNodeImmediately, avgRemainingSlotTimeWhenAPSendingInSameSlot, numberOfCollisions, numberofMACTxMissedACKAndDroppedPacket, tcpConnected, tcpSlowStartThreshold, tcpEstimatedBandwidth, tcpRTT, numberOfBeaconsMissed, numberOfTransmissionsDuringRAWSlot, totalNumberOfDrops, firmwareTransferTime, ipCameraSendingRate, ipCameraReceivingRate, numberOfTransmissionsCancelledDueToCrossingRAWBoundary, jitter, reliability, interPacketDelayAtServer, interPacketDelayAtClient, interPacketDelayDeviationPercentageAtServer, interPacketDelayDeviationPercentageAtClient) {
+    EventManager.prototype.onStatsUpdated = function (stream, timestamp, id, totalTransmitTime, totalReceiveTime, totalDozeTime, totalActiveTime, nrOfTransmissions, nrOfTransmissionsDropped, nrOfReceives, nrOfReceivesDropped, nrOfSentPackets, nrOfSuccessfulPackets, nrOfDroppedPackets, avgPacketTimeOfFlight, goodputKbit, edcaQueueLength, nrOfSuccessfulRoundtripPackets, avgRoundTripTime, tcpCongestionWindow, numberOfTCPRetransmissions, numberOfTCPRetransmissionsFromAP, nrOfReceivesDroppedByDestination, numberOfMACTxRTSFailed, numberOfMACTxMissedACK, numberOfDropsByReason, numberOfDropsByReasonAtAP, tcpRtoValue, numberOfAPScheduledPacketForNodeInNextSlot, numberOfAPSentPacketForNodeImmediately, avgRemainingSlotTimeWhenAPSendingInSameSlot, numberOfCollisions, numberofMACTxMissedACKAndDroppedPacket, tcpConnected, tcpSlowStartThreshold, tcpEstimatedBandwidth, tcpRTT, numberOfBeaconsMissed, numberOfTransmissionsDuringRAWSlot, totalNumberOfDrops, firmwareTransferTime, ipCameraSendingRate, ipCameraReceivingRate, numberOfTransmissionsCancelledDueToCrossingRAWBoundary, jitter, reliability, interPacketDelayAtServer, interPacketDelayAtClient, interPacketDelayDeviationPercentageAtServer, interPacketDelayDeviationPercentageAtClient, latency) {
         // ^- it's getting awfully crowded around here
         var simulation = this.sim.simulationContainer.getSimulation(stream);
         if (id < 0 || id >= simulation.nodes.length)
@@ -985,6 +985,7 @@ var EventManager = (function () {
         nodeVal.nrOfSentPackets = nrOfSentPackets;
         nodeVal.nrOfSuccessfulPackets = nrOfSuccessfulPackets;
         nodeVal.nrOfDroppedPackets = nrOfDroppedPackets;
+        nodeVal.latency = latency;
         nodeVal.avgSentReceiveTime = avgPacketTimeOfFlight;
         nodeVal.goodputKbit = goodputKbit;
         nodeVal.edcaQueueLength = edcaQueueLength;
@@ -1109,7 +1110,6 @@ var SimulationContainer = (function () {
 var toolTipContainer = [];
 // The Tool-Tip instance:
 function ToolTip(canvas, region, text, width, timeout) {
-    toolTipContainer = [];
     var me = this, // self-reference for event handlers
     div = document.createElement("div"), // the tool-tip div
     parent = canvas.parentNode, // parent node for canvas
@@ -1123,13 +1123,18 @@ function ToolTip(canvas, region, text, width, timeout) {
             visible = true; // lock so it's only shown once
             setDivPos(pos); // set position
             parent.appendChild(div); // add to parent of canvas
-            setTimeout(hide, timeout); // timeout for hide
+            setTimeout(hideTooltip, timeout); // timeout for hide
+            //console.log("SHOW");
         }
+        //console.log("show nothing");
     };
     // hide the tool-tip
-    function hide() {
+    function hideTooltip() {
         visible = false; // hide it after timeout
         parent.removeChild(div); // remove from DOM
+        canvas.removeEventListener("click", check);
+        canvas.removeEventListener("mousemove", check);
+        //console.log("HIDE");
     }
     // check mouse position, add limits as wanted... just for example:
     function check(e) {
@@ -1308,7 +1313,14 @@ var SimulationGUI = (function () {
                     var region = { x: xGroupCoord, y: i * rectHeight + (i + 1) * (padding + 0.5), w: multiGroupWidths[i][j], h: rectHeight };
                     var showtext = "Cross-slot: " + selectedSimulation.config.rawSlotBoundary[ind] + "; Slot count: " + selectedSimulation.config.rawSlotDurationCount[ind] + "; AID start: " + selectedSimulation.config.rawGroupAidStart[ind] + "; AID end: " + selectedSimulation.config.rawGroupAidEnd[ind];
                     ind++;
-                    toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
+                    if (toolTipContainer.length == 1) {
+                        setTimeout(toolTipContainer[0].hideTooltip, 0);
+                        toolTipContainer[0] = new ToolTip(canv, region, showtext, 150, 4000);
+                    }
+                    else {
+                        toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
+                    }
+                    //console.log(toolTipContainer);
                 }
             }
         }
@@ -1604,8 +1616,9 @@ var SimulationGUI = (function () {
                     var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
                         $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
                     if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
-                        prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
-                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                        //prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
+                        prevSiblingHeader = (prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) != "") ? prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) : prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                        //console.log("BEG-"+prevSiblingHeader+"-END")
                     }
                     if (this.automaticHideNullProperties) {
                         if ((selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] &&
@@ -1924,6 +1937,7 @@ var NodeValue = (function () {
         this.nrOfSentPackets = 0;
         this.nrOfSuccessfulPackets = 0;
         this.nrOfDroppedPackets = 0;
+        this.latency = 0;
         this.avgSentReceiveTime = 0;
         this.goodputKbit = 0;
         this.edcaQueueLength = 0;
