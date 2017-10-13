@@ -35,6 +35,7 @@ var NodeValue = (function () {
         this.nrOfSentPackets = 0;
         this.nrOfSuccessfulPackets = 0;
         this.nrOfDroppedPackets = 0;
+        this.latency = 0;
         this.avgSentReceiveTime = 0;
         this.goodputKbit = 0;
         this.edcaQueueLength = 0;
@@ -139,6 +140,8 @@ var Simulation = (function () {
         this.totalSlotUsageTimestamps = [];
         this.totalTraffic = 0;
         this.currentTime = 0;
+        //totalPacketLoss: number = 0;
+        this.totalPacketLoss = [];
         this.config = new SimulationConfiguration();
     }
     return Simulation;

@@ -220,7 +220,7 @@ var Program = (function () {
             }
             this.liveSimulationInitializationLines.push(line);
         }
-        else if (parts[1] == "stanodeadd" || parts[1] == "apnodeadd" || parts[1] == "stanodeassoc")
+        else if (parts[1] == "stanodeadd" || parts[1] == "apnodeadd" || parts[1] == "stanodeassoc" || parts[1] == "rawconfig")
             this.liveSimulationInitializationLines.push(line);
         for (var _i = 0, _a = this.activeSocketManager.getSocketsFor("live"); _i < _a.length; _i++) {
             var s = _a[_i];

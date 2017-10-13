@@ -37,7 +37,7 @@ var EventManager = (function () {
                     this.onNodeAdded(ev.stream, false, -1, parseFloat(ev.parts[2]), parseFloat(ev.parts[3]), -1);
                     break;
                 case 'nodestats':
-                    this.onStatsUpdated(ev.stream, ev.time, parseInt(ev.parts[2]), parseFloat(ev.parts[3]), parseFloat(ev.parts[4]), parseFloat(ev.parts[5]), parseFloat(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), parseInt(ev.parts[9]), parseInt(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), parseFloat(ev.parts[14]), parseFloat(ev.parts[15]), parseInt(ev.parts[16]), parseInt(ev.parts[17]), parseFloat(ev.parts[18]), parseInt(ev.parts[19]), parseInt(ev.parts[20]), parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), ev.parts[25], ev.parts[26], parseInt(ev.parts[27]), parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseFloat(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseInt(ev.parts[33]), parseInt(ev.parts[34]), parseFloat(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]), parseInt(ev.parts[38]), parseInt(ev.parts[39]), parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]), parseInt(ev.parts[43]), parseFloat(ev.parts[44]), parseFloat(ev.parts[45]), parseFloat(ev.parts[46]), parseFloat(ev.parts[47]), parseFloat(ev.parts[48]), parseFloat(ev.parts[49]));
+                    this.onStatsUpdated(ev.stream, ev.time, parseInt(ev.parts[2]), parseFloat(ev.parts[3]), parseFloat(ev.parts[4]), parseFloat(ev.parts[5]), parseFloat(ev.parts[6]), parseInt(ev.parts[7]), parseInt(ev.parts[8]), parseInt(ev.parts[9]), parseInt(ev.parts[10]), parseInt(ev.parts[11]), parseInt(ev.parts[12]), parseInt(ev.parts[13]), parseFloat(ev.parts[14]), parseFloat(ev.parts[15]), parseInt(ev.parts[16]), parseInt(ev.parts[17]), parseFloat(ev.parts[18]), parseInt(ev.parts[19]), parseInt(ev.parts[20]), parseInt(ev.parts[21]), parseInt(ev.parts[22]), parseInt(ev.parts[23]), parseInt(ev.parts[24]), ev.parts[25], ev.parts[26], parseInt(ev.parts[27]), parseInt(ev.parts[28]), parseInt(ev.parts[29]), parseFloat(ev.parts[30]), parseInt(ev.parts[31]), parseInt(ev.parts[32]), parseInt(ev.parts[33]), parseInt(ev.parts[34]), parseFloat(ev.parts[35]), parseInt(ev.parts[36]), parseInt(ev.parts[37]), parseInt(ev.parts[38]), parseInt(ev.parts[39]), parseInt(ev.parts[40]), parseFloat(ev.parts[41]), parseFloat(ev.parts[42]), parseInt(ev.parts[43]), parseFloat(ev.parts[44]), parseFloat(ev.parts[45]), parseFloat(ev.parts[46]), parseFloat(ev.parts[47]), parseFloat(ev.parts[48]), parseFloat(ev.parts[49]), parseFloat(ev.parts[50]));
                     break;
                 case 'slotstatsSTA':
                     {
@@ -94,6 +94,7 @@ var EventManager = (function () {
         simulation.totalSlotUsageAP = [];
         simulation.totalSlotUsageSTA = [];
         simulation.totalTraffic = 0;
+        simulation.totalPacketLoss = [];
         var config = simulation.config;
         /*config.nGroupsPerRps = [];
         config.rawSlotFormat = [];
@@ -114,7 +115,7 @@ var EventManager = (function () {
         config.dataRate = dataRate;
         config.bandwidth = bandwidth;
         config.trafficInterval = trafficInterval;
-        config.trafficPacketsize = trafficPacketsize;
+        config.payloadSize = trafficPacketsize;
         config.beaconInterval = beaconInterval;
         config.name = name;
         config.propagationLossExponent = propagationLossExponent;
@@ -259,7 +260,7 @@ var EventManager = (function () {
         else
             return false;
     };
-    EventManager.prototype.onStatsUpdated = function (stream, timestamp, id, totalTransmitTime, totalReceiveTime, totalDozeTime, totalActiveTime, nrOfTransmissions, nrOfTransmissionsDropped, nrOfReceives, nrOfReceivesDropped, nrOfSentPackets, nrOfSuccessfulPackets, nrOfDroppedPackets, avgPacketTimeOfFlight, goodputKbit, edcaQueueLength, nrOfSuccessfulRoundtripPackets, avgRoundTripTime, tcpCongestionWindow, numberOfTCPRetransmissions, numberOfTCPRetransmissionsFromAP, nrOfReceivesDroppedByDestination, numberOfMACTxRTSFailed, numberOfMACTxMissedACK, numberOfDropsByReason, numberOfDropsByReasonAtAP, tcpRtoValue, numberOfAPScheduledPacketForNodeInNextSlot, numberOfAPSentPacketForNodeImmediately, avgRemainingSlotTimeWhenAPSendingInSameSlot, numberOfCollisions, numberofMACTxMissedACKAndDroppedPacket, tcpConnected, tcpSlowStartThreshold, tcpEstimatedBandwidth, tcpRTT, numberOfBeaconsMissed, numberOfTransmissionsDuringRAWSlot, totalNumberOfDrops, firmwareTransferTime, ipCameraSendingRate, ipCameraReceivingRate, numberOfTransmissionsCancelledDueToCrossingRAWBoundary, jitter, reliability, interPacketDelayAtServer, interPacketDelayAtClient, interPacketDelayDeviationPercentageAtServer, interPacketDelayDeviationPercentageAtClient) {
+    EventManager.prototype.onStatsUpdated = function (stream, timestamp, id, totalTransmitTime, totalReceiveTime, totalDozeTime, totalActiveTime, nrOfTransmissions, nrOfTransmissionsDropped, nrOfReceives, nrOfReceivesDropped, nrOfSentPackets, nrOfSuccessfulPackets, nrOfDroppedPackets, avgPacketTimeOfFlight, goodputKbit, edcaQueueLength, nrOfSuccessfulRoundtripPackets, avgRoundTripTime, tcpCongestionWindow, numberOfTCPRetransmissions, numberOfTCPRetransmissionsFromAP, nrOfReceivesDroppedByDestination, numberOfMACTxRTSFailed, numberOfMACTxMissedACK, numberOfDropsByReason, numberOfDropsByReasonAtAP, tcpRtoValue, numberOfAPScheduledPacketForNodeInNextSlot, numberOfAPSentPacketForNodeImmediately, avgRemainingSlotTimeWhenAPSendingInSameSlot, numberOfCollisions, numberofMACTxMissedACKAndDroppedPacket, tcpConnected, tcpSlowStartThreshold, tcpEstimatedBandwidth, tcpRTT, numberOfBeaconsMissed, numberOfTransmissionsDuringRAWSlot, totalNumberOfDrops, firmwareTransferTime, ipCameraSendingRate, ipCameraReceivingRate, numberOfTransmissionsCancelledDueToCrossingRAWBoundary, jitter, reliability, interPacketDelayAtServer, interPacketDelayAtClient, interPacketDelayDeviationPercentageAtServer, interPacketDelayDeviationPercentageAtClient, latency) {
         // ^- it's getting awfully crowded around here
         var simulation = this.sim.simulationContainer.getSimulation(stream);
         if (id < 0 || id >= simulation.nodes.length)
@@ -281,6 +282,7 @@ var EventManager = (function () {
         nodeVal.nrOfSentPackets = nrOfSentPackets;
         nodeVal.nrOfSuccessfulPackets = nrOfSuccessfulPackets;
         nodeVal.nrOfDroppedPackets = nrOfDroppedPackets;
+        nodeVal.latency = latency;
         nodeVal.avgSentReceiveTime = avgPacketTimeOfFlight;
         nodeVal.goodputKbit = goodputKbit;
         nodeVal.edcaQueueLength = edcaQueueLength;

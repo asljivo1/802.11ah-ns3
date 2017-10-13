@@ -255,7 +255,7 @@ export class Program {
 
             this.liveSimulationInitializationLines.push(line);
         }
-        else if (parts[1] == "stanodeadd" || parts[1] == "apnodeadd" || parts[1] == "stanodeassoc")
+        else if (parts[1] == "stanodeadd" || parts[1] == "apnodeadd" || parts[1] == "stanodeassoc" || parts[1] == "rawconfig")
             this.liveSimulationInitializationLines.push(line);
 
         for (let s of this.activeSocketManager.getSocketsFor("live")) {

@@ -32,6 +32,7 @@ var SimulationContainer = (function () {
     };
     return SimulationContainer;
 }());
+var toolTipContainer = [];
 // The Tool-Tip instance:
 function ToolTip(canvas, region, text, width, timeout) {
     var me = this, // self-reference for event handlers
@@ -47,13 +48,18 @@ function ToolTip(canvas, region, text, width, timeout) {
             visible = true; // lock so it's only shown once
             setDivPos(pos); // set position
             parent.appendChild(div); // add to parent of canvas
-            setTimeout(hide, timeout); // timeout for hide
+            setTimeout(hideTooltip, timeout); // timeout for hide
+            //console.log("SHOW");
         }
+        //console.log("show nothing");
     };
     // hide the tool-tip
-    function hide() {
+    function hideTooltip() {
         visible = false; // hide it after timeout
         parent.removeChild(div); // remove from DOM
+        canvas.removeEventListener("click", check);
+        canvas.removeEventListener("mousemove", check);
+        //console.log("HIDE");
     }
     // check mouse position, add limits as wanted... just for example:
     function check(e) {
@@ -232,7 +238,14 @@ var SimulationGUI = (function () {
                     var region = { x: xGroupCoord, y: i * rectHeight + (i + 1) * (padding + 0.5), w: multiGroupWidths[i][j], h: rectHeight };
                     var showtext = "Cross-slot: " + selectedSimulation.config.rawSlotBoundary[ind] + "; Slot count: " + selectedSimulation.config.rawSlotDurationCount[ind] + "; AID start: " + selectedSimulation.config.rawGroupAidStart[ind] + "; AID end: " + selectedSimulation.config.rawGroupAidEnd[ind];
                     ind++;
-                    var t1 = new ToolTip(canv, region, showtext, 150, 4000);
+                    if (toolTipContainer.length == 1) {
+                        setTimeout(toolTipContainer[0].hideTooltip, 0);
+                        toolTipContainer[0] = new ToolTip(canv, region, showtext, 150, 4000);
+                    }
+                    else {
+                        toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
+                    }
+                    //console.log(toolTipContainer);
                 }
             }
         }
@@ -429,7 +442,7 @@ var SimulationGUI = (function () {
     };
     SimulationGUI.prototype.changeNodeSelection = function (id) {
         // don't change the node if channel traffic is selected
-        if (id != -1 && this.selectedPropertyForChart == "channelTraffic")
+        if (id != -1 && (this.selectedPropertyForChart == "channelTraffic" || this.selectedPropertyForChart == "totalPacketLoss"))
             return;
         this.selectedNode = id;
         this.updateGUI(true);
@@ -444,7 +457,21 @@ var SimulationGUI = (function () {
         if (typeof selectedSimulation == "undefined")
             return;
         this.updateConfigGUI(selectedSimulation);
-        $("#simChannelTraffic").text(selectedSimulation.totalTraffic + "B (" + (selectedSimulation.totalTraffic / selectedSimulation.currentTime * 1000).toFixed(2) + "B/s)");
+        var sp = this.getAverageAndStdDevValue(selectedSimulation, "nrOfSuccessfulPackets")[0];
+        if (sp) {
+            var pl = 100 - 100 * sp / this.getAverageAndStdDevValue(selectedSimulation, "nrOfSentPackets")[0];
+            selectedSimulation.totalPacketLoss.push(pl);
+            $("#simTotalPacketLoss").text(pl.toFixed(2) + " %");
+        }
+        else {
+            $("#simTotalPacketLoss").text("100 %");
+        }
+        if (selectedSimulation.totalTraffic) {
+            $("#simChannelTraffic").text(selectedSimulation.totalTraffic + "B (" + (selectedSimulation.totalTraffic * 8 / selectedSimulation.currentTime).toFixed(2) + "Kbit/s)");
+        }
+        else {
+            $("#simChannelTraffic").text("0 B (0 Kbit/s)");
+        }
         var propertyElements = $(".nodeProperty");
         if (this.selectedNode < 0 || this.selectedNode >= selectedSimulation.nodes.length)
             this.updateGUIForAll(simulations, selectedSimulation, full);
@@ -514,8 +541,9 @@ var SimulationGUI = (function () {
                     var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
                         $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
                     if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
-                        prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
-                        prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                        //prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
+                        prevSiblingHeader = (prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) != "") ? prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) : prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+                        //console.log("BEG-"+prevSiblingHeader+"-END")
                     }
                     if (this.automaticHideNullProperties) {
                         if ((selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] &&

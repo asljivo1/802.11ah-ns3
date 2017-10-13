@@ -136,6 +136,9 @@ var Charting = (function () {
     Charting.prototype.updateChartsForAll = function (selectedSimulation, simulations, full, showDeltas) {
         if (this.simGUI.selectedPropertyForChart == "channelTraffic")
             this.updateChartsForTraffic(simulations, full, showDeltas);
+        else if (this.simGUI.selectedPropertyForChart == "totalPacketLoss") {
+            this.updateChartsForPacketLoss(simulations, full, showDeltas);
+        }
         else {
             if ($("#chkShowDistribution").prop("checked"))
                 this.updateDistributionChart(selectedSimulation, showDeltas);
@@ -428,6 +431,68 @@ var Charting = (function () {
                 }
             },
             title: { text: 'Channel traffic' },
+            xAxis: {
+                type: 'linear',
+                tickPixelInterval: 100,
+            },
+            yAxis: {
+                title: { text: 'Value' },
+                plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+            },
+            legend: { enabled: true },
+            series: series,
+            credits: false
+        });
+    };
+    Charting.prototype.updateChartsForPacketLoss = function (simulations, full, showDeltas) {
+        var self = this;
+        var series = [];
+        var lastSums = [];
+        for (var s = 0; s < simulations.length; s++)
+            lastSums.push(0);
+        for (var s = 0; s < simulations.length; s++) {
+            var data = [];
+            //data.push([showDeltas ? simulations[s].totalPacketLoss - lastSums[s] : simulations[s].totalPacketLoss]);
+            for (var i = 0; i < simulations[s].totalPacketLoss.length; i++) {
+                if (simulations[s].totalSlotUsageTimestamps[i] >= 0) {
+                    data.push([
+                        simulations[s].totalSlotUsageTimestamps[i],
+                        showDeltas ? simulations[s].totalPacketLoss[i] - lastSums[s] : simulations[s].totalPacketLoss[i]
+                    ]);
+                    lastSums[s] = simulations[s].totalPacketLoss[simulations[s].totalPacketLoss.length - 1];
+                    //console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
+                    //console.log("----------------------" + s);
+                }
+            }
+            series.push({
+                name: simulations[s].config.name,
+                type: "spline",
+                data: data,
+                zIndex: 2,
+            });
+        }
+        $('#nodeChart').empty().highcharts({
+            chart: {
+                animation: "Highcharts.svg",
+                marginRight: 10,
+                events: {
+                    load: function () {
+                        self.simGUI.currentChart = this;
+                    }
+                },
+                zoomType: "x"
+            },
+            plotOptions: {
+                series: {
+                    animation: false,
+                    marker: { enabled: false }
+                }
+            },
+            title: { text: 'Total Packet Loss' },
             xAxis: {
                 type: 'linear',
                 tickPixelInterval: 100,
