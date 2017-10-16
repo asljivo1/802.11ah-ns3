@@ -790,7 +790,6 @@ var EventManager = (function () {
             simulation = new Simulation();
             this.sim.simulationContainer.setSimulation(stream, simulation);
         }
-        console.log("ON START");
         simulation.nodes = [];
         simulation.slotUsageAP = [];
         simulation.slotUsageSTA = [];
@@ -878,7 +877,6 @@ var EventManager = (function () {
     };
     EventManager.prototype.onRawConfig = function (stream, rpsIndex, rawIndex, rawSlotFormat, rawSlotDurationCount, nRawSlots, rawSlotBoundary, rawGroupAidStart, rawGroupAidEnd) {
         var config = this.sim.simulationContainer.getSimulation(stream).config;
-        console.log("ON RAW CONF");
         /*//if make
         if (!config.nGroupsPerRps) {
             console.log("UNDEFINED+++");
@@ -1107,6 +1105,86 @@ var SimulationContainer = (function () {
     };
     return SimulationContainer;
 }());
+/*
+class ToolTip {
+    private me = this;                                                  // self-reference for event handlers
+    private div: HTMLDivElement = document.createElement("div");        // the tool-tip div
+    private visible: boolean = false;                                   // current status
+
+    private parent;
+    public released = false;
+
+    constructor(private canvas: HTMLCanvasElement, private region, private text: string, private width: number, private timeout: number) {
+        this.parent = canvas.parentNode;
+        // set some initial styles, can be replaced by class-name etc.
+        this.div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.5;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";
+        this.div.innerHTML = text;
+
+        // we need to use shared event handlers:
+        this.canvas.addEventListener("mousemove", this.check);
+        this.canvas.addEventListener("click", this.check);
+    }
+
+    public release(){
+        this.hideTooltip();
+        this.released = true;
+    }
+    // show the tool-tip
+    show(pos) {
+        if (!this.visible) {                             // ignore if already shown (or reset time)
+            this.visible = true;                           // lock so it's only shown once
+            this.setDivPos(pos);                           // set position
+            this.parent.appendChild(this.div);                  // add to parent of canvas
+            setTimeout(this.hideTooltip, this.timeout);                // timeout for hide
+            //console.log("SHOW");
+        }
+        //console.log("show nothing");
+    }
+
+    // hide the tool-tip
+    hideTooltip() {
+        this.visible = false;                            // hide it after timeout
+        this.parent.removeChild(this.div);                    // remove from DOM
+        this.canvas.removeEventListener("click", this.check);
+        this.canvas.removeEventListener("mousemove", this.check);
+        console.log("HIDE");
+    }
+
+    // get mouse position relative to canvas
+    getPos(e) {
+        let r = this.canvas.getBoundingClientRect();
+        return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+
+    // check mouse position, add limits as wanted... just for example:
+    check(e) {
+
+        let posAbs = { x: e.clientX, y: e.clientY };  // div is fixed, so use clientX/Y
+        let r = this.canvas.getBoundingClientRect();
+        let pos = { x: e.clientX - r.left, y: e.clientY - r.top };
+        console.log("pos je " + pos);
+        if (!this.visible &&
+            pos.x >= this.region.x && pos.x < this.region.x + this.region.w &&
+            pos.y >= this.region.y && pos.y < this.region.y + this.region.h) {
+            this.show(posAbs);                          // show tool-tip at this pos
+        }
+        else this.setDivPos(posAbs);                     // otherwise, update position
+    }
+
+
+    // update and adjust div position if needed (anchor to a different corner etc.)
+    setDivPos(pos) {
+        if (this.visible) {
+            if (pos.x < 0) pos.x = 0;
+            if (pos.y < 0) pos.y = 0;
+            // other bound checks here
+            this.div.style.left = pos.x + "px";
+            this.div.style.top = pos.y + "px";
+        }
+    }
+
+}
+*/
 var toolTipContainer = [];
 // The Tool-Tip instance:
 function ToolTip(canvas, region, text, width, timeout) {
@@ -1115,26 +1193,27 @@ function ToolTip(canvas, region, text, width, timeout) {
     parent = canvas.parentNode, // parent node for canvas
     visible = false; // current status
     // set some initial styles, can be replaced by class-name etc.
-    div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.5;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";
+    div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.8;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";
     div.innerHTML = text;
     // show the tool-tip
     this.show = function (pos) {
         if (!visible) {
+            //me.hideOther();
+            //console.log("tu sam ");
             visible = true; // lock so it's only shown once
             setDivPos(pos); // set position
             parent.appendChild(div); // add to parent of canvas
-            setTimeout(hideTooltip, timeout); // timeout for hide
-            //console.log("SHOW");
+            setTimeout(hide, timeout); // timeout for hide
+            console.log("SHOW");
         }
-        //console.log("show nothing");
     };
     // hide the tool-tip
-    function hideTooltip() {
+    function hide() {
         visible = false; // hide it after timeout
         parent.removeChild(div); // remove from DOM
-        canvas.removeEventListener("click", check);
-        canvas.removeEventListener("mousemove", check);
-        //console.log("HIDE");
+        //canvas.removeEventListener("click", check);
+        //canvas.removeEventListener("mousemove", check);        
+        console.log("HIDE");
     }
     // check mouse position, add limits as wanted... just for example:
     function check(e) {
@@ -1312,15 +1391,14 @@ var SimulationGUI = (function () {
                     // hover xGroupCoord, i * rectHeight + (i + 1) * (padding + 0.5), multiGroupWidths[i][j], rectHeight
                     var region = { x: xGroupCoord, y: i * rectHeight + (i + 1) * (padding + 0.5), w: multiGroupWidths[i][j], h: rectHeight };
                     var showtext = "Cross-slot: " + selectedSimulation.config.rawSlotBoundary[ind] + "; Slot count: " + selectedSimulation.config.rawSlotDurationCount[ind] + "; AID start: " + selectedSimulation.config.rawGroupAidStart[ind] + "; AID end: " + selectedSimulation.config.rawGroupAidEnd[ind];
-                    ind++;
-                    if (toolTipContainer.length == 1) {
-                        setTimeout(toolTipContainer[0].hideTooltip, 0);
-                        toolTipContainer[0] = new ToolTip(canv, region, showtext, 150, 4000);
+                    if (toolTipContainer.length == ind) {
+                        toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
+                        console.log("first+++++++++++++++++++++++++++++ " + ind);
                     }
                     else {
-                        toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
+                        //toolTipContainer[ind] = new ToolTip(canv, region, showtext, 150, 4000);
                     }
-                    //console.log(toolTipContainer);
+                    ind++;
                 }
             }
         }

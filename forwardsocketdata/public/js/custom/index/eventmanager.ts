@@ -143,7 +143,6 @@ class EventManager {
             simulation = new Simulation();
             this.sim.simulationContainer.setSimulation(stream, simulation);
         }
-console.log("ON START");
 
         simulation.nodes = [];
         simulation.slotUsageAP = [];
@@ -250,7 +249,6 @@ console.log("ON START");
     onRawConfig(stream: string, rpsIndex: number, rawIndex: number, rawSlotFormat: number, rawSlotDurationCount: number,
         nRawSlots: number, rawSlotBoundary: number, rawGroupAidStart: number, rawGroupAidEnd: number) {
         let config = this.sim.simulationContainer.getSimulation(stream).config;
-        console.log("ON RAW CONF");
         
         /*//if make
         if (!config.nGroupsPerRps) {
