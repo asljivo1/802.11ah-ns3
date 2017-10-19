@@ -231,7 +231,9 @@ var Charting = (function () {
     Charting.prototype.updateChartsForAll = function (selectedSimulation, simulations, full, showDeltas) {
         if (this.simGUI.selectedPropertyForChart == "channelTraffic")
             this.updateChartsForTraffic(simulations, full, showDeltas);
-        else if (this.simGUI.selectedPropertyForChart == "totalPacketLoss") {
+        else if (this.simGUI.selectedPropertyForChart == "totalPacketLoss" && this.simGUI.selectedStream == "live") {
+            $("#simTotalPacketLoss").removeClass("configProperty");
+            $("#simTotalPacketLoss").addClass("chartProperty");
             this.updateChartsForPacketLoss(simulations, full, showDeltas);
         }
         else {
@@ -544,30 +546,27 @@ var Charting = (function () {
         });
     };
     Charting.prototype.updateChartsForPacketLoss = function (simulations, full, showDeltas) {
-        var self = this;
         var series = [];
+        var self = this;
         var lastSums = [];
         for (var s = 0; s < simulations.length; s++)
             lastSums.push(0);
         for (var s = 0; s < simulations.length; s++) {
             var data = [];
-            //data.push([showDeltas ? simulations[s].totalPacketLoss - lastSums[s] : simulations[s].totalPacketLoss]);
-            for (var i = 0; i < simulations[s].totalPacketLoss.length; i++) {
-                if (simulations[s].totalSlotUsageTimestamps[i] >= 0) {
+            for (var i = 0; i < simulations[s].totalSlotUsageTimestamps.length; i++) {
+                if (simulations[s].totalSlotUsageTimestamps[i] && simulations[s].totalPacketLoss[i]) {
                     data.push([
                         simulations[s].totalSlotUsageTimestamps[i],
                         showDeltas ? simulations[s].totalPacketLoss[i] - lastSums[s] : simulations[s].totalPacketLoss[i]
                     ]);
                     lastSums[s] = simulations[s].totalPacketLoss[simulations[s].totalPacketLoss.length - 1];
-                    //console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
-                    //console.log("----------------------" + s);
                 }
             }
             series.push({
                 name: simulations[s].config.name,
                 type: "spline",
                 data: data,
-                zIndex: 2
+                zIndex: 1
             });
         }
         $('#nodeChart').empty().highcharts({
@@ -798,21 +797,12 @@ var EventManager = (function () {
         simulation.totalTraffic = 0;
         simulation.totalPacketLoss = [];
         var config = simulation.config;
-        /*config.nGroupsPerRps = [];
-        config.rawSlotFormat = [];
-        config.rawSlotDurationCount = [];
-        config.rawSlotDuration = [];
-        config.nRawSlots = [];
-        config.rawSlotBoundary = [];
-        config.rawGroupAidStart = [];
-        config.rawGroupAidEnd = [];
-        config.rawGroupDurations = [];*/
         config.AIDRAWRange = aidRAWRange;
         config.numberOfRAWGroups = numberOfRAWGroups;
         config.RAWSlotFormat = RAWSlotFormat;
         config.numberOfRAWSlots = numberOfRAWSlots;
         config.RAWSlotCount = RAWSlotCount;
-        config.RAWSlotDuration = 500 + 120 * RAWSlotCount;
+        config.RAWSlotDuration = RAWSlotCount > 0 ? 500 + 120 * RAWSlotCount : undefined;
         config.dataMode = dataMode;
         config.dataRate = dataRate;
         config.bandwidth = bandwidth;
@@ -877,19 +867,6 @@ var EventManager = (function () {
     };
     EventManager.prototype.onRawConfig = function (stream, rpsIndex, rawIndex, rawSlotFormat, rawSlotDurationCount, nRawSlots, rawSlotBoundary, rawGroupAidStart, rawGroupAidEnd) {
         var config = this.sim.simulationContainer.getSimulation(stream).config;
-        /*//if make
-        if (!config.nGroupsPerRps) {
-            console.log("UNDEFINED+++");
-            config.nGroupsPerRps = [];
-            config.rawGroupDurations = [];
-            config.rawSlotFormat = [];
-            config.rawSlotDurationCount = [];
-            config.rawSlotDuration = [];
-            config.nRawSlots = [];
-            config.rawSlotBoundary = [];
-            config.rawGroupAidStart = [];
-            config.rawGroupAidEnd = [];
-        }*/
         if (config.nGroupsPerRps)
             if (config.nGroupsPerRps.length == 0) {
                 config.nGroupsPerRps.push(rawIndex + 1);
@@ -911,15 +888,6 @@ var EventManager = (function () {
         config.rawGroupAidStart.push(rawGroupAidStart);
         config.rawGroupAidEnd.push(rawGroupAidEnd);
         config.rawGroupDurations.push(nRawSlots * slotDuration);
-        /*            console.log("config.rawSlotFormat " + config.rawSlotFormat);
-                    console.log("config.rawSlotDurationCount " + config.rawSlotDurationCount);
-                    console.log("config.rawSlotDuration " + config.rawSlotDuration);
-                    console.log("config.nRawSlots " + config.nRawSlots);
-                    console.log("config.rawSlotBoundary " + config.rawSlotBoundary);
-                    console.log("config.rawGroupAidStart " + config.rawGroupAidStart);
-                    console.log("config.rawGroupAidEnd " + config.rawGroupAidEnd);
-                    console.log("config.rawGroupDurations " + config.rawGroupDurations);
-                    console.log("rawSlotFormat " + rawSlotFormat);*/
     };
     EventManager.prototype.onNodeAdded = function (stream, isSTA, id, x, y, aId) {
         var n = isSTA ? new STANode() : new APNode();
@@ -1105,86 +1073,6 @@ var SimulationContainer = (function () {
     };
     return SimulationContainer;
 }());
-/*
-class ToolTip {
-    private me = this;                                                  // self-reference for event handlers
-    private div: HTMLDivElement = document.createElement("div");        // the tool-tip div
-    private visible: boolean = false;                                   // current status
-
-    private parent;
-    public released = false;
-
-    constructor(private canvas: HTMLCanvasElement, private region, private text: string, private width: number, private timeout: number) {
-        this.parent = canvas.parentNode;
-        // set some initial styles, can be replaced by class-name etc.
-        this.div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.5;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";
-        this.div.innerHTML = text;
-
-        // we need to use shared event handlers:
-        this.canvas.addEventListener("mousemove", this.check);
-        this.canvas.addEventListener("click", this.check);
-    }
-
-    public release(){
-        this.hideTooltip();
-        this.released = true;
-    }
-    // show the tool-tip
-    show(pos) {
-        if (!this.visible) {                             // ignore if already shown (or reset time)
-            this.visible = true;                           // lock so it's only shown once
-            this.setDivPos(pos);                           // set position
-            this.parent.appendChild(this.div);                  // add to parent of canvas
-            setTimeout(this.hideTooltip, this.timeout);                // timeout for hide
-            //console.log("SHOW");
-        }
-        //console.log("show nothing");
-    }
-
-    // hide the tool-tip
-    hideTooltip() {
-        this.visible = false;                            // hide it after timeout
-        this.parent.removeChild(this.div);                    // remove from DOM
-        this.canvas.removeEventListener("click", this.check);
-        this.canvas.removeEventListener("mousemove", this.check);
-        console.log("HIDE");
-    }
-
-    // get mouse position relative to canvas
-    getPos(e) {
-        let r = this.canvas.getBoundingClientRect();
-        return { x: e.clientX - r.left, y: e.clientY - r.top };
-    }
-
-    // check mouse position, add limits as wanted... just for example:
-    check(e) {
-
-        let posAbs = { x: e.clientX, y: e.clientY };  // div is fixed, so use clientX/Y
-        let r = this.canvas.getBoundingClientRect();
-        let pos = { x: e.clientX - r.left, y: e.clientY - r.top };
-        console.log("pos je " + pos);
-        if (!this.visible &&
-            pos.x >= this.region.x && pos.x < this.region.x + this.region.w &&
-            pos.y >= this.region.y && pos.y < this.region.y + this.region.h) {
-            this.show(posAbs);                          // show tool-tip at this pos
-        }
-        else this.setDivPos(posAbs);                     // otherwise, update position
-    }
-
-
-    // update and adjust div position if needed (anchor to a different corner etc.)
-    setDivPos(pos) {
-        if (this.visible) {
-            if (pos.x < 0) pos.x = 0;
-            if (pos.y < 0) pos.y = 0;
-            // other bound checks here
-            this.div.style.left = pos.x + "px";
-            this.div.style.top = pos.y + "px";
-        }
-    }
-
-}
-*/
 var toolTipContainer = [];
 // The Tool-Tip instance:
 function ToolTip(canvas, region, text, width, timeout) {
@@ -1193,27 +1081,22 @@ function ToolTip(canvas, region, text, width, timeout) {
     parent = canvas.parentNode, // parent node for canvas
     visible = false; // current status
     // set some initial styles, can be replaced by class-name etc.
-    div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.8;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";
+    div.style.cssText = "position:fixed;padding:7px;background:white;opacity:0.9;border-style:solid;border-color:#7cb5ec;border-width:1px;pointer-events:none;width:" + width + "px";
     div.innerHTML = text;
     // show the tool-tip
     this.show = function (pos) {
         if (!visible) {
             //me.hideOther();
-            //console.log("tu sam ");
             visible = true; // lock so it's only shown once
             setDivPos(pos); // set position
             parent.appendChild(div); // add to parent of canvas
             setTimeout(hide, timeout); // timeout for hide
-            console.log("SHOW");
         }
     };
     // hide the tool-tip
     function hide() {
         visible = false; // hide it after timeout
-        parent.removeChild(div); // remove from DOM
-        //canvas.removeEventListener("click", check);
-        //canvas.removeEventListener("mousemove", check);        
-        console.log("HIDE");
+        parent.removeChild(div); // remove from DOM     
     }
     // check mouse position, add limits as wanted... just for example:
     function check(e) {
@@ -1388,15 +1271,11 @@ var SimulationGUI = (function () {
                         ctx.rect(xGroupCoord + k * multiSlotWidths[i][j], i * rectHeight + (i + 1) * (padding + 0.5), multiSlotWidths[i][j], rectHeight);
                         ctx.stroke();
                     }
-                    // hover xGroupCoord, i * rectHeight + (i + 1) * (padding + 0.5), multiGroupWidths[i][j], rectHeight
+                    // hover 
                     var region = { x: xGroupCoord, y: i * rectHeight + (i + 1) * (padding + 0.5), w: multiGroupWidths[i][j], h: rectHeight };
                     var showtext = "Cross-slot: " + selectedSimulation.config.rawSlotBoundary[ind] + "; Slot count: " + selectedSimulation.config.rawSlotDurationCount[ind] + "; AID start: " + selectedSimulation.config.rawGroupAidStart[ind] + "; AID end: " + selectedSimulation.config.rawGroupAidEnd[ind];
                     if (toolTipContainer.length == ind) {
-                        toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 4000));
-                        console.log("first+++++++++++++++++++++++++++++ " + ind);
-                    }
-                    else {
-                        //toolTipContainer[ind] = new ToolTip(canv, region, showtext, 150, 4000);
+                        toolTipContainer.push(new ToolTip(canv, region, showtext, 150, 2000));
                     }
                     ind++;
                 }
@@ -1407,6 +1286,7 @@ var SimulationGUI = (function () {
             var slots = selectedSimulation.config.numberOfRAWSlots;
             var groupWidth = Math.floor(width / groups) - 2 * padding;
             var rectHeight = height - 2 * padding;
+            console.log("groups " + groups + " , slots " + slots + " ,groupwidth" + groupWidth);
             for (var g = 0; g < groups; g++) {
                 ctx.beginPath();
                 ctx.rect(padding + g * (padding + groupWidth) + 0.5, padding + 0.5, groupWidth, rectHeight);
@@ -1425,11 +1305,6 @@ var SimulationGUI = (function () {
                         var barHeight = fullBarHeight * percAP;
                         ctx.fillStyle = "#ecb57c";
                         ctx.fillRect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + y + 0.5, slotWidth, barHeight);
-                        // these 3 lines below are unnecessary
-                        /*ctx.beginPath();
-                        ctx.rect(padding + g * (padding + groupWidth) + s * slotWidth + 0.5, padding + 0.5, slotWidth, height - 2 * padding);
-                        ctx.stroke();
-                        */
                         y += barHeight;
                         barHeight = fullBarHeight * percSTA;
                         ctx.fillStyle = "#7cb5ec";
@@ -1696,7 +1571,6 @@ var SimulationGUI = (function () {
                     if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
                         //prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
                         prevSiblingHeader = (prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) != "") ? prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) : prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
-                        //console.log("BEG-"+prevSiblingHeader+"-END")
                     }
                     if (this.automaticHideNullProperties) {
                         if ((selectedSimulation.nodes[this.selectedNode].values[values.length - 1][prop] &&
@@ -1778,6 +1652,12 @@ var SimulationGUI = (function () {
             var prop = $(propertyElements[i]).attr("data-property");
             var avgAndStdDev = this.getAverageAndStdDevValue(selectedSimulation, prop);
             var el = "";
+            var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
+                $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
+            if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
+                //prevSiblingHeader.replace(/(\r\n|\n|\r)/, "");
+                prevSiblingHeader = (prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) != "") ? prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\r")) : prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
+            }
             if (avgAndStdDev.length > 0) {
                 var text = avgAndStdDev[0].toFixed(2) + " (stddev: " + avgAndStdDev[1].toFixed(2) + ")";
                 if (simulations.length > 1) {
@@ -1804,21 +1684,24 @@ var SimulationGUI = (function () {
                 else {
                     el = text;
                 }
-                var prevSiblingHeader = ($($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] ? $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('- ')[1] :
-                    $($(propertyElements[i]).prevAll('tr.header').get(0)).text().split('+ ')[1]);
-                if (this.headersListFullyShown.length > 0 && prevSiblingHeader) {
-                    prevSiblingHeader = prevSiblingHeader.substr(0, prevSiblingHeader.indexOf("\n"));
-                }
                 if (this.automaticHideNullProperties) {
                     if ((el != '0.00 (stddev: 0.00)' && el != "-1") || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
                         $(propertyElements[i]).show();
                     }
                     else {
-                        //zero and -1 elements and the names of hidden metrics are shown in the browser console
                         $(propertyElements[i]).hide();
                     }
                 }
                 $($(propertyElements[i]).find("td").get(1)).empty().append(el);
+            }
+            else {
+                var el_1 = "-1";
+                if (this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                    $(propertyElements[i]).show();
+                }
+                else {
+                    $(propertyElements[i]).hide();
+                }
             }
         }
         this.charting.deferUpdateCharts(simulations, full);
@@ -1885,6 +1768,12 @@ $(document).ready(function () {
     sock.on("bulkentry", function (data) {
         evManager.onReceiveBulk(data);
     });
+    if (sim.selectedStream != "live") {
+        // because data is not available 
+        $("#simTotalPacketLoss").removeClass("chartProperty");
+        $("#simTotalPacketLoss").addClass("configProperty");
+        $("#simTotalPacketLoss").parent().hide();
+    }
     $(canvas).keydown(function (ev) {
         if (!sim.simulationContainer.hasSimulations())
             return;

@@ -174,7 +174,9 @@ class Charting {
 
         if (this.simGUI.selectedPropertyForChart == "channelTraffic")
             this.updateChartsForTraffic(simulations, full, showDeltas);
-        else if (this.simGUI.selectedPropertyForChart == "totalPacketLoss") {
+        else if (this.simGUI.selectedPropertyForChart == "totalPacketLoss" && this.simGUI.selectedStream == "live") {
+            $("#simTotalPacketLoss").removeClass("configProperty");
+            $("#simTotalPacketLoss").addClass("chartProperty");
             this.updateChartsForPacketLoss(simulations, full, showDeltas);
         }
         else {
@@ -533,32 +535,29 @@ class Charting {
     }
 
     private updateChartsForPacketLoss(simulations: Simulation[], full: boolean, showDeltas: boolean) {
-        let self = this;
         let series = [];
-
+        let self = this;
         let lastSums: number[] = [];
         for (let s = 0; s < simulations.length; s++)
             lastSums.push(0);
 
         for (let s = 0; s < simulations.length; s++) {
             let data = [];
-            //data.push([showDeltas ? simulations[s].totalPacketLoss - lastSums[s] : simulations[s].totalPacketLoss]);
-            for (let i = 0; i < simulations[s].totalPacketLoss.length; i++) {
-                if (simulations[s].totalSlotUsageTimestamps[i] >= 0) {
+            for (let i = 0; i < simulations[s].totalSlotUsageTimestamps.length; i++) {
+                if (simulations[s].totalSlotUsageTimestamps[i] && simulations[s].totalPacketLoss[i]) {
                     data.push([
                         simulations[s].totalSlotUsageTimestamps[i],
                         showDeltas ? simulations[s].totalPacketLoss[i] - lastSums[s] : simulations[s].totalPacketLoss[i]]
                     );
                     lastSums[s] = simulations[s].totalPacketLoss[simulations[s].totalPacketLoss.length - 1];
-                    //console.log("Time " + simulations[s].totalSlotUsageTimestamps[i] + "  ;value " + simulations[s].totalPacketLoss[i] + " ; last " + lastSums[s]);
-                    //console.log("----------------------" + s);
+
                 }
             }
             series.push({
                 name: simulations[s].config.name,
                 type: "spline",
                 data: data,
-                zIndex: 2,
+                zIndex: 1,
             });
         }
 

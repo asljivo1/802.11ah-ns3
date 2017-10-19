@@ -154,21 +154,12 @@ class EventManager {
 
         let config = simulation.config;
         
-        /*config.nGroupsPerRps = [];
-        config.rawSlotFormat = [];
-        config.rawSlotDurationCount = [];
-        config.rawSlotDuration = [];
-        config.nRawSlots = [];
-        config.rawSlotBoundary = [];
-        config.rawGroupAidStart = [];
-        config.rawGroupAidEnd = [];
-        config.rawGroupDurations = [];*/
         config.AIDRAWRange = aidRAWRange;
         config.numberOfRAWGroups = numberOfRAWGroups;
         config.RAWSlotFormat = RAWSlotFormat;
         config.numberOfRAWSlots = numberOfRAWSlots;
         config.RAWSlotCount = RAWSlotCount;
-        config.RAWSlotDuration = 500 + 120 * RAWSlotCount;
+        config.RAWSlotDuration = RAWSlotCount > 0 ? 500 + 120 * RAWSlotCount : undefined;
         config.dataMode = dataMode;
         config.dataRate = dataRate;
         config.bandwidth = bandwidth;
@@ -249,20 +240,6 @@ class EventManager {
     onRawConfig(stream: string, rpsIndex: number, rawIndex: number, rawSlotFormat: number, rawSlotDurationCount: number,
         nRawSlots: number, rawSlotBoundary: number, rawGroupAidStart: number, rawGroupAidEnd: number) {
         let config = this.sim.simulationContainer.getSimulation(stream).config;
-        
-        /*//if make
-        if (!config.nGroupsPerRps) {
-            console.log("UNDEFINED+++");
-            config.nGroupsPerRps = [];
-            config.rawGroupDurations = [];
-            config.rawSlotFormat = [];
-            config.rawSlotDurationCount = [];
-            config.rawSlotDuration = [];
-            config.nRawSlots = [];
-            config.rawSlotBoundary = [];
-            config.rawGroupAidStart = [];
-            config.rawGroupAidEnd = []; 
-        }*/
         if (config.nGroupsPerRps)
             if (config.nGroupsPerRps.length == 0) {
                 config.nGroupsPerRps.push(rawIndex + 1);
@@ -284,15 +261,6 @@ class EventManager {
         config.rawGroupAidStart.push(rawGroupAidStart);
         config.rawGroupAidEnd.push(rawGroupAidEnd);
         config.rawGroupDurations.push(nRawSlots * slotDuration);
-        /*            console.log("config.rawSlotFormat " + config.rawSlotFormat);
-                    console.log("config.rawSlotDurationCount " + config.rawSlotDurationCount);
-                    console.log("config.rawSlotDuration " + config.rawSlotDuration);
-                    console.log("config.nRawSlots " + config.nRawSlots);
-                    console.log("config.rawSlotBoundary " + config.rawSlotBoundary);
-                    console.log("config.rawGroupAidStart " + config.rawGroupAidStart);
-                    console.log("config.rawGroupAidEnd " + config.rawGroupAidEnd);
-                    console.log("config.rawGroupDurations " + config.rawGroupDurations);
-                    console.log("rawSlotFormat " + rawSlotFormat);*/
 
     }
 
