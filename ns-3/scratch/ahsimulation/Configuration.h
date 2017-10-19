@@ -27,7 +27,7 @@ struct Configuration {
 	bool useV6 = false; //false
 	uint32_t nControlLoops = 64/2;
 	uint32_t coapPayloadSize = 64;
-	uint32_t BeaconInterval = 102400/2; //102400 25600 us 599040/2
+	uint32_t BeaconInterval = 102400*2; //102400 25600 us 599040/2
 	uint32_t trafficInterval = 1000; //ms 55,110,210,310,410,515,615,720,820,950,1024 beacon interval *4
 	uint32_t trafficIntervalDeviation = trafficInterval/10; //1000 discuss with Jeroen
 	UintegerValue maxNumberOfPackets = 4294967295u; ///4294967295u //ami
@@ -40,7 +40,7 @@ struct Configuration {
 	uint32_t NGroup = 2; // mora biti djeljenik od nsta dodati u checks
 
 
-	double simulationTime = 200;
+	double simulationTime = 20;
 	uint32_t seed = 1;
 	uint32_t MinRTO = 81920000; //819200
 	uint32_t TCPConnectionTimeout = 6000000;

@@ -124,8 +124,10 @@ sub analyzeFile {
 		
 		if($parts[1] eq "start") {
 			# config line
+#print STDERR ">> last index of parts is $#parts and value is $parts[$#parts] \n";
 			for my $idx (@configIdx) {
 			  	push @configParts, $parts[$idx];
+#print STDERR ">> indeksi = $idx \n";
 			}
 		}
 		elsif($parts[1] eq "startheader") {
@@ -268,10 +270,12 @@ sub resolveConfigIdxNames {
                                                 #print lc($statHeaders[$i]) . " <-> " . $item . "\n";
                                                 if(lc($configHeaders[$i]) eq lc($item)) {
                                                         $configIdx[$itm] = $i; # update to index
-#                                                        print "updated $statsIdx[$item] to $i because its equal to $item\n";
+#print STDERR ">> $configIdx[$itm] = $i \n";
+                                                        #print STDERR "updated $statsIdx[$item] to $i because its equal to $item\n";
                                                         last;
                                                 }
                                         }
+#print STDERR ">> last index of configHeaders is $#configHeaders and value is $configHeaders[$#configHeaders] \n";
                                 }
                         }
 

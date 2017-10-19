@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
         i++;
     }
 
-    //eventManager.onStartHeader();
+    eventManager.onStartHeader();
     eventManager.onStart(config);
 
 

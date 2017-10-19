@@ -210,16 +210,11 @@ void SimulationEventManager::send(vector<string> str) {
 void SimulationEventManager::onStartHeader() {
 	send({"startheader",
 		   "NRawSta",
-		   "NGroup",
-		   "SlotFormat",
-		   "NRawSlotCount",
-		   "NRawSlotDuration",
-		   "NRawSlotNum",
 		   "DataMode",
 		   "",
 		   "",
 		   "TrafficInterval",
-		   "TrafficPacketSize",
+		   "PayloadSize",
 		   "BeaconInterval",
 		   "Name",
 		   "PropagationLossExponent",
@@ -243,8 +238,14 @@ void SimulationEventManager::onStartHeader() {
 		   "FirmwareCorruptionProbability",
 		   "FirmwareNewUpdateProbability",
 		   "SensorMeasurementSize",
+		   "NGroup",
+		   "SlotFormat",
+		   "NRawSlotCount",
+		   "NRawSlotDuration",
+		   "NRawSlotNum",
 		   "ContentionPerRAWSlot",
-		   "ContentionPerRAWSlotOnlyInFirstGroup"
+		   "ContentionPerRAWSlotOnlyInFirstGroup",
+		   "numOfRpsElements"
 		});
 }
 

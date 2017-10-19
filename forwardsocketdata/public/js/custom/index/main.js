@@ -1286,7 +1286,6 @@ var SimulationGUI = (function () {
             var slots = selectedSimulation.config.numberOfRAWSlots;
             var groupWidth = Math.floor(width / groups) - 2 * padding;
             var rectHeight = height - 2 * padding;
-            console.log("groups " + groups + " , slots " + slots + " ,groupwidth" + groupWidth);
             for (var g = 0; g < groups; g++) {
                 ctx.beginPath();
                 ctx.rect(padding + g * (padding + groupWidth) + 0.5, padding + 0.5, groupWidth, rectHeight);
@@ -1685,7 +1684,7 @@ var SimulationGUI = (function () {
                     el = text;
                 }
                 if (this.automaticHideNullProperties) {
-                    if ((el != '0.00 (stddev: 0.00)' && el != "-1") || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
+                    if ((el != '0.00 (stddev: 0.00)' && el != "NaN (stddev: NaN)") || this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
                         $(propertyElements[i]).show();
                     }
                     else {
@@ -1695,7 +1694,6 @@ var SimulationGUI = (function () {
                 $($(propertyElements[i]).find("td").get(1)).empty().append(el);
             }
             else {
-                var el_1 = "-1";
                 if (this.headersListFullyShown.indexOf(prevSiblingHeader) > -1) {
                     $(propertyElements[i]).show();
                 }
